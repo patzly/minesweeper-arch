@@ -1,4 +1,5 @@
 import scala.util.Random
+import model.*
 
 val rand = new Random()
 
@@ -6,31 +7,7 @@ val rand = new Random()
 	val width = 8
 	val height = 8
 	val bomb_chance = 0.25f
-	val bombs = gen_bombs(width, height, bomb_chance, rand)
+	val field = Field(width, height, (x, y) => Cell(true, rand.nextInt((1/bomb_chance).toInt) == 0))
 
-	print(get_field(width, height, bombs))
+	print(field)
 
-// returns a string representation of the field
-def get_field(width: Int, height: Int, bombs: List[(Int, Int)]): String = 
-	// constants for the field
-	val hidden   = "#"
-	val revealed = " "
-	val bomb     = "o"
-
-	// generate the field as a string
-	(0 until height).map(y => 
-		(0 until width).map(x => 
-			(if bombs.contains((x, y)) 
-				then bomb 
-				else hidden
-			) + " ")
-		.toArray.mkString + "\n"
-	).toArray.mkString
-
-// generates a list of bomb coordinates with a given percentage
-def gen_bombs(width: Int, height: Int, percent: Float, rng: Random): List[(Int, Int)] =
-	(for {
-		x <- 0 until width
-		y <- 0 until height
-		if rng.nextInt((1/percent).toInt) == 0
-	} yield (x, y)).toList
