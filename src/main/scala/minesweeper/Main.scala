@@ -1,3 +1,5 @@
+package minesweeper
+
 import scala.util.Random
 import model.*
 
