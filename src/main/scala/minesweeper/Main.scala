@@ -9,7 +9,7 @@ import controller.genbombRand
 	val height = 8
 	val bomb_chance = 0.25f
 	val rand = new Random()
-	val field = Field(width, height, genbombRand(rand, bomb_chance))
+	val field: Field = Field(width, height, genbombRand(rand, bomb_chance))
 
 	print(field)
 
