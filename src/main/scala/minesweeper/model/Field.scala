@@ -8,9 +8,14 @@ class Field(rows: Int, cols: Int, genbomb: (Int, Int) => Cell) {
 	override def toString(): String = {
 		matrix.map(r => r.mkString(" ")).mkString("\n")
 	}
+
+	def withRevealed(x: Int, y: Int): Field = {
+		val newMatrix = matrix.updated(y, matrix(y).updated(x, Cell(true, matrix(y)(x).isBomb)))
+		Field(rows, cols, (x: Int, y: Int) => newMatrix(x)(y))
+	}
 }
 
 object Field {
 	def getRandBombGen(rand: Random, bomb_chance: Float): (Int, Int) => Cell =
-		(_, _) => Cell(true, rand.nextInt((1/bomb_chance).toInt) == 0)
+		(_, _) => Cell(false, rand.nextInt((1/bomb_chance).toInt) == 0)
 }

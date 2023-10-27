@@ -58,9 +58,9 @@ class FieldSpec extends AnyWordSpec {
             val genbomb = Field.getRandBombGen(rand, 0.25f)
 
             "always return a bomb" in {
-                genbomb(0, 0) shouldBe(Cell(true, true))
-                genbomb(1, 1) shouldBe(Cell(true, true))
-                genbomb(0, 1) shouldBe(Cell(true, true))
+                genbomb(0, 0) shouldBe(Cell(false, true))
+                genbomb(1, 1) shouldBe(Cell(false, true))
+                genbomb(0, 1) shouldBe(Cell(false, true))
             }
         }
         "used with a generator that never returns 0" should {
@@ -68,9 +68,9 @@ class FieldSpec extends AnyWordSpec {
             val genbomb = Field.getRandBombGen(rand, 0.25f)
 
             "never return a bomb" in {
-                genbomb(0, 0) shouldBe(Cell(true, false))
-                genbomb(1, 1) shouldBe(Cell(true, false))
-                genbomb(0, 1) shouldBe(Cell(true, false))
+                genbomb(0, 0) shouldBe(Cell(false, false))
+                genbomb(1, 1) shouldBe(Cell(false, false))
+                genbomb(0, 1) shouldBe(Cell(false, false))
             }
         }
     }

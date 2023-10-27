@@ -1,24 +1,30 @@
 package minesweeper.view
 
-class Tui() {
-    def processLine(line: String): Unit = {
+import minesweeper.controller.FieldController
+
+class Tui(controller: FieldController) {
+    def invalidInput(): Boolean = {
+        System.err.println("Invalid input")
+        true
+    }
+
+    def processLine(line: String): Boolean = {
         line match {
-            case "q" => System.exit(0)
+            case "q" => return false
             case _ => {
-                line.split(" ").toList match {
-                    case xc :: yc :: _ => {
-                        val (x, y) = (xc.toIntOption, yc.toIntOption) match {
-                            case (Some(x), Some(y)) => (x, y)
-                            case _ => {
-                                System.err.println("Invalid input")
-                                return ()
-                            }
-                        }
-                        println(s"Selected ($x, $y)")
-                    }
-                    case _ => System.err.println("Invalid input")
+                val inputs = line.split(" ").toList
+                if inputs.length < 2 then {
+                    return invalidInput()
                 }
-            }
+                val (x, y) = (inputs(0).toIntOption, inputs(1).toIntOption) match {
+                    case (Some(x), Some(y)) => (x, y)
+                    case _ => return invalidInput()
+                }
+                println(s"Selected ($x, $y)")
+                controller.reveal(x-1, y-1)
+                println(controller.field)
+                }
         }
+        true
     }
 }
