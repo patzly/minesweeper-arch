@@ -13,6 +13,10 @@ class Field(rows: Int, cols: Int, genbomb: (Int, Int) => Cell) {
 		val newMatrix = matrix.updated(y, matrix(y).updated(x, Cell(true, matrix(y)(x).isBomb)))
 		Field(rows, cols, (x: Int, y: Int) => newMatrix(x)(y))
 	}
+
+	def isInBounds(x: Int, y: Int): Boolean = {
+		matrix.length > y && matrix(y).length > x
+	}
 }
 
 object Field {
