@@ -10,11 +10,13 @@ class Field(rows: Int, cols: Int, genbomb: (Int, Int) => Cell) {
 	}
 
 	def withRevealed(x: Int, y: Int): Field = {
+		if !isInBounds(x, y) then 
+			throw new IndexOutOfBoundsException(s"Indices ($x, $y) out of bounds for field of dimension (${matrix.length}, ${matrix(0).length})")
 		val newMatrix = matrix.updated(y, matrix(y).updated(x, Cell(true, matrix(y)(x).isBomb)))
 		Field(rows, cols, (x: Int, y: Int) => newMatrix(x)(y))
 	}
 
-	def isInBounds(x: Int, y: Int): Boolean = {
+	private def isInBounds(x: Int, y: Int): Boolean = {
 		matrix.length > y && matrix(y).length > x
 	}
 }
