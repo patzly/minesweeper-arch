@@ -3,11 +3,11 @@ package minesweeper.view
 import minesweeper.controller.FieldController
 
 class Tui(controller: FieldController) {
-    def invalidInput(msg: String): Boolean = {
+    private def invalidInput(msg: String): Boolean = {
         System.err.println(msg)
         true
     }
-    def invalidInput(): Boolean = invalidInput("Invalid input")
+    private def invalidInput(): Boolean = invalidInput("Invalid input")
 
     def processLine(line: String): Boolean = {
         line match {
