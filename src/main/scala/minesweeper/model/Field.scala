@@ -3,11 +3,9 @@ package minesweeper.model
 import scala.util.Random
 
 class Field(rows: Int, cols: Int, genbomb: (Int, Int) => Cell) {
-	val matrix = Vector.tabulate(rows, cols) {(x, y) => genbomb(x, y)}
+	val matrix: Vector[Vector[Cell]] = Vector.tabulate(rows, cols) { (x, y) => genbomb(x, y)}
 
-	override def toString(): String = {
-		matrix.map(r => r.mkString(" ")).mkString("\n")
-	}
+	override def toString: String = matrix.map(r => r.mkString(" ")).mkString("\n")
 
 	def withRevealed(x: Int, y: Int): Field = {
 		if !isInBounds(x, y) then 
