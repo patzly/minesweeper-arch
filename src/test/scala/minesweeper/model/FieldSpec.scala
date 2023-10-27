@@ -4,6 +4,10 @@ import minesweeper.model._
 import org.scalatest.matchers.should.Matchers._
 import org.scalatest.wordspec.AnyWordSpec
 
+class NRand(val result: Int) extends scala.util.Random {
+    override def nextInt(n: Int): Int = result
+}
+
 class FieldSpec extends AnyWordSpec {
 	"A Field" when {
 		"it has 1 rows and columns" should {
@@ -12,8 +16,8 @@ class FieldSpec extends AnyWordSpec {
 			val fieldBomb = Field(1, 1, (x, y) => Cell(true, true))
 
 			"have a single Cell" in {
-				fieldHidden.matrix.size shouldBe(1)
-				fieldHidden.matrix.head.size shouldBe(1)
+				fieldHidden.matrix.size shouldBe 1
+				fieldHidden.matrix.head.size shouldBe 1
 			}
 
 			"print a single hidden Cell" in {
@@ -48,4 +52,26 @@ class FieldSpec extends AnyWordSpec {
 			}
 		}
 	}
+	"Field.getRandBombGen" when {
+        "used with a generator that always returns 0" should {
+            val rand = new NRand(0)
+            val genbomb = Field.getRandBombGen(rand, 0.25f)
+
+            "always return a bomb" in {
+                genbomb(0, 0) shouldBe(Cell(true, true))
+                genbomb(1, 1) shouldBe(Cell(true, true))
+                genbomb(0, 1) shouldBe(Cell(true, true))
+            }
+        }
+        "used with a generator that never returns 0" should {
+            val rand = new NRand(1)
+            val genbomb = Field.getRandBombGen(rand, 0.25f)
+
+            "never return a bomb" in {
+                genbomb(0, 0) shouldBe(Cell(true, false))
+                genbomb(1, 1) shouldBe(Cell(true, false))
+                genbomb(0, 1) shouldBe(Cell(true, false))
+            }
+        }
+    }
 }
