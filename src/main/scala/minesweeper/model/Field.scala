@@ -3,7 +3,14 @@ package minesweeper.model
 import scala.util.Random
 
 class Field(rows: Int, cols: Int, genbomb: (Int, Int) => Cell) {
-	val matrix: Vector[Vector[Cell]] = Vector.tabulate(rows, cols) { (x, y) => genbomb(x, y)}
+	val matrix: Vector[Vector[Cell]] = {
+		val raw_matrix = Vector.tabulate(rows, cols)((x, y) => genbomb(x, y))
+		raw_matrix.zipWithIndex.map((row, y) => 
+			row.zipWithIndex.map((cell, x) => 
+				cell.copy(nearbyBombs = countNearbyMinesImpl(x, y, raw_matrix))
+			)
+		)
+	}
 
 	override def toString: String = matrix.map(r => r.mkString(" ")).mkString("\n")
 	
@@ -18,14 +25,18 @@ class Field(rows: Int, cols: Int, genbomb: (Int, Int) => Cell) {
 
 	def withRevealed(x: Int, y: Int): Field = {
 		check_out_of_bounds(x, y)
-		val newMatrix = matrix.updated(y, matrix(y).updated(x, Cell(true, matrix(y)(x).isBomb)))
+		val newMatrix = matrix.updated(y, matrix(y).updated(x, Cell(true, matrix(y)(x).isBomb, matrix(y)(x).nearbyBombs)))
 		Field(rows, cols, (x: Int, y: Int) => newMatrix(x)(y))
+	}
+
+	private def countNearbyMinesImpl(x: Int, y: Int, matrix: Vector[Vector[Cell]]) = {
+		val sum = matrix.slice(y-1, y+2).map(row => row.slice(x-1, x+2).count(c => c.isBomb)).sum
+		if matrix(y)(x).isBomb then sum - 1 else sum
 	}
 
 	def countNearbyMines(x: Int, y: Int): Int = {
 		check_out_of_bounds(x, y)
-		val sum = matrix.slice(y-1, y+2).map(row => row.slice(x-1, x+2).count(c => c.isBomb)).sum
-		if matrix(y)(x).isBomb then sum - 1 else sum
+		countNearbyMinesImpl(x, y, matrix)
 	}
 }
 
