@@ -29,6 +29,16 @@ class FieldSpec extends AnyWordSpec {
 			"print a single revealed bomb Cell" in {
 				fieldBomb.toString shouldBe("☒")
 			}
+			"return the correct number of nearby bombs" in {
+				fieldHidden.countNearbyMines(0, 0) shouldBe(0)
+				fieldRevealed.countNearbyMines(0, 0) shouldBe(0)
+				fieldBomb.countNearbyMines(0, 0) shouldBe(0)
+			}
+			"return the correct number of nearby bombs for out of bounds indices" in {
+				fieldHidden.countNearbyMines(0, 0) shouldBe(0)
+				fieldRevealed.countNearbyMines(0, 0) shouldBe(0)
+				fieldBomb.countNearbyMines(0, 0) shouldBe(0)
+			}
 		}
 		"it has 3 rows and columns and is empty" should {
 			val fieldRevealed = Field(3, 3, (x, y) => Cell(true, false))
@@ -49,6 +59,22 @@ class FieldSpec extends AnyWordSpec {
 			val fieldBomb = Field(3, 3, (x, y) => Cell(true, true))
 			"be printed correctly if all Cells are bombs" in {
 				fieldBomb.toString shouldBe("☒ ☒ ☒\n☒ ☒ ☒\n☒ ☒ ☒")
+			}
+		}
+		"it has 3 ros and colums and bombs on the diagonal" should {
+			val fieldWithBombs = Field(3, 3, (x, y) => Cell(false, x == y))
+			"return the correct bomb count for each cell" in {
+				fieldWithBombs.countNearbyMines(0, 0) shouldBe(1)
+				fieldWithBombs.countNearbyMines(1, 0) shouldBe(2)
+				fieldWithBombs.countNearbyMines(2, 0) shouldBe(1)
+
+				fieldWithBombs.countNearbyMines(0, 1) shouldBe(2)
+				fieldWithBombs.countNearbyMines(1, 1) shouldBe(2)
+				fieldWithBombs.countNearbyMines(2, 1) shouldBe(2)
+				
+				fieldWithBombs.countNearbyMines(0, 2) shouldBe(1)
+				fieldWithBombs.countNearbyMines(1, 2) shouldBe(2)
+				fieldWithBombs.countNearbyMines(2, 2) shouldBe(1)
 			}
 		}
 	}
