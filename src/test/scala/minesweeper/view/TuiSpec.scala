@@ -33,7 +33,7 @@ class TuiSpec extends AnyWordSpec {
 			}
 		}
 		"it has a multi cell field" should {
-			val field = Field(3, 3, (x, y) => Cell(false, false))
+			val field = Field(3, 3, (x, y) => Cell(false, x == 0))
 			val controller = FieldController(field)
 			val tui = Tui(controller)
 			"without revealing the cell" in {
@@ -43,14 +43,16 @@ class TuiSpec extends AnyWordSpec {
 				tui.processLine("abc") shouldEqual(true)
 				controller.field.toString shouldEqual("# # #\n# # #\n# # #")
 			}
-			"after revealing some cells" in {
-				tui.processLine("1 1") shouldEqual(true)
-				controller.field.toString shouldBe("☐ # #\n# # #\n# # #")
-				tui.processLine("3 3") shouldEqual(true)
-				controller.field.toString shouldBe("☐ # #\n# # #\n# # ☐")
+			"after revealing some cells recursively" in {
+				tui.processLine("1 1") shouldEqual(false) // bomb is hit
+				controller.field.toString shouldBe("☒ # #\n# # #\n# # #")
+				tui.processLine("3 3") shouldEqual(false)
+				controller.field.toString shouldBe("☒ 2 ☐\n# 3 ☐\n# 2 ☐")
 				tui.processLine("4 4") shouldEqual(true)
-				controller.field.toString shouldBe("☐ # #\n# # #\n# # ☐")
-				controller.field.hasWon shouldBe(false)
+				controller.field.toString shouldBe("☒ 2 ☐\n# 3 ☐\n# 2 ☐")
+				tui.processLine("2 1") shouldEqual(true)
+				controller.field.toString shouldBe("☒ 2 ☐\n# 3 ☐\n# 2 ☐")
+				controller.field.hasWon shouldBe(true)
 			}
 			"after quitting" in {
 				tui.processLine("q") shouldEqual(false)

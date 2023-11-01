@@ -2,9 +2,11 @@ package minesweeper.model
 
 import scala.util.Random
 
+type CellMatrix = Vector[Vector[Cell]]
+
 class Field(rows: Int, cols: Int, genbomb: (Int, Int) => Cell) {
-	val matrix: Vector[Vector[Cell]] = {
-		val raw_matrix = Vector.tabulate(rows, cols)((x, y) => genbomb(x, y))
+	private val matrix: CellMatrix = {
+		val raw_matrix = Vector.tabulate(rows, cols)((y, x) => genbomb(x, y))
 		raw_matrix.zipWithIndex.map((row, y) => 
 			row.zipWithIndex.map((cell, x) => 
 				cell.copy(nearbyBombs = countNearbyMinesImpl(x, y, raw_matrix))
@@ -14,8 +16,13 @@ class Field(rows: Int, cols: Int, genbomb: (Int, Int) => Cell) {
 
 	override def toString: String = matrix.map(r => r.mkString(" ")).mkString("\n")
 	
-	private def isInBounds(x: Int, y: Int): Boolean = {
-		matrix.length > y && matrix(y).length > x
+	def getCell(x: Int, y: Int): Cell = {
+		check_out_of_bounds(x, y)
+		matrix(y)(x)
+	}
+
+	def isInBounds(x: Int, y: Int): Boolean = {
+		x >= 0 && y >= 0 && matrix.length > y && matrix(y).length > x
 	}
 
 	private def check_out_of_bounds(x: Int, y: Int): Unit = {
@@ -25,11 +32,38 @@ class Field(rows: Int, cols: Int, genbomb: (Int, Int) => Cell) {
 
 	def withRevealed(x: Int, y: Int): Field = {
 		check_out_of_bounds(x, y)
-		val newMatrix = matrix.updated(y, matrix(y).updated(x, Cell(true, matrix(y)(x).isBomb, matrix(y)(x).nearbyBombs)))
-		Field(rows, cols, (x: Int, y: Int) => newMatrix(x)(y))
+		val newMatrix = revealRec(x, y, 
+			matrix.updated(y, matrix(y).updated(x, Cell(true, matrix(y)(x).isBomb, matrix(y)(x).nearbyBombs))), // definetly reveal the clicked cell
+			Set()
+		)._1
+		Field(rows, cols, (x: Int, y: Int) => newMatrix(y)(x))
 	}
 
-	private def countNearbyMinesImpl(x: Int, y: Int, matrix: Vector[Vector[Cell]]) = {
+	private type IndexSet = Set[(Int, Int)]
+
+	private def revealRec(xPos: Int, yPos: Int, matrix: CellMatrix, revealed: IndexSet): (CellMatrix, IndexSet) = {
+		if matrix(yPos)(xPos).isBomb then return (matrix, revealed)
+
+		val new_matrix = matrix.updated(yPos, matrix(yPos).updated(xPos, Cell(true, matrix(yPos)(xPos).isBomb, matrix(yPos)(xPos).nearbyBombs)))
+		val new_revealed = revealed + ((xPos, yPos))
+
+		if matrix(yPos)(xPos).nearbyBombs > 0 then return (new_matrix, new_revealed)
+
+		val to_reveal = new_matrix.zipWithIndex.map((row, y) =>
+			row.zipWithIndex.map((col, x) =>
+				(col, x, y)
+			).slice(xPos-1, xPos+2)
+		).slice(yPos-1, yPos+2)
+		.flatten
+		.filter((c, x, y) => !new_revealed.contains((x, y)) && !c.isBomb)
+
+		to_reveal.foldLeft((new_matrix, new_revealed))((acc, cell) => {
+			val (x, y) = (cell._2, cell._3)
+			revealRec(x, y, acc._1, acc._2)
+		})
+	}
+
+	private def countNearbyMinesImpl(x: Int, y: Int, matrix: CellMatrix) = {
 		val sum = matrix.slice(y-1, y+2).map(row => row.slice(x-1, x+2).count(c => c.isBomb)).sum
 		if matrix(y)(x).isBomb then sum - 1 else sum
 	}

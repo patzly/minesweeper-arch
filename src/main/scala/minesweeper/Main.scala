@@ -10,7 +10,7 @@ import controller.FieldController
 	val height = 8
 	val bomb_chance = 0.25f
 	val rand = new Random()
-	val field: Field = Field(width, height, Field.getRandBombGen(rand, bomb_chance))
+	val field: Field = Field(height, width, Field.getRandBombGen(rand, bomb_chance))
 
 	println(field)
 	val controller = FieldController(field)

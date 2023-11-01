@@ -27,16 +27,16 @@ class FieldControllerSpec extends AnyWordSpec {
             }
         }
         "it has a multi cell field" should {
-            val field = Field(3, 3, (x, y) => Cell(false, false))
+            val field = Field(3, 3, (x, y) => Cell(false, x == 0))
             val controller = FieldController(field)
             "without revealing the cell" in {
                 controller.field.toString shouldBe("# # #\n# # #\n# # #")
             }
-            "reveal the cell" in {
+            "reveal the cell recursively" in {
                 controller.reveal(0, 0)
-                controller.field.toString shouldBe("☐ # #\n# # #\n# # #")
-                controller.reveal(2, 2)
-                controller.field.toString shouldBe("☐ # #\n# # #\n# # ☐")
+                controller.field.toString shouldBe("☒ # #\n# # #\n# # #")
+                controller.reveal(2, 0)
+                controller.field.toString shouldBe("☒ 2 ☐\n# 3 ☐\n# 2 ☐")
             }
         }
     }

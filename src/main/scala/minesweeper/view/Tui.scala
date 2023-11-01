@@ -17,18 +17,26 @@ class Tui(controller: FieldController) {
 				if inputs.length < 2 then {
 				    return invalidInput()
 				}
+
 				val (x, y) = (inputs(0).toIntOption, inputs(1).toIntOption) match {
 				    case (Some(x), Some(y)) => (x-1, y-1)
 				    case _ => return invalidInput()
 				}
+
 				println(s"Selected ($x, $y)")
+				if controller.field.isInBounds(x, y) && controller.field.getCell(x, y).isRevealed then {
+					return invalidInput("Cell already revealed")
+				}
+
 				try {
 				    controller.reveal(x, y)
 				} catch {
 				    case e: IndexOutOfBoundsException => return invalidInput(e.getMessage)
 				}
+
 				println(controller.field)
-				if controller.field.matrix(y)(x).isBomb then {
+
+				if controller.field.getCell(x, y).isBomb then {
 					println("You lost!")
 					return false
 				}
