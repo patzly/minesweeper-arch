@@ -39,6 +39,11 @@ class FieldSpec extends AnyWordSpec {
 				fieldRevealed.countNearbyMines(0, 0) shouldBe(0)
 				fieldBomb.countNearbyMines(0, 0) shouldBe(0)
 			}
+			"check correctly if the game is won" in {
+				fieldHidden.hasWon shouldBe(false)
+				fieldRevealed.hasWon shouldBe(true)
+				fieldBomb.hasWon shouldBe(true)
+			}
 		}
 		"it has 3 rows and columns and is empty" should {
 			val fieldRevealed = Field(3, 3, (x, y) => Cell(true, false))
@@ -60,6 +65,12 @@ class FieldSpec extends AnyWordSpec {
 			"be printed correctly if all Cells are bombs" in {
 				fieldBomb.toString shouldBe("☒ ☒ ☒\n☒ ☒ ☒\n☒ ☒ ☒")
 			}
+
+			"check correctly if the game is won" in {
+				fieldHidden.hasWon shouldBe(false)
+				fieldRevealed.hasWon shouldBe(true)
+				fieldBomb.hasWon shouldBe(true)
+			}
 		}
 		"it has 3 ros and colums and bombs on the diagonal" should {
 			val fieldWithBombs = Field(3, 3, (x, y) => Cell(false, x == y))
@@ -75,6 +86,9 @@ class FieldSpec extends AnyWordSpec {
 				fieldWithBombs.countNearbyMines(0, 2) shouldBe(1)
 				fieldWithBombs.countNearbyMines(1, 2) shouldBe(2)
 				fieldWithBombs.countNearbyMines(2, 2) shouldBe(1)
+			}
+			"check correctly if the game is won" in {
+				fieldWithBombs.hasWon shouldBe(false)
 			}
 		}
 	}

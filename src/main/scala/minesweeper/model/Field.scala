@@ -38,6 +38,10 @@ class Field(rows: Int, cols: Int, genbomb: (Int, Int) => Cell) {
 		check_out_of_bounds(x, y)
 		countNearbyMinesImpl(x, y, matrix)
 	}
+
+	def hasWon: Boolean = {
+		matrix.forall(row => row.forall(cell => cell.isRevealed || cell.isBomb))
+	}
 }
 
 object Field {
