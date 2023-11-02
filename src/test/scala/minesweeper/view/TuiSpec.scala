@@ -10,8 +10,7 @@ import java.lang.IndexOutOfBoundsException
 class TuiSpec extends AnyWordSpec {
 	"A Tui" when {
 		"it has a single cell field" should {
-			val field = Field(1, 1, (x, y) => Cell(false, false))
-			val controller = FieldController(field)
+			val controller = FieldController(1, 1, (x, y) => Cell(false, false))
 			val tui = Tui(controller)
 
 			"without revealing the cell" in {
@@ -33,8 +32,7 @@ class TuiSpec extends AnyWordSpec {
 			}
 		}
 		"it has a multi cell field" should {
-			val field = Field(3, 3, (x, y) => Cell(false, x == 0))
-			val controller = FieldController(field)
+			val controller = FieldController(3, 3, (x, y) => Cell(false, x == 0))
 			val tui = Tui(controller)
 			"without revealing the cell" in {
 				controller.field.toString shouldEqual("# # #\n# # #\n# # #")
@@ -44,8 +42,10 @@ class TuiSpec extends AnyWordSpec {
 				controller.field.toString shouldEqual("# # #\n# # #\n# # #")
 			}
 			"after revealing some cells recursively" in {
-				tui.processLine("1 1") shouldEqual(false) // bomb is hit
-				controller.field.toString shouldBe("☒ # #\n# # #\n# # #")
+				tui.processLine("2 1") shouldEqual(true)
+				controller.field.toString shouldBe("# 2 #\n# # #\n# # #")
+				tui.processLine("1 1") shouldEqual(false) // bomb is hit -> lost
+				controller.field.toString shouldBe("☒ 2 #\n# # #\n# # #")
 				tui.processLine("3 3") shouldEqual(false)
 				controller.field.toString shouldBe("☒ 2 ☐\n# 3 ☐\n# 2 ☐")
 				tui.processLine("4 4") shouldEqual(true)
@@ -59,13 +59,14 @@ class TuiSpec extends AnyWordSpec {
 			}
 		}
 		"it has a field with bombs" should {
-			val field = Field(1, 1, (x, y) => Cell(false, true))
-			val controller = FieldController(field)
+			val controller = FieldController(3, 3, (x, y) => Cell(false, x == 0))
 			val tui = Tui(controller)
 			"return false if the game is lost" in {
+				tui.processLine("2 1") shouldEqual(true)
+				controller.field.toString shouldEqual("# 2 #\n# # #\n# # #")
 				tui.processLine("1 1") shouldEqual(false)
-				controller.field.toString shouldEqual("☒")
-				controller.field.hasWon shouldBe(true)
+				controller.field.toString shouldEqual("☒ 2 #\n# # #\n# # #")
+				controller.field.hasWon shouldBe(false)
 			}
 		}
 	}

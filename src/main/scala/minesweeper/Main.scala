@@ -10,11 +10,10 @@ import controller.FieldController
 	val height = 8
 	val bomb_chance = 0.25f
 	val rand = new Random()
-	val field: Field = Field(height, width, Field.getRandBombGen(rand, bomb_chance))
 
-	println(field)
-	val controller = FieldController(field)
+	val controller = FieldController(height, width, Field.getRandBombGen(rand, bomb_chance))
 	val tui = Tui(controller)
+	println(controller.field)
 	while tui.processLine(scala.io.StdIn.readLine()) do
 		{}
 
