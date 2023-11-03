@@ -5,7 +5,7 @@ import model.*
 import view.Tui
 import controller.FieldController
 
-@main def main: Unit =
+@main def main(): Unit =
 	val width = 16
 	val height = 16
 	val bomb_chance = 0.15f
@@ -13,7 +13,8 @@ import controller.FieldController
 
 	val controller = FieldController(height, width, Field.getRandBombGen(rand, bomb_chance))
 	val tui = Tui(controller)
-	println(controller.field)
+
+	println(tui)
 	while tui.processLine(scala.io.StdIn.readLine()) do
 		{}
 

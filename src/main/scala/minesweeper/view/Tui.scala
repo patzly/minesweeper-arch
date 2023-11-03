@@ -7,7 +7,15 @@ class Tui(controller: FieldController) {
 	    System.err.println(msg)
 	    true
 	}
+
 	private def invalidInput(): Boolean = invalidInput("Invalid input")
+
+	override def toString: String =
+		val (cols, rows) = controller.field.dimension
+		val l = rows.toString.length + 1
+		" " * (l+1) + (1 until cols).mkString(" ") + "\n" 
+		  + " " * (l+1) + "-" * cols*2 + "\n"
+		  + controller.field.toString.split('\n').zipWithIndex.map((s, i) => (i + 1).toString.padTo(l, ' ') + '|' + s).mkString("\n")
 
 	def processLine(line: String): Boolean = {
 		line match {
@@ -34,7 +42,7 @@ class Tui(controller: FieldController) {
 				    case e: IndexOutOfBoundsException => return invalidInput(e.getMessage)
 				}
 
-				println(controller.field)
+				println(this)
 
 				if controller.field.getCell(x, y).isBomb then {
 					println("You lost!")

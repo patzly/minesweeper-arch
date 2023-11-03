@@ -21,6 +21,8 @@ class Field(rows: Int, cols: Int, genbomb: (Int, Int) => Cell) {
 		matrix(y)(x)
 	}
 
+	def dimension: (Int, Int) = (rows, cols)
+
 	private def revealCell(x: Int, y: Int, cellMatrix: CellMatrix): CellMatrix = {
 		cellMatrix.updated(y, cellMatrix(y).updated(x, Cell(true, cellMatrix(y)(x).isBomb, cellMatrix(y)(x).nearbyBombs)))
 	}
