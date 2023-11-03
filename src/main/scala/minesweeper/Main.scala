@@ -3,6 +3,7 @@ package minesweeper
 import scala.util.Random
 import model.*
 import view.Tui
+import view.TUIState
 import controller.FieldController
 
 @main def main(): Unit =
@@ -15,6 +16,21 @@ import controller.FieldController
 	val tui = Tui(controller)
 
 	println(tui)
-	while tui.processLine(scala.io.StdIn.readLine()) do
-		{}
+	while processInput(tui) do { }
 
+def processInput(tui: Tui) : Boolean =
+	val state: TUIState = tui.processLine(scala.io.StdIn.readLine())
+
+	println(tui)
+	state match
+		case TUIState.Continue => true
+		case TUIState.Won =>
+			println("You Won!")
+			false
+		case TUIState.Lost =>
+			println("You Lost!")
+			false
+		case TUIState.Invalid(msg) =>
+			println(msg)
+			true
+		case TUIState.Exit => false
