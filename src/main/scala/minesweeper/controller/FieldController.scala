@@ -8,7 +8,7 @@ class FieldController(rows: Int, cols: Int, genbomb: (Int, Int) => Cell) {
     private var isFirstMove = true
     def reveal(x: Int, y: Int): Unit = {
         if isFirstMove then {
-            while field.getCell(x, y).isBomb do {
+            while field.getCell(x, y).nearbyBombs != 0 || field.getCell(x, y).isBomb do {
                 field = Field(rows, cols, genbomb)
             }
             isFirstMove = false

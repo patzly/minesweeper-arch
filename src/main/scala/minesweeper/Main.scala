@@ -6,9 +6,9 @@ import view.Tui
 import controller.FieldController
 
 @main def main: Unit =
-	val width = 8
-	val height = 8
-	val bomb_chance = 0.25f
+	val width = 16
+	val height = 16
+	val bomb_chance = 0.15f
 	val rand = new Random()
 
 	val controller = FieldController(height, width, Field.getRandBombGen(rand, bomb_chance))

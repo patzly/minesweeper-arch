@@ -42,15 +42,13 @@ class TuiSpec extends AnyWordSpec {
 				controller.field.toString shouldEqual("# # #\n# # #\n# # #")
 			}
 			"after revealing some cells recursively" in {
-				tui.processLine("2 1") shouldEqual(true)
-				controller.field.toString shouldBe("# 2 #\n# # #\n# # #")
-				tui.processLine("1 1") shouldEqual(false) // bomb is hit -> lost
-				controller.field.toString shouldBe("☒ 2 #\n# # #\n# # #")
 				tui.processLine("3 3") shouldEqual(false)
-				controller.field.toString shouldBe("☒ 2 ☐\n# 3 ☐\n# 2 ☐")
+				controller.field.toString shouldBe("# 2 ☐\n# 3 ☐\n# 2 ☐")
 				tui.processLine("4 4") shouldEqual(true)
-				controller.field.toString shouldBe("☒ 2 ☐\n# 3 ☐\n# 2 ☐")
+				controller.field.toString shouldBe("# 2 ☐\n# 3 ☐\n# 2 ☐")
 				tui.processLine("2 1") shouldEqual(true)
+				controller.field.toString shouldBe("# 2 ☐\n# 3 ☐\n# 2 ☐")
+				tui.processLine("1 1") shouldEqual(false) // bomb is hit -> lost
 				controller.field.toString shouldBe("☒ 2 ☐\n# 3 ☐\n# 2 ☐")
 				controller.field.hasWon shouldBe(true)
 			}
@@ -61,12 +59,12 @@ class TuiSpec extends AnyWordSpec {
 		"it has a field with bombs" should {
 			val controller = FieldController(3, 3, (x, y) => Cell(false, x == 0))
 			val tui = Tui(controller)
-			"return false if the game is lost" in {
-				tui.processLine("2 1") shouldEqual(true)
-				controller.field.toString shouldEqual("# 2 #\n# # #\n# # #")
+			"return false if the game is lost or won" in {
+				tui.processLine("3 3") shouldEqual(false)
+				controller.field.toString shouldEqual("# 2 ☐\n# 3 ☐\n# 2 ☐")
+				controller.field.hasWon shouldBe(true)
 				tui.processLine("1 1") shouldEqual(false)
-				controller.field.toString shouldEqual("☒ 2 #\n# # #\n# # #")
-				controller.field.hasWon shouldBe(false)
+				controller.field.toString shouldEqual("☒ 2 ☐\n# 3 ☐\n# 2 ☐")
 			}
 		}
 	}
