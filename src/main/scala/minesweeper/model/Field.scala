@@ -21,6 +21,10 @@ class Field(rows: Int, cols: Int, genbomb: (Int, Int) => Cell) {
 		matrix(y)(x)
 	}
 
+	private def revealCell(x: Int, y: Int, cellMatrix: CellMatrix): CellMatrix = {
+		cellMatrix.updated(y, cellMatrix(y).updated(x, Cell(true, cellMatrix(y)(x).isBomb, cellMatrix(y)(x).nearbyBombs)))
+	}
+
 	def isInBounds(x: Int, y: Int): Boolean = {
 		x >= 0 && y >= 0 && matrix.length > y && matrix(y).length > x
 	}
@@ -32,8 +36,8 @@ class Field(rows: Int, cols: Int, genbomb: (Int, Int) => Cell) {
 
 	def withRevealed(x: Int, y: Int): Field = {
 		check_out_of_bounds(x, y)
-		val newMatrix = revealRec(x, y, 
-			matrix.updated(y, matrix(y).updated(x, Cell(true, matrix(y)(x).isBomb, matrix(y)(x).nearbyBombs))), // definetly reveal the clicked cell
+		val newMatrix = revealRec(x, y,
+			revealCell(x, y, matrix), // definitely reveal the clicked cell
 			Set()
 		)._1
 		Field(rows, cols, (x: Int, y: Int) => newMatrix(y)(x))
@@ -44,7 +48,7 @@ class Field(rows: Int, cols: Int, genbomb: (Int, Int) => Cell) {
 	private def revealRec(xPos: Int, yPos: Int, matrix: CellMatrix, revealed: IndexSet): (CellMatrix, IndexSet) = {
 		if matrix(yPos)(xPos).isBomb then return (matrix, revealed)
 
-		val new_matrix = matrix.updated(yPos, matrix(yPos).updated(xPos, Cell(true, matrix(yPos)(xPos).isBomb, matrix(yPos)(xPos).nearbyBombs)))
+		val new_matrix = revealCell(xPos, yPos, matrix)
 		val new_revealed = revealed + ((xPos, yPos))
 
 		if matrix(yPos)(xPos).nearbyBombs > 0 then return (new_matrix, new_revealed)
@@ -74,7 +78,7 @@ class Field(rows: Int, cols: Int, genbomb: (Int, Int) => Cell) {
 	}
 
 	def hasWon: Boolean = {
-		matrix.forall(row => row.forall(cell => cell.isRevealed || cell.isBomb))
+		matrix.flatten.forall(cell => cell.isRevealed || cell.isBomb)
 	}
 }
 
