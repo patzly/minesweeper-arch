@@ -24,7 +24,7 @@ class Field(rows: Int, cols: Int, genbomb: (Int, Int) => Cell) {
 	def dimension: (Int, Int) = (rows, cols)
 
 	private def revealCell(x: Int, y: Int, cellMatrix: CellMatrix): CellMatrix = {
-		cellMatrix.updated(y, cellMatrix(y).updated(x, Cell(true, cellMatrix(y)(x).isBomb, cellMatrix(y)(x).nearbyBombs)))
+		cellMatrix.updated(y, cellMatrix(y).updated(x, cellMatrix(y)(x).asRevealed))
 	}
 
 	def isInBounds(x: Int, y: Int): Boolean = {
@@ -43,6 +43,12 @@ class Field(rows: Int, cols: Int, genbomb: (Int, Int) => Cell) {
 			Set()
 		)._1
 		Field(rows, cols, (x: Int, y: Int) => newMatrix(y)(x))
+	}
+
+	def withToggledFlag(x: Int, y: Int) : Field = {
+		check_out_of_bounds(x, y)
+		val flagged = matrix.updated(y, matrix(y).updated(x, matrix(y)(x).asFlagToggled))
+		Field(rows, cols, (x,y) => flagged(y)(x))
 	}
 
 	private type IndexSet = Set[(Int, Int)]

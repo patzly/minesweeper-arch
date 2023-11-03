@@ -14,6 +14,10 @@ class FieldControllerSpec extends AnyWordSpec {
             "without revealing the cell" in {
                 controller.field.toString shouldEqual("#")
             }
+            "flag the cell" in { // has to be tested before reveal() is called!
+                controller.flag(0, 0)
+                controller.field.toString shouldBe ("⚑")
+            }
             "reveal the cell" in {
                 controller.reveal(0, 0)
                 controller.field.toString shouldBe("☐")

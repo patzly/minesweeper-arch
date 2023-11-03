@@ -17,8 +17,17 @@ class TuiSpec extends AnyWordSpec {
 				controller.field.toString shouldEqual("#")
 				tui.processLine("abc 2") shouldEqual TUIState.Invalid("Invalid input: Please enter numbers!")
 				controller.field.toString shouldEqual("#")
-				tui.processLine("2") shouldEqual TUIState.Invalid("Invalid input: Format is <column> <row>!")
+				tui.processLine("2") shouldEqual TUIState.Invalid("Invalid input: Format is <column> <row> ['flag']!")
 				controller.field.toString shouldEqual("#")
+			}
+			"after flagging the cell" in {
+				tui.processLine("1 1 flag") shouldEqual TUIState.Continue
+				controller.field.toString shouldEqual "⚑"
+				tui.processLine("2 2 flag") shouldEqual TUIState.Invalid("Indices (1, 1) out of bounds for field of dimension (1, 1)")
+			}
+			"after flagging the cell again" in {
+				tui.processLine("1 1 flag") shouldEqual TUIState.Continue
+				controller.field.toString shouldEqual "#"
 			}
 			"after revealing the cell" in {
 				tui.processLine("1 1") shouldEqual TUIState.Won
@@ -39,7 +48,7 @@ class TuiSpec extends AnyWordSpec {
 				controller.field.toString shouldEqual("# # #\n# # #\n# # #")
 				tui.processLine("abc 2") shouldEqual TUIState.Invalid("Invalid input: Please enter numbers!")
 				controller.field.toString shouldEqual("# # #\n# # #\n# # #")
-				tui.processLine("abc") shouldEqual TUIState.Invalid("Invalid input: Format is <column> <row>!")
+				tui.processLine("abc") shouldEqual TUIState.Invalid("Invalid input: Format is <column> <row> ['flag']!")
 				controller.field.toString shouldEqual("# # #\n# # #\n# # #")
 			}
 			"after revealing some cells recursively" in {

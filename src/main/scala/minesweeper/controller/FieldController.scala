@@ -6,6 +6,7 @@ import minesweeper.model.Cell
 class FieldController(rows: Int, cols: Int, genbomb: (Int, Int) => Cell) {
     var field: Field = Field(rows, cols, genbomb)
     private var isFirstMove = true
+
     def reveal(x: Int, y: Int): Unit = {
         if isFirstMove then {
             while field.getCell(x, y).nearbyBombs != 0 || field.getCell(x, y).isBomb do {
@@ -15,6 +16,9 @@ class FieldController(rows: Int, cols: Int, genbomb: (Int, Int) => Cell) {
         }
 
         field = field.withRevealed(x, y)
-        ()
+    }
+
+    def flag(x: Int, y: Int): Unit = {
+        field = field.withToggledFlag(x, y)
     }
 }

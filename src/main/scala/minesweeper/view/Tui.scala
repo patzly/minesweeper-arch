@@ -33,12 +33,22 @@ class Tui(controller: FieldController) {
 			case _ =>
 				val inputs = line.split(" ").toList
 				if inputs.length < 2 then {
-				    return TUIState.Invalid("Invalid input: Format is <column> <row>!")
+				    return TUIState.Invalid("Invalid input: Format is <column> <row> ['flag']!")
 				}
 
 				val (x, y) = (inputs(0).toIntOption, inputs(1).toIntOption) match {
 				    case (Some(x), Some(y)) => (x-1, y-1)
 				    case _ => return TUIState.Invalid("Invalid input: Please enter numbers!")
+				}
+
+				if inputs.length == 3 && inputs(2) == "flag" then {
+					println(s"Toggle flag for ($x, $y)")
+					try {
+						controller.flag(x, y)
+					} catch {
+						case e: IndexOutOfBoundsException => return TUIState.Invalid(e.getMessage)
+					}
+					return TUIState.Continue
 				}
 
 				println(s"Selected ($x, $y)")
