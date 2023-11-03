@@ -12,11 +12,20 @@ enum TUIState {
 
 class Tui(controller: FieldController) {
 	override def toString: String =
-		val (cols, rows) = controller.field.dimension
-		val l = rows.toString.length + 1
-		" " * (l+1) + (1 until cols+1).mkString(" ") + "\n"
-		  + " " * (l+1) + "-" * (cols*2 - 1) + "\n"
-		  + controller.field.toString.split('\n').zipWithIndex.map((s, i) => (i + 1).toString.padTo(l, ' ') + '|' + s).mkString("\n")
+		val (rows, cols) = controller.field.dimension
+		val l = cols.toString.length + 2
+
+		val pad = " " * l
+
+		val n1 = pad + (" " * 18) + (10 until cols+1).map(a => a / 10).mkString(" ")
+		val n0 = pad + (1 until cols+1).map(a => a % 10).mkString(" ")
+
+		val numbers = if cols % 10 == 0 then n1 + "\n" + n0 else n0
+
+		val lines = pad + "-" * (cols*2 - 1)
+		val rowStrings = controller.field.toString.split('\n').zipWithIndex.map((s, i) => (i + 1).toString.padTo(l-1, ' ') + '|' + s).mkString("\n")
+
+		numbers + "\n" + lines + "\n" + rowStrings
 
 	def processLine(line: String): TUIState = {
 		line match {
