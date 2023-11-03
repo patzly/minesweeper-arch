@@ -14,5 +14,5 @@ case class Cell(isRevealed: Boolean, isBomb: Boolean, isFlagged: Boolean = false
 		else hiddenChar
 	}
 
-	def asRevealed: Cell = Cell(true, isBomb, isFlagged, nearbyBombs)
-	def asFlagToggled: Cell = Cell(isRevealed, isBomb, !isFlagged, nearbyBombs)
+	def asRevealed: Cell = copy(isRevealed = true)
+	def asFlagToggled: Cell = copy(isFlagged = !isFlagged)
