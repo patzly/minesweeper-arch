@@ -1,18 +1,16 @@
 package minesweeper.view
 
+import minesweeper.model.Field
 import minesweeper.controller.FieldController
+import minesweeper.controller.Event
+import minesweeper.observer.Observer
 
-enum TUIState {
-	case Continue
-	case Won
-	case Lost
-	case Invalid(string: String)
-	case Exit
-}
+class Tui(controller: FieldController) extends Observer[Event] {
+	private var loop = true
+	controller.addObserver(this)
 
-class Tui(controller: FieldController) {
-	override def toString: String =
-		val (rows, cols) = controller.field.dimension
+	def fieldString(field: Field): String = {
+		val (rows, cols) = field.dimension
 		val l = cols.toString.length + 2
 
 		val pad = " " * l
@@ -23,22 +21,23 @@ class Tui(controller: FieldController) {
 		val numbers = if cols % 10 == 0 then n1 + "\n" + n0 else n0
 
 		val lines = pad + "-" * (cols*2 - 1)
-		val rowStrings = controller.field.toString.split('\n').zipWithIndex.map((s, i) => (i + 1).toString.padTo(l-1, ' ') + '|' + s).mkString("\n")
+		val rowStrings = field.toString.split('\n').zipWithIndex.map((s, i) => (i + 1).toString.padTo(l-1, ' ') + '|' + s).mkString("\n")
 
 		numbers + "\n" + lines + "\n" + rowStrings
+	}
 
-	def processLine(line: String): TUIState = {
+	def processLine(line: String): Unit = {
 		line match {
-			case "q" => return TUIState.Exit
-			case _ =>
+			case "q" => return controller.exit()
+			case _ => {
 				val inputs = line.split(" ").toList
 				if inputs.length < 2 then {
-				    return TUIState.Invalid("Invalid input: Format is <column> <row> ['flag']!")
+					return println("Invalid input: Format is <column> <row>!")
 				}
 
 				val (x, y) = (inputs(0).toIntOption, inputs(1).toIntOption) match {
 				    case (Some(x), Some(y)) => (x-1, y-1)
-				    case _ => return TUIState.Invalid("Invalid input: Please enter numbers!")
+				    case _ => return println("Invalid input: Please enter numbers!")
 				}
 
 				if inputs.length == 3 && inputs(2) == "flag" then {
@@ -46,29 +45,45 @@ class Tui(controller: FieldController) {
 					try {
 						controller.flag(x, y)
 					} catch {
-						case e: IndexOutOfBoundsException => return TUIState.Invalid(e.getMessage)
+						case e: IndexOutOfBoundsException => return println(e.getMessage())
 					}
-					return TUIState.Continue
+					return ()
 				}
 
 				println(s"Selected ($x, $y)")
-				if controller.field.isInBounds(x, y) && controller.field.getCell(x, y).isRevealed then {
-					return TUIState.Invalid("Cell already revealed!")
-				}
 
 				try {
 				    controller.reveal(x, y)
 				} catch {
-				    case e: IndexOutOfBoundsException => return TUIState.Invalid(e.getMessage)
+				    case e: IndexOutOfBoundsException => return println(e.getMessage())
 				}
-
-				if controller.field.getCell(x, y).isBomb then {
-					return TUIState.Lost
-				}
-				if controller.field.hasWon then {
-					return TUIState.Won
-				}
+			}
 		}
-		TUIState.Continue
+	}
+
+	override def update(e: Event): Unit =  {
+		e match {
+			case Event.Setup(field) => println(fieldString(field))
+			case Event.FieldUpdated(field) => println(fieldString(field))
+			case Event.Won => {
+				println("You won!")
+				loop = false
+			}
+			case Event.Lost => {
+				println("You lost!")
+				loop = false
+			}
+			case Event.Exit => {
+				println("Bye!")
+				loop = false
+			}
+		}
+	}
+
+	def play: Unit = {
+		println(this)
+		while loop do {
+			processLine(scala.io.StdIn.readLine())
+		}
 	}
 }
