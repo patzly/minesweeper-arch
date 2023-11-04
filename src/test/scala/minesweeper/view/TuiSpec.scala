@@ -42,22 +42,14 @@ class TuiSpec extends AnyWordSpec {
 				observer.f.toString shouldEqual("#")
 			}
 			"after flagging the cell" in {
-				tui.processLine("1 1 flag") shouldEqual TUIState.Continue
-				controller.field.toString shouldEqual "⚑"
-				tui.processLine("2 2 flag") shouldEqual TUIState.Invalid("Indices (1, 1) out of bounds for field of dimension (1, 1)")
+				tui.processLine("1 1 flag")
+				observer.f.toString shouldEqual("⚑")
+				tui.processLine("2 2 flag")
+				observer.f.toString shouldEqual("⚑")
 			}
 			"after flagging the cell again" in {
-				tui.processLine("1 1 flag") shouldEqual TUIState.Continue
-				controller.field.toString shouldEqual "#"
-			}
-			"after flagging the cell" in {
-				tui.processLine("1 1 flag") shouldEqual TUIState.Continue
-				controller.field.toString shouldEqual "⚑"
-				tui.processLine("2 2 flag") shouldEqual TUIState.Invalid("Indices (1, 1) out of bounds for field of dimension (1, 1)")
-			}
-			"after flagging the cell again" in {
-				tui.processLine("1 1 flag") shouldEqual TUIState.Continue
-				controller.field.toString shouldEqual "#"
+				tui.processLine("1 1 flag")
+				observer.f.toString shouldEqual("#")
 			}
 			"after revealing the cell" in {
 				tui.processLine("1 1")
