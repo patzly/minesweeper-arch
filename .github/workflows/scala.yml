@@ -7,9 +7,9 @@ name: Scala CI
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "master", "coveralls" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "master", "coveralls" ]
 
 permissions:
   contents: read
@@ -18,6 +18,9 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
+
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
     - uses: actions/checkout@v3
@@ -29,3 +32,7 @@ jobs:
         cache: 'sbt'
     - name: Run tests
       run: sbt test
+    - name: Coveralls
+      run: sbt clean coverage test coverageReport
+    - name: Upload coveralls
+      run: sbt coverageReport coveralls
