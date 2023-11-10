@@ -4,6 +4,9 @@ import minesweeper.model.Field
 import minesweeper.controller.FieldController
 import minesweeper.controller.Event
 import minesweeper.observer.Observer
+import scala.util.Failure
+import scala.util.Success
+import scala.util.Try
 
 class Tui(controller: FieldController) extends Observer[Event] {
 	private var loop = true
@@ -28,7 +31,7 @@ class Tui(controller: FieldController) extends Observer[Event] {
 
 	def processLine(line: String): Unit = {
 		line match {
-			case "q" => return controller.exit()
+			case "q" => controller.exit()
 			case _ => {
 				val inputs = line.split(" ").toList
 				if inputs.length < 2 then {
@@ -42,20 +45,18 @@ class Tui(controller: FieldController) extends Observer[Event] {
 
 				if inputs.length == 3 && inputs(2) == "flag" then {
 					println(s"Toggle flag for ($x, $y)")
-					try {
-						controller.flag(x, y)
-					} catch {
-						case e: IndexOutOfBoundsException => return println(e.getMessage())
+					
+					return controller.flag(x, y) match {
+						case Success(value) => ()
+						case Failure(exception) => println(exception.getMessage())
 					}
-					return ()
 				}
 
 				println(s"Selected ($x, $y)")
 
-				try {
-				    controller.reveal(x, y)
-				} catch {
-				    case e: IndexOutOfBoundsException => return println(e.getMessage())
+				return controller.reveal(x, y) match {
+					case Success(value) => ()
+					case Failure(exception) => println(exception.getMessage())
 				}
 			}
 		}

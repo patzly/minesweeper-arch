@@ -6,6 +6,8 @@ import org.scalatest.matchers.should.Matchers._
 import org.scalatest.wordspec.AnyWordSpec
 import java.lang.IndexOutOfBoundsException
 import minesweeper.observer.Observer
+import scala.util.Success
+import scala.util.Failure
 
 class TestObserver extends Observer[Event] {
     var f: Field = null
@@ -36,19 +38,17 @@ class FieldControllerSpec extends AnyWordSpec {
                 observer.f.toString shouldBe("#")
             }
             "flag the cell" in { // has to be tested before reveal() is called!
-                controller.flag(0, 0)
+                controller.flag(0, 0) shouldBe(Success(()))
                 observer.f.toString shouldBe ("⚑")
             }
             "reveal the cell" in {
-                controller.reveal(0, 0)
+                controller.reveal(0, 0) shouldBe(Success(()))
                 observer.f.toString shouldBe("☐")
                 observer.w shouldBe(Event.Won)
             }
-            "throw an exception" in {
-                val thrown = intercept[IndexOutOfBoundsException] {
-                    controller.reveal(1, 1)
-                }
-                thrown.getMessage shouldBe("Indices (1, 1) out of bounds for field of dimension (1, 1)")
+            "return Failure" in {
+                controller.reveal(1, 1) shouldBe a [Failure[IndexOutOfBoundsException]]
+                observer.f.toString shouldBe("☐")
             }
             "send an exit Event" in {
                 controller.exit()
@@ -64,10 +64,10 @@ class FieldControllerSpec extends AnyWordSpec {
                 observer.f.toString shouldBe("# # #\n# # #\n# # #")
             }
             "reveal the cell recursively" in {
-                controller.reveal(2, 0)
+                controller.reveal(2, 0) shouldBe(Success(()))
                 observer.f.toString shouldBe("# 2 ☐\n# 3 ☐\n# 2 ☐")
                 observer.w shouldBe(Event.Won)
-                controller.reveal(0, 0)
+                controller.reveal(0, 0) shouldBe(Success(()))
                 observer.f.toString shouldBe("☒ 2 ☐\n# 3 ☐\n# 2 ☐")
                 observer.l shouldBe(Event.Lost)
             }
@@ -88,7 +88,7 @@ class FieldControllerSpec extends AnyWordSpec {
                 observer.f.toString shouldBe("# # #\n# # #\n# # #")
             }
             "make sure the cell revealed first is not a bomb and then reveal recursively" in {
-                controller.reveal(2, 0)
+                controller.reveal(2, 0) shouldBe(Success(()))
                 observer.f.toString shouldBe("# 2 ☐\n# 3 ☐\n# 2 ☐")
                 observer.w shouldBe(Event.Won)
             }

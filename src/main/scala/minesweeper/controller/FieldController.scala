@@ -4,6 +4,10 @@ import minesweeper.model.Field
 import minesweeper.model.Cell
 import minesweeper.observer.Observable
 
+import scala.util.Try
+import scala.util.Success
+import scala.util.Failure
+
 enum Event {
 	case Setup(field: Field)
 	case FieldUpdated(field: Field)
@@ -20,31 +24,49 @@ class FieldController(rows: Int, cols: Int, genbomb: (Int, Int) => Cell) extends
 		notifyObservers(Event.Setup(field))
 	}
 
-	def reveal(x: Int, y: Int): Unit = {
+	def reveal(x: Int, y: Int): Try[Unit] = {
 		if isFirstMove then {
-			while field.getCell(x, y).nearbyBombs != 0 || field.getCell(x, y).isBomb do {
+			while field.getCell(x, y) match {
+				case Success(cell) => cell.nearbyBombs != 0 || cell.isBomb
+				case Failure(exception) => return Failure(exception)
+			} do {
 				field = Field(rows, cols, genbomb)
 			}
 			isFirstMove = false
 		}
 
-		field = field.withRevealed(x, y)
+		val withRevealed = field.withRevealed(x, y)
+		withRevealed match {
+			case Success(value) => field = value
+			case Failure(exception) => return Failure(exception)
+		}
+
 		notifyObservers(Event.FieldUpdated(field))
 
-		if field.getCell(x, y).isBomb then {
-			notifyObservers(Event.Lost)
-		} else if field.hasWon then {
-			notifyObservers(Event.Won)
+		field.getCell(x, y) match {
+			case Success(cell) => {
+				if cell.isBomb then {
+					notifyObservers(Event.Lost)
+				} else if field.hasWon then {
+					notifyObservers(Event.Won)
+				}
+			}
+			case Failure(exception) => return Failure(exception)
 		}
-		()
+		return Success(())
 	}
 
 	def exit(): Unit = {
 		notifyObservers(Event.Exit)
 	}
 
-	def flag(x: Int, y: Int): Unit = {
-		field = field.withToggledFlag(x, y)
-		notifyObservers(Event.FieldUpdated(field))
+	def flag(x: Int, y: Int): Try[Unit] = {
+		field.withToggledFlag(x, y) match {
+			case Success(newField) => {
+				field = newField
+				Try(notifyObservers(Event.FieldUpdated(field)))
+			}
+			case Failure(exception) => return Failure(exception)
+		}
 	}
 }

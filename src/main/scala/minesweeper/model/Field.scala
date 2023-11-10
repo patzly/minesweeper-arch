@@ -1,6 +1,10 @@
 package minesweeper.model
 
 import scala.util.Random
+import scala.util.Try
+import scala.util.Success
+import scala.util.Failure
+import org.scalactic.Fail
 
 type CellMatrix = Vector[Vector[Cell]]
 
@@ -16,10 +20,7 @@ class Field(rows: Int, cols: Int, genbomb: (Int, Int) => Cell) {
 
 	override def toString: String = matrix.map(r => r.mkString(" ")).mkString("\n")
 	
-	def getCell(x: Int, y: Int): Cell = {
-		check_out_of_bounds(x, y)
-		matrix(y)(x)
-	}
+	def getCell(x: Int, y: Int) = Try(matrix(y)(x))
 
 	def dimension: (Int, Int) = (rows, cols)
 
@@ -31,24 +32,23 @@ class Field(rows: Int, cols: Int, genbomb: (Int, Int) => Cell) {
 		x >= 0 && y >= 0 && matrix.length > y && matrix(y).length > x
 	}
 
-	private def check_out_of_bounds(x: Int, y: Int): Unit = {
-		if !isInBounds(x, y) then 
-			throw new IndexOutOfBoundsException(s"Indices ($x, $y) out of bounds for field of dimension (${matrix.length}, ${matrix(0).length})")
-	}
-
-	def withRevealed(x: Int, y: Int): Field = {
-		check_out_of_bounds(x, y)
-		val newMatrix = revealRec(x, y,
+	def withRevealed(x: Int, y: Int): Try[Field] = {
+		val newMatrix = Try(revealRec(x, y,
 			revealCell(x, y, matrix), // definitely reveal the clicked cell
 			Set()
-		)._1
-		Field(rows, cols, (x: Int, y: Int) => newMatrix(y)(x))
+		))
+		newMatrix match {
+			case Success((newMatrix, _)) => Success(Field(rows, cols, (x: Int, y: Int) => newMatrix(y)(x)))
+			case Failure(exception) => Failure(exception)
+		}
 	}
 
-	def withToggledFlag(x: Int, y: Int) : Field = {
-		check_out_of_bounds(x, y)
-		val flagged = matrix.updated(y, matrix(y).updated(x, matrix(y)(x).asFlagToggled))
-		Field(rows, cols, (x,y) => flagged(y)(x))
+	def withToggledFlag(x: Int, y: Int) : Try[Field] = {
+		val flagged = Try(matrix.updated(y, matrix(y).updated(x, matrix(y)(x).asFlagToggled)))
+		flagged match {
+			case Success(flagged) => Success(Field(rows, cols, (x,y) => flagged(y)(x)))
+			case Failure(exception) => Failure(exception)
+		}
 	}
 
 	private type IndexSet = Set[(Int, Int)]
@@ -75,14 +75,13 @@ class Field(rows: Int, cols: Int, genbomb: (Int, Int) => Cell) {
 		})
 	}
 
-	private def countNearbyMinesImpl(x: Int, y: Int, matrix: CellMatrix) = {
+	private def countNearbyMinesImpl(x: Int, y: Int, matrix: CellMatrix): Int = {
 		val sum = matrix.slice(y-1, y+2).map(row => row.slice(x-1, x+2).count(c => c.isBomb)).sum
 		if matrix(y)(x).isBomb then sum - 1 else sum
 	}
 
-	def countNearbyMines(x: Int, y: Int): Int = {
-		check_out_of_bounds(x, y)
-		countNearbyMinesImpl(x, y, matrix)
+	def countNearbyMines(x: Int, y: Int): Try[Int] = {
+		Try(countNearbyMinesImpl(x, y, matrix))
 	}
 
 	def hasWon: Boolean = {

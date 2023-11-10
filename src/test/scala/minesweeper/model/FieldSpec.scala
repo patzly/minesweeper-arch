@@ -3,6 +3,8 @@ package minesweeper.model
 import minesweeper.model._
 import org.scalatest.matchers.should.Matchers._
 import org.scalatest.wordspec.AnyWordSpec
+import scala.util.Success
+import scala.util.Failure
 
 class NRand(val result: Int) extends scala.util.Random {
     override def nextInt(n: Int): Int = result
@@ -34,14 +36,14 @@ class FieldSpec extends AnyWordSpec {
 				fieldBomb.toString shouldBe("☒")
 			}
 			"return the correct number of nearby bombs" in {
-				fieldHidden.countNearbyMines(0, 0) shouldBe(0)
-				fieldRevealed.countNearbyMines(0, 0) shouldBe(0)
-				fieldBomb.countNearbyMines(0, 0) shouldBe(0)
+				fieldHidden.countNearbyMines(0, 0) shouldBe(Success(0))
+				fieldRevealed.countNearbyMines(0, 0) shouldBe(Success(0))
+				fieldBomb.countNearbyMines(0, 0) shouldBe(Success(0))
 			}
 			"return the correct number of nearby bombs for out of bounds indices" in {
-				fieldHidden.countNearbyMines(0, 0) shouldBe(0)
-				fieldRevealed.countNearbyMines(0, 0) shouldBe(0)
-				fieldBomb.countNearbyMines(0, 0) shouldBe(0)
+				fieldHidden.countNearbyMines(0, 0) shouldBe(Success(0))
+				fieldRevealed.countNearbyMines(0, 0) shouldBe(Success(0))
+				fieldBomb.countNearbyMines(0, 0) shouldBe(Success(0))
 			}
 			"check correctly if the game is won" in {
 				fieldHidden.hasWon shouldBe(false)
@@ -92,17 +94,17 @@ class FieldSpec extends AnyWordSpec {
 		"it has 3 ros and colums and bombs on the diagonal" should {
 			val fieldWithBombs = Field(3, 3, (x, y) => Cell(false, x == y))
 			"return the correct bomb count for each cell" in {
-				fieldWithBombs.countNearbyMines(0, 0) shouldBe(1)
-				fieldWithBombs.countNearbyMines(1, 0) shouldBe(2)
-				fieldWithBombs.countNearbyMines(2, 0) shouldBe(1)
+				fieldWithBombs.countNearbyMines(0, 0) shouldBe(Success(1))
+				fieldWithBombs.countNearbyMines(1, 0) shouldBe(Success(2))
+				fieldWithBombs.countNearbyMines(2, 0) shouldBe(Success(1))
 
-				fieldWithBombs.countNearbyMines(0, 1) shouldBe(2)
-				fieldWithBombs.countNearbyMines(1, 1) shouldBe(2)
-				fieldWithBombs.countNearbyMines(2, 1) shouldBe(2)
+				fieldWithBombs.countNearbyMines(0, 1) shouldBe(Success(2))
+				fieldWithBombs.countNearbyMines(1, 1) shouldBe(Success(2))
+				fieldWithBombs.countNearbyMines(2, 1) shouldBe(Success(2))
 				
-				fieldWithBombs.countNearbyMines(0, 2) shouldBe(1)
-				fieldWithBombs.countNearbyMines(1, 2) shouldBe(2)
-				fieldWithBombs.countNearbyMines(2, 2) shouldBe(1)
+				fieldWithBombs.countNearbyMines(0, 2) shouldBe(Success(1))
+				fieldWithBombs.countNearbyMines(1, 2) shouldBe(Success(2))
+				fieldWithBombs.countNearbyMines(2, 2) shouldBe(Success(1))
 			}
 			"check correctly if the game is won" in {
 				fieldWithBombs.hasWon shouldBe(false)
