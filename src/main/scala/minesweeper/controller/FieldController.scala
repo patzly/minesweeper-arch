@@ -35,8 +35,7 @@ class FieldController(rows: Int, cols: Int, genbomb: (Int, Int) => Cell) extends
 			isFirstMove = false
 		}
 
-		val withRevealed = field.withRevealed(x, y)
-		withRevealed match {
+		field.withRevealed(x, y) match {
 			case Success(value) => field = value
 			case Failure(exception) => return Failure(exception)
 		}
@@ -53,7 +52,7 @@ class FieldController(rows: Int, cols: Int, genbomb: (Int, Int) => Cell) extends
 			}
 			case Failure(exception) => return Failure(exception)
 		}
-		return Success(())
+		Success(())
 	}
 
 	def exit(): Unit = {
@@ -66,7 +65,7 @@ class FieldController(rows: Int, cols: Int, genbomb: (Int, Int) => Cell) extends
 				field = newField
 				Try(notifyObservers(Event.FieldUpdated(field)))
 			}
-			case Failure(exception) => return Failure(exception)
+			case Failure(exception) => Failure(exception)
 		}
 	}
 }

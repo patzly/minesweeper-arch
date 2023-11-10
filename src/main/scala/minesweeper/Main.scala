@@ -15,5 +15,5 @@ import controller.FieldController
 	val tui = Tui(controller)
 
 	controller.setup()
-	tui.play
+	tui.play()
 }

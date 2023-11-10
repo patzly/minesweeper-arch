@@ -32,7 +32,7 @@ class Tui(controller: FieldController) extends Observer[Event] {
 	def processLine(line: String): Unit = {
 		line match {
 			case "q" => controller.exit()
-			case _ => {
+			case _ =>
 				val inputs = line.split(" ").toList
 				if inputs.length < 2 then {
 					return println("Invalid input: Format is <column> <row>!")
@@ -45,20 +45,19 @@ class Tui(controller: FieldController) extends Observer[Event] {
 
 				if inputs.length == 3 && inputs(2) == "flag" then {
 					println(s"Toggle flag for ($x, $y)")
-					
+
 					return controller.flag(x, y) match {
 						case Success(value) => ()
-						case Failure(exception) => println(exception.getMessage())
+						case Failure(exception) => println(exception.getMessage)
 					}
 				}
 
 				println(s"Selected ($x, $y)")
 
-				return controller.reveal(x, y) match {
+				controller.reveal(x, y) match {
 					case Success(value) => ()
-					case Failure(exception) => println(exception.getMessage())
+					case Failure(exception) => println(exception.getMessage)
 				}
-			}
 		}
 	}
 
@@ -81,7 +80,7 @@ class Tui(controller: FieldController) extends Observer[Event] {
 		}
 	}
 
-	def play: Unit = {
+	def play(): Unit = {
 		println(this)
 		while loop do {
 			processLine(scala.io.StdIn.readLine())

@@ -20,7 +20,7 @@ class Field(rows: Int, cols: Int, genbomb: (Int, Int) => Cell) {
 
 	override def toString: String = matrix.map(r => r.mkString(" ")).mkString("\n")
 	
-	def getCell(x: Int, y: Int) = Try(matrix(y)(x))
+	def getCell(x: Int, y: Int): Try[Cell] = Try(matrix(y)(x))
 
 	def dimension: (Int, Int) = (rows, cols)
 
