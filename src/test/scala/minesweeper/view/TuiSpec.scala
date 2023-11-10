@@ -29,7 +29,7 @@ class TuiSpec extends AnyWordSpec {
 		"it has a single cell field" should {
 			val controller = FieldController(1, 1, (x, y) => Cell(false, false))
 			val tui = Tui(controller)
-			var observer = TestObserver()
+			val observer = TestObserver()
 			controller.addObserver(observer)
 
 			"without revealing the cell" in {
@@ -66,7 +66,7 @@ class TuiSpec extends AnyWordSpec {
 		"it has a multi cell field" should {
 			val controller = FieldController(3, 3, (x, y) => Cell(false, x == 0))
 			val tui = Tui(controller)
-			var observer = TestObserver()
+			val observer = TestObserver()
 			controller.addObserver(observer)
 
 			"without revealing the cell" in {
@@ -99,6 +99,17 @@ class TuiSpec extends AnyWordSpec {
 			"after quitting" in {
 				tui.processLine("q")
 				observer.e shouldBe(Event.Exit)
+			}
+		}
+		"it is a long matrix" should {
+			val controller = FieldController(1, 15, (x, y) => Cell(false, false))
+			val tui = Tui(controller)
+			val observer = TestObserver()
+			controller.addObserver(observer)
+
+			"print correctly" in {
+				controller.setup()
+				tui.fieldString(observer.f) shouldEqual "    1 2 3 4 5 6 7 8 9 0 1 2 3 4 5\n    -----------------------------\n1  |# # # # # # # # # # # # # # #"
 			}
 		}
 	}
