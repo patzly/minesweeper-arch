@@ -78,12 +78,13 @@ class FieldController(rows: Int, cols: Int, genbomb: (Int, Int) => Cell) extends
 
 	private def execute(command: Command): Try[Unit] = {
 		undoStack = command :: undoStack
+		redoStack = List()
 		command.execute()
 	}
 
 	def undo(): Try[Unit] = {
 		undoStack match {
-			case Nil => Failure(new Exception("Nothing to undo!"))
+			case Nil => Failure(new NoSuchElementException("Nothing to undo!"))
 			case head :: tail => {
 				head.undo()
 				undoStack = tail
@@ -95,7 +96,7 @@ class FieldController(rows: Int, cols: Int, genbomb: (Int, Int) => Cell) extends
 
 	def redo(): Try[Unit] = {
 		redoStack match {
-			case Nil => Failure(new Exception("Nothing to redo!"))
+			case Nil => Failure(new NoSuchElementException("Nothing to redo!"))
 			case head :: tail => {
 				head.redo()
 				redoStack = tail

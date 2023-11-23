@@ -37,14 +37,38 @@ class FieldControllerSpec extends AnyWordSpec {
                 controller.setup()
                 observer.f.toString shouldBe("#")
             }
+            "after undoing an empty stack" in {
+                val fail = controller.undo() shouldBe a [Failure[NoSuchElementException]]
+                observer.f.toString shouldBe("#")
+            }
             "flag the cell" in { // has to be tested before reveal() is called!
                 controller.flag(0, 0) shouldBe(Success(()))
                 observer.f.toString shouldBe ("⚑")
+            }
+            "after undoing the flag" in {
+                controller.undo() shouldBe(Success(()))
+                observer.f.toString shouldBe("#")
+            }
+            "after redoing the flag" in {
+                controller.redo() shouldBe(Success(()))
+                observer.f.toString shouldBe("⚑")
             }
             "reveal the cell" in {
                 controller.reveal(0, 0) shouldBe(Success(()))
                 observer.f.toString shouldBe("☐")
                 observer.w shouldBe(Event.Won)
+            }
+            "after undoing the reveal" in {
+                controller.undo() shouldBe(Success(()))
+                observer.f.toString shouldBe("⚑")
+            }
+            "after redoing the reveal" in {
+                controller.redo() shouldBe(Success(()))
+                observer.f.toString shouldBe("☐")
+            }
+            "after redoing an empty stack" in {
+                controller.redo() shouldBe a [Failure[NoSuchElementException]]
+                observer.f.toString shouldBe("☐")
             }
             "return Failure" in {
                 controller.reveal(1, 1) shouldBe a [Failure[IndexOutOfBoundsException]]
@@ -70,6 +94,14 @@ class FieldControllerSpec extends AnyWordSpec {
                 controller.reveal(0, 0) shouldBe(Success(()))
                 observer.f.toString shouldBe("☒ 2 ☐\n# 3 ☐\n# 2 ☐")
                 observer.l shouldBe(Event.Lost)
+            }
+            "undo the last reveal" in {
+                controller.undo() shouldBe(Success(()))
+                observer.f.toString shouldBe("# 2 ☐\n# 3 ☐\n# 2 ☐")
+            }
+            "redo the last reveal" in {
+                controller.redo() shouldBe(Success(()))
+                observer.f.toString shouldBe("☒ 2 ☐\n# 3 ☐\n# 2 ☐")
             }
         }
         "it has another multi cell field" should {
