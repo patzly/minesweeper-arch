@@ -27,7 +27,7 @@ class TestObserver extends Observer[Event] {
 class TuiSpec extends AnyWordSpec {
 	"A Tui" when {
 		"it has a single cell field" should {
-			val controller = FieldController(1, 1, (x, y) => Cell(false, false))
+			val controller = FieldController(TestFieldFactory(Vector(Vector(Cell(false, false)))))
 			val tui = Tui(controller)
 			val observer = TestObserver()
 			controller.addObserver(observer)
@@ -64,7 +64,7 @@ class TuiSpec extends AnyWordSpec {
 			}
 		}
 		"it has a multi cell field" should {
-			val controller = FieldController(3, 3, (x, y) => Cell(false, x == 0))
+			val controller = FieldController(TestFieldFactory(Vector.tabulate(3, 3)((y, x) => Cell(false, x == 0))))
 			val tui = Tui(controller)
 			val observer = TestObserver()
 			controller.addObserver(observer)
@@ -102,7 +102,7 @@ class TuiSpec extends AnyWordSpec {
 			}
 		}
 		"it is a long matrix" should {
-			val controller = FieldController(1, 15, (x, y) => Cell(false, false))
+			val controller = FieldController(TestFieldFactory(Vector.tabulate(1, 15)((y, x) => Cell(false, false))))
 			val tui = Tui(controller)
 			val observer = TestObserver()
 			controller.addObserver(observer)

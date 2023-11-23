@@ -1,7 +1,6 @@
 package minesweeper.controller
 
-import minesweeper.model.Field
-import minesweeper.model.Cell
+import minesweeper.model.{Cell, Field, FieldFactory}
 import minesweeper.observer.Observable
 
 import scala.util.Try
@@ -16,8 +15,8 @@ enum Event {
 	case Exit
 }
 
-class FieldController(rows: Int, cols: Int, genbomb: (Int, Int) => Cell) extends Observable[Event] {
-	private var field: Field = Field(rows, cols, genbomb)
+class FieldController(factory: FieldFactory) extends Observable[Event] {
+	private var field: Field = factory.createField()
 	private var isFirstMove = true
 
 	def setup(): Unit = {
@@ -30,7 +29,7 @@ class FieldController(rows: Int, cols: Int, genbomb: (Int, Int) => Cell) extends
 				case Success(cell) => cell.nearbyBombs != 0 || cell.isBomb
 				case Failure(exception) => return Failure(exception)
 			} do {
-				field = Field(rows, cols, genbomb)
+				field = factory.createField()
 			}
 			isFirstMove = false
 		}

@@ -6,16 +6,12 @@ import org.scalatest.wordspec.AnyWordSpec
 import scala.util.Success
 import scala.util.Failure
 
-class NRand(val result: Int) extends scala.util.Random {
-    override def nextInt(n: Int): Int = result
-}
-
 class FieldSpec extends AnyWordSpec {
 	"A Field" when {
 		"it has 1 rows and columns" should {
-			val fieldHidden = Field(1, 1, (x, y) => Cell(false, false))
-			val fieldRevealed = Field(1, 1, (x, y) => Cell(true, false))
-			val fieldBomb = Field(1, 1, (x, y) => Cell(true, true))
+			val fieldHidden = Field(Vector(Vector(Cell(false, false))))
+			val fieldRevealed = Field(Vector(Vector(Cell(true, false))))
+			val fieldBomb = Field(Vector(Vector(Cell(true, true))))
 
 			"check bounds correctly" in {
 				fieldHidden.isInBounds(0, 0) shouldBe(true)
@@ -52,7 +48,7 @@ class FieldSpec extends AnyWordSpec {
 			}
 		}
 		"it has 3 rows and columns and is empty" should {
-			val fieldRevealed = Field(3, 3, (x, y) => Cell(true, false))
+			val fieldRevealed = Field(Vector.tabulate(3, 3)((x,y) => Cell(true, false)))
 
 			"check bounds correctly" in {
 				fieldRevealed.isInBounds(0, 0) shouldBe(true)
@@ -75,12 +71,12 @@ class FieldSpec extends AnyWordSpec {
 				fieldRevealed.toString shouldBe("☐ ☐ ☐\n☐ ☐ ☐\n☐ ☐ ☐")
 			}
 
-			val fieldHidden = Field(3, 3, (x, y) => Cell(false, false))
+			val fieldHidden = Field(Vector.tabulate(3, 3)((x,y) => Cell(false, false)))
 			"be printed correctly if all Cells are hidden" in {
 				fieldHidden.toString shouldBe("# # #\n# # #\n# # #")
 			}
 
-			val fieldBomb = Field(3, 3, (x, y) => Cell(true, true))
+			val fieldBomb = Field(Vector.tabulate(3, 3)((x,y) => Cell(true, true)))
 			"be printed correctly if all Cells are bombs" in {
 				fieldBomb.toString shouldBe("☒ ☒ ☒\n☒ ☒ ☒\n☒ ☒ ☒")
 			}
@@ -92,7 +88,7 @@ class FieldSpec extends AnyWordSpec {
 			}
 		}
 		"it has 3 ros and colums and bombs on the diagonal" should {
-			val fieldWithBombs = Field(3, 3, (x, y) => Cell(false, x == y))
+			val fieldWithBombs = Field(Vector.tabulate(3, 3)((x, y) => Cell(false, x == y)))
 			"return the correct bomb count for each cell" in {
 				fieldWithBombs.countNearbyMines(0, 0) shouldBe(Success(1))
 				fieldWithBombs.countNearbyMines(1, 0) shouldBe(Success(2))
@@ -111,26 +107,4 @@ class FieldSpec extends AnyWordSpec {
 			}
 		}
 	}
-	"Field.getRandBombGen" when {
-        "used with a generator that always returns 0" should {
-            val rand = new NRand(0)
-            val genbomb = Field.getRandBombGen(rand, 0.25f)
-
-            "always return a bomb" in {
-                genbomb(0, 0) shouldBe(Cell(false, true))
-                genbomb(1, 1) shouldBe(Cell(false, true))
-                genbomb(0, 1) shouldBe(Cell(false, true))
-            }
-        }
-        "used with a generator that never returns 0" should {
-            val rand = new NRand(1)
-            val genbomb = Field.getRandBombGen(rand, 0.25f)
-
-            "never return a bomb" in {
-                genbomb(0, 0) shouldBe(Cell(false, false))
-                genbomb(1, 1) shouldBe(Cell(false, false))
-                genbomb(0, 1) shouldBe(Cell(false, false))
-            }
-        }
-    }
 }

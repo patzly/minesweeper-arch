@@ -9,9 +9,9 @@ import controller.FieldController
 	val width = 16
 	val height = 16
 	val bomb_chance = 0.15f
-	val rand = new Random()
+	val rand = Random()
 
-	val controller = FieldController(height, width, Field.getRandBombGen(rand, bomb_chance))
+	val controller = FieldController(RandomFieldFactory(height, width, rand, bomb_chance))
 	val tui = Tui(controller)
 
 	controller.setup()

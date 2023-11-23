@@ -8,12 +8,11 @@ import org.scalactic.Fail
 
 type CellMatrix = Vector[Vector[Cell]]
 
-class Field(rows: Int, cols: Int, genbomb: (Int, Int) => Cell) {
+class Field(cellMatrix: CellMatrix) {
 	private val matrix: CellMatrix = {
-		val raw_matrix = Vector.tabulate(rows, cols)((y, x) => genbomb(x, y))
-		raw_matrix.zipWithIndex.map((row, y) => 
-			row.zipWithIndex.map((cell, x) => 
-				cell.copy(nearbyBombs = countNearbyMinesImpl(x, y, raw_matrix))
+		cellMatrix.zipWithIndex.map((row, y) =>
+			row.zipWithIndex.map((cell, x) =>
+				cell.copy(nearbyBombs = countNearbyMinesImpl(x, y, cellMatrix))
 			)
 		)
 	}
@@ -22,7 +21,7 @@ class Field(rows: Int, cols: Int, genbomb: (Int, Int) => Cell) {
 	
 	def getCell(x: Int, y: Int): Try[Cell] = Try(matrix(y)(x))
 
-	def dimension: (Int, Int) = (rows, cols)
+	def dimension: (Int, Int) = if matrix.isEmpty then (0,0) else (matrix.size, matrix(0).size)
 
 	private def revealCell(x: Int, y: Int, cellMatrix: CellMatrix): CellMatrix = {
 		cellMatrix.updated(y, cellMatrix(y).updated(x, cellMatrix(y)(x).asRevealed))
@@ -38,7 +37,7 @@ class Field(rows: Int, cols: Int, genbomb: (Int, Int) => Cell) {
 			Set()
 		))
 		newMatrix match {
-			case Success((newMatrix, _)) => Success(Field(rows, cols, (x: Int, y: Int) => newMatrix(y)(x)))
+			case Success((newMatrix, _)) => Success(Field(newMatrix))
 			case Failure(exception) => Failure(exception)
 		}
 	}
@@ -46,7 +45,7 @@ class Field(rows: Int, cols: Int, genbomb: (Int, Int) => Cell) {
 	def withToggledFlag(x: Int, y: Int) : Try[Field] = {
 		val flagged = Try(matrix.updated(y, matrix(y).updated(x, matrix(y)(x).asFlagToggled)))
 		flagged match {
-			case Success(flagged) => Success(Field(rows, cols, (x,y) => flagged(y)(x)))
+			case Success(flagged) => Success(Field(flagged))
 			case Failure(exception) => Failure(exception)
 		}
 	}
@@ -87,9 +86,4 @@ class Field(rows: Int, cols: Int, genbomb: (Int, Int) => Cell) {
 	def hasWon: Boolean = {
 		matrix.flatten.forall(cell => cell.isRevealed || cell.isBomb)
 	}
-}
-
-object Field {
-	def getRandBombGen(rand: Random, bomb_chance: Float): (Int, Int) => Cell =
-		(_, _) => Cell(false, rand.nextInt((1/bomb_chance).toInt) == 0)
 }

@@ -29,8 +29,8 @@ class TestObserver extends Observer[Event] {
 class FieldControllerSpec extends AnyWordSpec {
     "A FieldController" when {
         "it has a single cell field" should {
-            val controller = FieldController(1, 1, (x, y) => Cell(false, false))
-            var observer = TestObserver()
+            val controller = FieldController(TestFieldFactory(Vector(Vector(Cell(false, false)))))
+            val observer = TestObserver()
             controller.addObserver(observer)
 
             "without revealing the cell" in {
@@ -40,6 +40,9 @@ class FieldControllerSpec extends AnyWordSpec {
             "flag the cell" in { // has to be tested before reveal() is called!
                 controller.flag(0, 0) shouldBe(Success(()))
                 observer.f.toString shouldBe ("⚑")
+            }
+            "return Failure (firstMove)" in {
+                controller.reveal(1, 1) shouldBe a[Failure[IndexOutOfBoundsException]]
             }
             "reveal the cell" in {
                 controller.reveal(0, 0) shouldBe(Success(()))
@@ -56,8 +59,8 @@ class FieldControllerSpec extends AnyWordSpec {
             }
         }
         "it has a multi cell field" should {
-            val controller = FieldController(3, 3, (x, y) => Cell(false, x == 0))
-            var observer = TestObserver()
+            val controller = FieldController(TestFieldFactory(Vector.tabulate(3, 3)((y, x) => Cell(false, x == 0))))
+            val observer = TestObserver()
             controller.addObserver(observer)
             "without revealing the cell" in {
                 controller.setup()
@@ -74,13 +77,13 @@ class FieldControllerSpec extends AnyWordSpec {
         }
         "it has another multi cell field" should {
             var i = 0
-            val controller = FieldController(3, 3, (x, y) => Cell(false, {
-                if ((x, y)) == (2, 0) && i < 3 then
+            val controller = FieldController(GeneratorTestFieldFactory(3, 3, (y, x) => Cell(false, {
+                if ((x, y) == (2, 0) && i < 3) then
                     i += 1
                     true
                 else x == 0
-            }))
-            var observer = TestObserver()
+            })))
+            val observer = TestObserver()
             controller.addObserver(observer)
 
             "without revealing the cell" in {
