@@ -41,10 +41,32 @@ class TuiSpec extends AnyWordSpec {
 				tui.processLine("2")
 				observer.f.toString shouldEqual("#")
 			}
+			"after redoing an empty stack" in {
+				tui.processLine("r")
+				observer.f.toString shouldEqual("#")
+			}
 			"after flagging the cell" in {
 				tui.processLine("1 1 flag")
 				observer.f.toString shouldEqual("⚑")
 				tui.processLine("2 2 flag")
+				observer.f.toString shouldEqual("⚑")
+			}
+			"after undoing the flag" in {
+				tui.processLine("u")
+				observer.f.toString shouldEqual("⚑")
+				tui.processLine("u")
+				observer.f.toString shouldEqual("#")
+			}
+			"after undoing an empty stack" in {
+				tui.processLine("u")
+				observer.f.toString shouldEqual("#")
+			}
+			"after redoing the flag" in {
+				tui.processLine("r")
+				observer.f.toString shouldEqual("⚑")
+			}
+			"after redoing again" in {
+				tui.processLine("r")
 				observer.f.toString shouldEqual("⚑")
 			}
 			"after flagging the cell again" in {

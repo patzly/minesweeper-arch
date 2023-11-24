@@ -32,6 +32,14 @@ class Tui(controller: FieldController) extends Observer[Event] {
 	def processLine(line: String): Unit = {
 		line match {
 			case "q" => controller.exit()
+			case "u" => controller.undo() match {
+				case Success(value) => ()
+				case Failure(exception) => println(exception.getMessage)
+			}
+			case "r" => controller.redo() match {
+				case Success(value) => ()
+				case Failure(exception) => println(exception.getMessage)
+			}
 			case _ =>
 				val inputs = line.split(" ").toList
 				if inputs.length < 2 then {
