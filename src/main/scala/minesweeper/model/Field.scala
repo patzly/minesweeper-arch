@@ -34,7 +34,7 @@ class Field(cellMatrix: CellMatrix) {
 	def withRevealed(x: Int, y: Int): Try[Field] = {
 		val newMatrix = Try(revealRec(x, y,
 			revealCell(x, y, matrix), // definitely reveal the clicked cell
-			Set()
+			Set.empty
 		))
 		newMatrix match {
 			case Success((newMatrix, _)) => Success(Field(newMatrix))
@@ -60,15 +60,14 @@ class Field(cellMatrix: CellMatrix) {
 
 		if matrix(yPos)(xPos).nearbyBombs > 0 then return (new_matrix, new_revealed)
 
-		val to_reveal = new_matrix.zipWithIndex.map((row, y) =>
+		new_matrix.zipWithIndex.map((row, y) =>
 			row.zipWithIndex.map((col, x) =>
 				(col, x, y)
 			).slice(xPos-1, xPos+2)
 		).slice(yPos-1, yPos+2)
 		.flatten
 		.filter((c, x, y) => !new_revealed.contains((x, y)) && !c.isBomb)
-
-		to_reveal.foldLeft((new_matrix, new_revealed))((acc, cell) => {
+		.foldLeft((new_matrix, new_revealed))((acc, cell) => {
 			val (x, y) = (cell._2, cell._3)
 			revealRec(x, y, acc._1, acc._2)
 		})
