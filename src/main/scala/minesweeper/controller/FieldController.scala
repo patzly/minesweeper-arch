@@ -37,12 +37,12 @@ class FieldController(val factory: FieldFactory) extends Observable[Event] {
 		notifyObservers(ExitEvent())
 	}
 
-	private[controller] var undoStack: List[Command] = List()
-	private[controller] var redoStack: List[Command] = List()
+	private[controller] var undoStack: List[Command] = List.empty
+	private[controller] var redoStack: List[Command] = List.empty
 
 	private def execute(command: Command): Try[Unit] = {
 		undoStack = command :: undoStack
-		redoStack = List()
+		redoStack = List.empty
 		command.execute() match {
 			case Success(_) => Success(())
 			case Failure(exception) => {

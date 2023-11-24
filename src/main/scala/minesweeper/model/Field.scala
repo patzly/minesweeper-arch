@@ -60,21 +60,23 @@ class Field(cellMatrix: CellMatrix) {
 
 		if matrix(yPos)(xPos).nearbyBombs > 0 then return (new_matrix, new_revealed)
 
-		new_matrix.zipWithIndex.map((row, y) =>
+		val reveal_area = new_matrix.zipWithIndex.map((row, y) =>
 			row.zipWithIndex.map((col, x) =>
 				(col, x, y)
 			).slice(xPos-1, xPos+2)
 		).slice(yPos-1, yPos+2)
-		.flatten
-		.filter((c, x, y) => !new_revealed.contains((x, y)) && !c.isBomb)
-		.foldLeft((new_matrix, new_revealed))((acc, cell) => {
+		
+		val filtered_area = reveal_area.flatten.filter((c, x, y) => !new_revealed.contains((x, y)) && !c.isBomb)
+		
+		filtered_area.foldLeft((new_matrix, new_revealed))((acc, cell) => {
 			val (x, y) = (cell._2, cell._3)
 			revealRec(x, y, acc._1, acc._2)
 		})
 	}
 
 	private def countNearbyMinesImpl(x: Int, y: Int, matrix: CellMatrix): Int = {
-		val sum = matrix.slice(y-1, y+2).map(row => row.slice(x-1, x+2).count(c => c.isBomb)).sum
+		val area = matrix.slice(y-1, y+2)
+		val sum = area.map(row => row.slice(x-1, x+2).count(c => c.isBomb)).sum
 		if matrix(y)(x).isBomb then sum - 1 else sum
 	}
 

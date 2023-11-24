@@ -24,7 +24,12 @@ class Tui(controller: FieldController) extends Observer[Event] with EventVisitor
 		val numbers = if cols % 10 == 0 then n1 + "\n" + n0 else n0
 
 		val lines = pad + "-" * (cols*2 - 1)
-		val rowStrings = field.toString.split('\n').zipWithIndex.map((s, i) => (i + 1).toString.padTo(l-1, ' ') + '|' + s).mkString("\n")
+		
+		val field_lines = field.toString.split('\n')
+		val rowStrings = field_lines.zipWithIndex.map(
+				(s, i) => (i + 1).toString.padTo(l-1, ' ') + '|' + s
+			)
+			.mkString("\n")
 
 		numbers + "\n" + lines + "\n" + rowStrings
 	}
