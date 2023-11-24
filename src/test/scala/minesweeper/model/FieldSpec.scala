@@ -8,6 +8,12 @@ import scala.util.Failure
 
 class FieldSpec extends AnyWordSpec {
 	"A Field" when {
+		"it has 0 rows and columns" should {
+			val zeroField = Field(Vector.empty)
+			"have 0 rows and columns" in {
+				zeroField.dimension shouldBe (0,0)
+			}
+		}
 		"it has 1 rows and columns" should {
 			val fieldHidden = Field(Vector(Vector(Cell(false, false))))
 			val fieldRevealed = Field(Vector(Vector(Cell(true, false))))
