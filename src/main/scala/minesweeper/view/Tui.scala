@@ -1,14 +1,14 @@
 package minesweeper.view
 
 import minesweeper.model.Field
-import minesweeper.controller.FieldController
-import minesweeper.controller.Event
+import minesweeper.controller.*
 import minesweeper.observer.Observer
 import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
+import minesweeper.controller.SetupEvent
 
-class Tui(controller: FieldController) extends Observer[Event] {
+class Tui(controller: FieldController) extends Observer[Event] with EventVisitor {
 	private var loop = true
 	controller.addObserver(this)
 
@@ -70,22 +70,30 @@ class Tui(controller: FieldController) extends Observer[Event] {
 	}
 
 	override def update(e: Event): Unit =  {
-		e match {
-			case Event.Setup(field) => println(fieldString(field))
-			case Event.FieldUpdated(field) => println(fieldString(field))
-			case Event.Won => {
-				println("You won!")
-				loop = false
-			}
-			case Event.Lost => {
-				println("You lost!")
-				loop = false
-			}
-			case Event.Exit => {
-				println("Bye!")
-				loop = false
-			}
-		}
+		e.accept(this)
+	}
+	
+	override def visitSetup(event: SetupEvent): Unit = {
+		println(fieldString(event.field))
+	}
+
+	override def visitFieldUpdated(event: FieldUpdatedEvent): Unit = {
+		println(fieldString(event.field))
+	}
+
+	override def visitWon(event: WonEvent): Unit = {
+		println("You won!")
+		loop = false
+	}
+
+	override def visitLost(event: LostEvent): Unit = {
+		println("You lost!")
+		loop = false
+	}
+
+	override def visitExit(event: ExitEvent): Unit = {
+		println("Goodbye!")
+		loop = false
 	}
 
 	def play(): Unit = {

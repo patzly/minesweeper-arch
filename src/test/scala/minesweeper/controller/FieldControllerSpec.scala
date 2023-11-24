@@ -9,20 +9,33 @@ import minesweeper.observer.Observer
 import scala.util.Success
 import scala.util.Failure
 
-class TestObserver extends Observer[Event] {
+class TestObserver extends Observer[Event] with EventVisitor {
     var f: Field = null
-    var w: Event = null
-    var l: Event = null
-    var e: Event = null
+    var w: WonEvent = null
+    var l: LostEvent = null
+    var e: ExitEvent = null
     override def update(ev: Event): Unit = {
-        ev match {
-            case Event.Setup(field) => f = field
-            case Event.FieldUpdated(field) => f = field
-            case Event.Won => w = Event.Won
-            case Event.Lost => l = Event.Lost
-            case Event.Exit => e = Event.Exit
-            case _ => ()
-        }
+        ev.accept(this)
+    }
+
+    override def visitSetup(event: SetupEvent): Unit = {
+        f = event.field
+    }
+
+    override def visitFieldUpdated(event: FieldUpdatedEvent): Unit = {
+        f = event.field
+    }
+
+    override def visitWon(event: WonEvent): Unit = {
+        w = event
+    }
+
+    override def visitLost(event: LostEvent): Unit = {
+        l = event
+    }
+
+    override def visitExit(event: ExitEvent): Unit = {
+        e = event
     }
 }
 
@@ -59,7 +72,7 @@ class FieldControllerSpec extends AnyWordSpec {
             "reveal the cell" in {
                 controller.reveal(0, 0) shouldBe(Success(()))
                 observer.f.toString shouldBe("☐")
-                observer.w shouldBe(Event.Won)
+                observer.w shouldBe(WonEvent())
             }
             "after undoing the reveal" in {
                 controller.undo() shouldBe(Success(()))
@@ -79,7 +92,7 @@ class FieldControllerSpec extends AnyWordSpec {
             }
             "send an exit Event" in {
                 controller.exit()
-                observer.e shouldBe(Event.Exit)
+                observer.e shouldBe(ExitEvent())
             }
         }
         "it has a multi cell field" should {
@@ -93,10 +106,10 @@ class FieldControllerSpec extends AnyWordSpec {
             "reveal the cell recursively" in {
                 controller.reveal(2, 0) shouldBe(Success(()))
                 observer.f.toString shouldBe("# 2 ☐\n# 3 ☐\n# 2 ☐")
-                observer.w shouldBe(Event.Won)
+                observer.w shouldBe(WonEvent())
                 controller.reveal(0, 0) shouldBe(Success(()))
                 observer.f.toString shouldBe("☒ 2 ☐\n# 3 ☐\n# 2 ☐")
-                observer.l shouldBe(Event.Lost)
+                observer.l shouldBe(LostEvent())
             }
             "undo the last reveal" in {
                 controller.undo() shouldBe(Success(()))
@@ -125,7 +138,7 @@ class FieldControllerSpec extends AnyWordSpec {
             "make sure the cell revealed first is not a bomb and then reveal recursively" in {
                 controller.reveal(2, 0) shouldBe(Success(()))
                 observer.f.toString shouldBe("# 2 ☐\n# 3 ☐\n# 2 ☐")
-                observer.w shouldBe(Event.Won)
+                observer.w shouldBe(WonEvent())
             }
         }
     }

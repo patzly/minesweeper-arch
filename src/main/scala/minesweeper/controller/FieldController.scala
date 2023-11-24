@@ -7,20 +7,12 @@ import scala.util.Try
 import scala.util.Success
 import scala.util.Failure
 
-enum Event {
-	case Setup(field: Field)
-	case FieldUpdated(field: Field)
-	case Won
-	case Lost
-	case Exit
-}
-
 class FieldController(factory: FieldFactory) extends Observable[Event] {
 	private var field: Field = factory.createField()
 	private var isFirstMove = true
 
 	def setup(): Unit = {
-		notifyObservers(Event.Setup(field))
+		notifyObservers(SetupEvent(field))
 	}
 
 	def reveal(x: Int, y: Int): Try[Unit] = execute(RevealCommand(this, x, y))
@@ -41,14 +33,14 @@ class FieldController(factory: FieldFactory) extends Observable[Event] {
 			case Failure(exception) => return Failure(exception)
 		}
 
-		notifyObservers(Event.FieldUpdated(field))
+		notifyObservers(FieldUpdatedEvent(field))
 
 		field.getCell(x, y) match {
 			case Success(cell) => {
 				if cell.isBomb then {
-					notifyObservers(Event.Lost)
+					notifyObservers(LostEvent())
 				} else if field.hasWon then {
-					notifyObservers(Event.Won)
+					notifyObservers(WonEvent())
 				}
 			}
 			case Failure(exception) => return Failure(exception)
@@ -62,14 +54,14 @@ class FieldController(factory: FieldFactory) extends Observable[Event] {
 		field.withToggledFlag(x, y) match {
 			case Success(newField) => {
 				field = newField
-				Try(notifyObservers(Event.FieldUpdated(field)))
+				Try(notifyObservers(FieldUpdatedEvent(field)))
 			}
 			case Failure(exception) => Failure(exception)
 		}
 	}
 
 	def exit(): Unit = {
-		notifyObservers(Event.Exit)
+		notifyObservers(ExitEvent())
 	}
 
 	private var undoStack: List[Command] = List()
@@ -116,7 +108,7 @@ class FieldController(factory: FieldFactory) extends Observable[Event] {
 		override def execute(): Try[Unit] = controller.reveal_impl(x, y)
 		override def undo(): Unit = {
 			controller.field = field
-			controller.notifyObservers(Event.FieldUpdated(field))
+			controller.notifyObservers(FieldUpdatedEvent(field))
 		}
 		override def redo(): Try[Unit] = controller.reveal_impl(x, y)
 	}

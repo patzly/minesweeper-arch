@@ -7,21 +7,34 @@ import org.scalatest.matchers.should.Matchers._
 import org.scalatest.wordspec.AnyWordSpec
 import minesweeper.observer.Observer
 
-class TestObserver extends Observer[Event] {
-	var f: Field = null
-	var w: Event = null
-	var l: Event = null
-	var e: Event = null
-	override def update(ev: Event): Unit = {
-		ev match {
-			case Event.Setup(field) => f = field
-			case Event.FieldUpdated(field) => f = field
-			case Event.Won => w = Event.Won
-			case Event.Lost => l = Event.Lost
-			case Event.Exit => e = Event.Exit
-			case _ => ()
-		}
-	}
+class TestObserver extends Observer[Event] with EventVisitor {
+    var f: Field = null
+    var w: WonEvent = null
+    var l: LostEvent = null
+    var e: ExitEvent = null
+    override def update(ev: Event): Unit = {
+        ev.accept(this)
+    }
+
+    override def visitSetup(event: SetupEvent): Unit = {
+        f = event.field
+    }
+
+    override def visitFieldUpdated(event: FieldUpdatedEvent): Unit = {
+        f = event.field
+    }
+
+    override def visitWon(event: WonEvent): Unit = {
+        w = event
+    }
+
+    override def visitLost(event: LostEvent): Unit = {
+        l = event
+    }
+
+    override def visitExit(event: ExitEvent): Unit = {
+        e = event
+    }
 }
 
 class TuiSpec extends AnyWordSpec {
@@ -76,13 +89,13 @@ class TuiSpec extends AnyWordSpec {
 			"after revealing the cell" in {
 				tui.processLine("1 1")
 				observer.f.toString shouldEqual("☐")
-				observer.w shouldBe(Event.Won)
+				observer.w shouldBe(WonEvent())
 				tui.processLine("2 2")
 				observer.f.toString shouldEqual("☐")
 			}
 			"after quitting" in {
 				tui.processLine("q")
-				observer.e shouldBe(Event.Exit)
+				observer.e shouldBe(ExitEvent())
 			}
 		}
 		"it has a multi cell field" should {
@@ -104,7 +117,7 @@ class TuiSpec extends AnyWordSpec {
 			"after revealing some cells recursively" in {
 				tui.processLine("3 3")
 				observer.f.toString shouldEqual("# 2 ☐\n# 3 ☐\n# 2 ☐")
-				observer.w shouldBe(Event.Won)
+				observer.w shouldBe(WonEvent())
 				tui.fieldString(observer.f) shouldEqual "   1 2 3\n   -----\n1 |# 2 ☐\n2 |# 3 ☐\n3 |# 2 ☐"
 
 				tui.processLine("4 4")
@@ -115,12 +128,12 @@ class TuiSpec extends AnyWordSpec {
 				
 				tui.processLine("1 1")
 				observer.f.toString shouldEqual("☒ 2 ☐\n# 3 ☐\n# 2 ☐")
-				observer.l shouldBe(Event.Lost)
+				observer.l shouldBe(LostEvent())
 				tui.fieldString(observer.f) shouldEqual "   1 2 3\n   -----\n1 |☒ 2 ☐\n2 |# 3 ☐\n3 |# 2 ☐"
 			}
 			"after quitting" in {
 				tui.processLine("q")
-				observer.e shouldBe(Event.Exit)
+				observer.e shouldBe(ExitEvent())
 			}
 		}
 		"it is a long matrix" should {
