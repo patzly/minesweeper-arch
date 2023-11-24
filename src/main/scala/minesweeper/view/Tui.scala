@@ -18,10 +18,11 @@ class Tui(controller: FieldController) extends Observer[Event] with EventVisitor
 
 		val pad = " " * l
 
-		val n1 = pad + (" " * 18) + (10 until cols+1).map(a => a / 10).mkString(" ")
-		val n0 = pad + (1 until cols+1).map(a => a % 10).mkString(" ")
-
-		val numbers = if cols % 10 == 0 then n1 + "\n" + n0 else n0
+		val numbers = {
+			val tens = pad + (" " * 18) + Range.inclusive(10, cols).map(a => a / 10).mkString(" ")
+			val ones = pad + Range.inclusive(1, cols).map(a => a % 10).mkString(" ")
+			if (cols % 10 == 0) tens + "\n" + ones else ones
+		}
 
 		val lines = pad + "-" * (cols*2 - 1)
 		
@@ -31,7 +32,7 @@ class Tui(controller: FieldController) extends Observer[Event] with EventVisitor
 			)
 			.mkString("\n")
 
-		numbers + "\n" + lines + "\n" + rowStrings
+		s"$numbers\n$lines\n$rowStrings"
 	}
 
 	def processLine(line: String): Unit = {
