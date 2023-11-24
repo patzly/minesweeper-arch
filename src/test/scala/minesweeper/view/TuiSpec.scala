@@ -66,7 +66,7 @@ class TuiSpec extends AnyWordSpec {
 			}
 			"after undoing the flag" in {
 				tui.processLine("u")
-				observer.f.toString shouldEqual("⚑")
+				observer.f.toString shouldEqual("#")
 				tui.processLine("u")
 				observer.f.toString shouldEqual("#")
 			}

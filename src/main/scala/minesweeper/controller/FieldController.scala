@@ -8,10 +8,10 @@ import scala.util.Success
 import scala.util.Failure
 
 class FieldController(val factory: FieldFactory) extends Observable[Event] {
-	var field: Field = factory.createField()
-	private var state: FieldControllerState = FirstMoveFieldControllerState(this)
+	private[controller] var field: Field = factory.createField()
+	private[controller] var state: FieldControllerState = FirstMoveFieldControllerState(this)
 
-	def changeState(newState: FieldControllerState): Unit = {
+	private[controller] def changeState(newState: FieldControllerState): Unit = {
 		state = newState
 	}
 
@@ -23,7 +23,7 @@ class FieldController(val factory: FieldFactory) extends Observable[Event] {
 
 	def flag(x: Int, y: Int): Try[Unit] = execute(FlagCommand(this, x, y))
 
-	private def flag_impl(x: Int, y: Int): Try[Unit] = {
+	private[controller] def flag_impl(x: Int, y: Int): Try[Unit] = {
 		field.withToggledFlag(x, y) match {
 			case Success(newField) => {
 				field = newField
@@ -37,13 +37,19 @@ class FieldController(val factory: FieldFactory) extends Observable[Event] {
 		notifyObservers(ExitEvent())
 	}
 
-	private var undoStack: List[Command] = List()
-	private var redoStack: List[Command] = List()
+	private[controller] var undoStack: List[Command] = List()
+	private[controller] var redoStack: List[Command] = List()
 
 	private def execute(command: Command): Try[Unit] = {
 		undoStack = command :: undoStack
 		redoStack = List()
-		command.execute()
+		command.execute() match {
+			case Success(_) => Success(())
+			case Failure(exception) => {
+				undoStack = undoStack.tail
+				Failure(exception)
+			}
+		}
 	}
 
 	def undo(): Try[Unit] = {
@@ -68,27 +74,5 @@ class FieldController(val factory: FieldFactory) extends Observable[Event] {
 				Success(())
 			}
 		}
-	}
-
-	private trait Command {
-		def execute(): Try[Unit]
-		def undo(): Unit
-		def redo(): Try[Unit]
-	}
-
-	private class RevealCommand(controller: FieldController, x: Int, y: Int) extends Command {
-		private val field = controller.field
-		override def execute(): Try[Unit] = state.reveal(x, y)
-		override def undo(): Unit = {
-			controller.field = field
-			controller.notifyObservers(FieldUpdatedEvent(field))
-		}
-		override def redo(): Try[Unit] = state.reveal(x, y)
-	}
-
-	private class FlagCommand(controller: FieldController, x: Int, y: Int) extends Command {
-		override def execute(): Try[Unit] = controller.flag_impl(x, y)
-		override def undo(): Unit = controller.flag_impl(x, y)
-		override def redo(): Try[Unit] = controller.flag_impl(x, y)
 	}
 }

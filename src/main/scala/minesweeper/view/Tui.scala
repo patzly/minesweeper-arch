@@ -97,7 +97,6 @@ class Tui(controller: FieldController) extends Observer[Event] with EventVisitor
 	}
 
 	def play(): Unit = {
-		println(this)
 		while loop do {
 			processLine(scala.io.StdIn.readLine())
 		}

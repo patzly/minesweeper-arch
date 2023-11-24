@@ -4,7 +4,7 @@ import minesweeper.controller.{FieldController, FieldUpdatedEvent, LostEvent, Wo
 
 import scala.util.{Failure, Success, Try}
 
-abstract class FieldControllerState(controller: FieldController) {
+private abstract class FieldControllerState(controller: FieldController) {
 	def reveal(x: Int, y: Int): Try[Unit] = {
 		controller.field.withRevealed(x, y) match {
 			case Success(value) => controller.field = value
@@ -27,7 +27,7 @@ abstract class FieldControllerState(controller: FieldController) {
 	}
 }
 
-class FirstMoveFieldControllerState(controller: FieldController) extends FieldControllerState(controller) {
+private class FirstMoveFieldControllerState(controller: FieldController) extends FieldControllerState(controller) {
 	override def reveal(x: Int, y: Int): Try[Unit] = {
 		while controller.field.getCell(x, y) match {
 			case Success(cell) => cell.nearbyBombs != 0 || cell.isBomb
@@ -36,12 +36,13 @@ class FirstMoveFieldControllerState(controller: FieldController) extends FieldCo
 			controller.field = controller.factory.createField()
 		}
 
+		controller.undoStack = new RevealCommand(controller, x, y) :: controller.undoStack.tail
 		controller.changeState(AnyMoveFieldControllerState(controller))
 
 		super.reveal(x, y)
 	}
 }
 
-class AnyMoveFieldControllerState(controller: FieldController) extends FieldControllerState(controller) {
+private class AnyMoveFieldControllerState(controller: FieldController) extends FieldControllerState(controller) {
 
 }
