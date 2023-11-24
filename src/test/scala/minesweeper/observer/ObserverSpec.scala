@@ -14,15 +14,21 @@ class TestObserver extends Observer[Int] {
     }
 }
 
-class TestObservable extends Observable[Int] {}
+class TestObservable extends Observable[Int] {
+    def getSubscribers: Vector[Observer[Int]] = subscribers
+}
 
 class ObservableSpec extends AnyWordSpec {
     "An Observable" when {
         "it has a single observer" should {
             val observable = TestObservable()
             var observer = TestObserver()
+
             observable.addObserver(observer)
 
+            "have one subscriber" in {
+                observable.getSubscribers.size shouldBe 1
+            }
             "without notification" in {
                 observer.i shouldBe(0)
             }
@@ -43,6 +49,9 @@ class ObservableSpec extends AnyWordSpec {
             observable.addObserver(observer1)
             observable.addObserver(observer2)
 
+            "have two subscribers" in {
+                observable.getSubscribers.size shouldBe 2
+            }
             "notify the observers" in {
                 observable.notifyObservers(1)
                 observer1.i shouldBe(1)
