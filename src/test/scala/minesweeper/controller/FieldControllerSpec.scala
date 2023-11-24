@@ -70,7 +70,11 @@ class FieldControllerSpec extends AnyWordSpec {
                 controller.reveal(1, 1) shouldBe a[Failure[IndexOutOfBoundsException]]
             }
             "reveal the cell" in {
+                controller.state shouldBe a [FirstMoveFieldControllerState]
                 controller.reveal(0, 0) shouldBe(Success(()))
+                controller.undoStack.head shouldBe a [RevealCommand]
+                controller.undoStack.tail shouldBe a [scala.collection.immutable.::[Command]]
+
                 observer.f.toString shouldBe("☐")
                 observer.w shouldBe(WonEvent())
             }

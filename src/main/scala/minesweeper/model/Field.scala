@@ -43,8 +43,7 @@ class Field(cellMatrix: CellMatrix) {
 	}
 
 	def withToggledFlag(x: Int, y: Int) : Try[Field] = {
-		val flagged = Try(matrix.updated(y, matrix(y).updated(x, matrix(y)(x).asFlagToggled)))
-		flagged match {
+		Try(matrix.updated(y, matrix(y).updated(x, matrix(y)(x).asFlagToggled))) match {
 			case Success(flagged) => Success(Field(flagged))
 			case Failure(exception) => Failure(exception)
 		}
@@ -75,9 +74,7 @@ class Field(cellMatrix: CellMatrix) {
 	}
 
 	private def countNearbyMinesImpl(x: Int, y: Int, matrix: CellMatrix): Int = {
-		val area = matrix.slice(y-1, y+2)
-		val sum = area.map(row => row.slice(x-1, x+2).count(c => c.isBomb)).sum
-		if matrix(y)(x).isBomb then sum - 1 else sum
+		matrix.slice(y-1, y+2).transpose.slice(x-1, x+2).flatten.count(c => c.isBomb) - (if (matrix(y)(x).isBomb) 1 else 0)
 	}
 
 	def countNearbyMines(x: Int, y: Int): Try[Int] = {

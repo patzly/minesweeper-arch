@@ -36,7 +36,7 @@ private class FirstMoveFieldControllerState(controller: FieldController) extends
 			controller.field = controller.factory.createField()
 		}
 
-		controller.undoStack = new RevealCommand(controller, x, y) :: controller.undoStack.tail
+		controller.undoStack = controller.undoStack.prepended(new RevealCommand(controller, x, y))
 		controller.changeState(AnyMoveFieldControllerState(controller))
 
 		super.reveal(x, y)
