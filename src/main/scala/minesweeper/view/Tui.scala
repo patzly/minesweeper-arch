@@ -25,10 +25,9 @@ class Tui(controller: FieldController) extends Observer[Event] with EventVisitor
 		}
 
 		val lines = pad + "-" * (cols*2 - 1)
-		
-		val field_lines = field.toString.split('\n')
-		val rowStrings = field_lines.zipWithIndex.map(
-				(s, i) => (i + 1).toString.padTo(l-1, ' ') + '|' + s
+
+		val rowStrings = Range.apply(0, field.dimension._1).map(
+				r => (r+1).toString.padTo(l-1, ' ') + '|' + field.getRow(r).get.mkString(" ")
 			)
 			.mkString("\n")
 

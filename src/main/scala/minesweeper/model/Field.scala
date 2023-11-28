@@ -21,6 +21,8 @@ class Field(cellMatrix: CellMatrix) {
 	
 	def getCell(x: Int, y: Int): Try[Cell] = Try(matrix(y)(x))
 
+	def getRow(row: Int): Try[Vector[Cell]] = Try(matrix(row))
+	
 	def dimension: (Int, Int) = if matrix.isEmpty then (0,0) else (matrix.size, matrix(0).size)
 
 	private def revealCell(x: Int, y: Int, cellMatrix: CellMatrix): CellMatrix = {
