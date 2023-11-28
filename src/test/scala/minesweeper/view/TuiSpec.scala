@@ -47,7 +47,7 @@ class TuiSpec extends AnyWordSpec {
 
 			"without revealing the cell" in {
 				controller.setup()
-				tui.fieldString(observer.f) shouldEqual "   1\n   -\n1 |#"
+				tui.fieldString(observer.f) shouldEqual "                     \n   1\n   -\n1 |#"
 				observer.f.toString shouldEqual("#")
 				tui.processLine("abc 2")
 				observer.f.toString shouldEqual("#")
@@ -106,7 +106,7 @@ class TuiSpec extends AnyWordSpec {
 
 			"without revealing the cell" in {
 				controller.setup()
-				tui.fieldString(observer.f) shouldEqual "   1 2 3\n   -----\n1 |# # #\n2 |# # #\n3 |# # #"
+				tui.fieldString(observer.f) shouldEqual "                     \n   1 2 3\n   -----\n1 |# # #\n2 |# # #\n3 |# # #"
 				observer.f.toString shouldEqual("# # #\n# # #\n# # #")
 				tui.processLine("abc 2")
 				observer.f.toString shouldEqual("# # #\n# # #\n# # #")
@@ -118,7 +118,7 @@ class TuiSpec extends AnyWordSpec {
 				tui.processLine("3 3")
 				observer.f.toString shouldEqual("# 2 ☐\n# 3 ☐\n# 2 ☐")
 				observer.w shouldBe(WonEvent())
-				tui.fieldString(observer.f) shouldEqual "   1 2 3\n   -----\n1 |# 2 ☐\n2 |# 3 ☐\n3 |# 2 ☐"
+				tui.fieldString(observer.f) shouldEqual "                     \n   1 2 3\n   -----\n1 |# 2 ☐\n2 |# 3 ☐\n3 |# 2 ☐"
 
 				tui.processLine("4 4")
 				observer.f.toString shouldEqual("# 2 ☐\n# 3 ☐\n# 2 ☐")
@@ -129,7 +129,7 @@ class TuiSpec extends AnyWordSpec {
 				tui.processLine("1 1")
 				observer.f.toString shouldEqual("☒ 2 ☐\n# 3 ☐\n# 2 ☐")
 				observer.l shouldBe(LostEvent())
-				tui.fieldString(observer.f) shouldEqual "   1 2 3\n   -----\n1 |☒ 2 ☐\n2 |# 3 ☐\n3 |# 2 ☐"
+				tui.fieldString(observer.f) shouldEqual "                     \n   1 2 3\n   -----\n1 |☒ 2 ☐\n2 |# 3 ☐\n3 |# 2 ☐"
 			}
 			"after quitting" in {
 				tui.processLine("q")
@@ -144,7 +144,7 @@ class TuiSpec extends AnyWordSpec {
 
 			"print correctly" in {
 				controller.setup()
-				tui.fieldString(observer.f) shouldEqual "    1 2 3 4 5 6 7 8 9 0 1 2 3 4 5\n    -----------------------------\n1  |# # # # # # # # # # # # # # #"
+				tui.fieldString(observer.f) shouldEqual "                      1 1 1 1 1 1\n    1 2 3 4 5 6 7 8 9 0 1 2 3 4 5\n    -----------------------------\n1  |# # # # # # # # # # # # # # #"
 			}
 		}
 	}

@@ -21,7 +21,7 @@ class Tui(controller: FieldController) extends Observer[Event] with EventVisitor
 		val numbers = {
 			val tens = pad + (" " * 18) + Range.inclusive(10, cols).map(a => a / 10).mkString(" ")
 			val ones = pad + Range.inclusive(1, cols).map(a => a % 10).mkString(" ")
-			if (cols % 10 == 0) tens + "\n" + ones else ones
+			tens + "\n" + ones
 		}
 
 		val lines = pad + "-" * (cols*2 - 1)
