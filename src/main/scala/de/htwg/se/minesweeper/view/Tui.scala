@@ -9,9 +9,66 @@ import de.htwg.se.minesweeper.controller._
 import de.htwg.se.minesweeper.model.Field
 import de.htwg.se.minesweeper.observer.Observer
 
-class Tui(controller: FieldController) extends Observer[Event] with EventVisitor {
+private trait TuiState {
+	def processLine(line: String): Unit
+}
+
+private class DefaultTuiState(tui: Tui) extends TuiState {
+	def processLine(line: String): Unit = {
+		line match {
+			case "q" => tui.controller.exit()
+			case "u" => tui.controller.undo() match {
+				case Success(value) => ()
+				case Failure(exception) => println(exception.getMessage)
+			}
+			case "r" => tui.controller.redo() match {
+				case Success(value) => ()
+				case Failure(exception) => println(exception.getMessage)
+			}
+			case _ => {
+				val inputs = line.split(" ").toList
+				if inputs.length < 2 then {
+					return println("Invalid input: Format is <column> <row>!")
+				}
+
+				val (x, y) = (inputs(0).toIntOption, inputs(1).toIntOption) match {
+				    case (Some(x), Some(y)) => (x-1, y-1)
+				    case _ => return println("Invalid input: Please enter numbers!")
+				}
+
+				if inputs.length == 3 && inputs(2) == "flag" then {
+					println(s"Toggle flag for ($x, $y)")
+
+					return tui.controller.flag(x, y) match {
+						case Success(value) => ()
+						case Failure(exception) => println(exception.getMessage)
+					}
+				}
+
+				println(s"Selected ($x, $y)")
+
+				tui.controller.reveal(x, y) match {
+					case Success(value) => ()
+					case Failure(exception) => println(exception.getMessage)
+				}
+			}
+		}
+	}
+}
+
+class RetryTuiState(tui: Tui) extends TuiState {
+	override def processLine(line: String): Unit = {
+		line match {
+			case "y" => tui.controller.setup()
+			case "n" | "q" => tui.controller.exit()
+			case _ => println("Invalid input: Please enter q, y or n!")
+		}
+	}
+}
+
+class Tui(val controller: FieldController) extends Observer[Event] with EventVisitor {
 	private var loop = true
-	private var retrying = false
+	private var state: TuiState = DefaultTuiState(this)
 	controller.addObserver(this)
 
 	def fieldString(field: Field): String = {
@@ -37,55 +94,7 @@ class Tui(controller: FieldController) extends Observer[Event] with EventVisitor
 	}
 
 	def processLine(line: String): Unit = {
-		line match {
-			case "q" => controller.exit()
-			case "u" => controller.undo() match {
-				case Success(value) => ()
-				case Failure(exception) => println(exception.getMessage)
-			}
-			case "r" => controller.redo() match {
-				case Success(value) => ()
-				case Failure(exception) => println(exception.getMessage)
-			}
-			case "y" => if retrying then {
-				controller.setup()
-			} else {
-				println("Invalid input: You are not in a retry state!")
-			}
-			case "n" => if retrying then {
-				println("Goodbye!")
-				controller.exit()
-			} else {
-				println("Invalid input: You are not in a retry state!")
-			}
-			case _ => {
-				val inputs = line.split(" ").toList
-				if inputs.length < 2 then {
-					return println("Invalid input: Format is <column> <row>!")
-				}
-
-				val (x, y) = (inputs(0).toIntOption, inputs(1).toIntOption) match {
-				    case (Some(x), Some(y)) => (x-1, y-1)
-				    case _ => return println("Invalid input: Please enter numbers!")
-				}
-
-				if inputs.length == 3 && inputs(2) == "flag" then {
-					println(s"Toggle flag for ($x, $y)")
-
-					return controller.flag(x, y) match {
-						case Success(value) => ()
-						case Failure(exception) => println(exception.getMessage)
-					}
-				}
-
-				println(s"Selected ($x, $y)")
-
-				controller.reveal(x, y) match {
-					case Success(value) => ()
-					case Failure(exception) => println(exception.getMessage)
-				}
-			}
-		}
+		state.processLine(line)
 	}
 
 	override def update(e: Event): Unit =  {
@@ -93,7 +102,8 @@ class Tui(controller: FieldController) extends Observer[Event] with EventVisitor
 	}
 	
 	override def visitSetup(event: SetupEvent): Unit = {
-		retrying = false
+		state = DefaultTuiState(this)
+		loop = true
 		println(fieldString(event.field))
 	}
 
@@ -104,19 +114,18 @@ class Tui(controller: FieldController) extends Observer[Event] with EventVisitor
 	override def visitWon(event: WonEvent): Unit = {
 		println("You won!")
 		println("retry? (y/n)")
-		retrying = true
+		state = new RetryTuiState(this)
 	}
 
 	override def visitLost(event: LostEvent): Unit = {
 		println("You lost!")
 		println("retry? (y/n)")
-		retrying = true
+		state = new RetryTuiState(this)
 	}
 
 	override def visitExit(event: ExitEvent): Unit = {
 		println("Goodbye!")
 		loop = false
-		retrying = false
 	}
 
 	def play(): Unit = {

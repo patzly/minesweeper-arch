@@ -126,13 +126,11 @@ class TuiSpec extends AnyWordSpec {
 
 				tui.processLine("2 1")
 				observer.f.toString shouldEqual("# 2 ☐\n# 3 ☐\n# 2 ☐")
-				
-				tui.processLine("1 1")
-				observer.f.toString shouldEqual("☒ 2 ☐\n# 3 ☐\n# 2 ☐")
-				observer.l shouldBe(LostEvent())
-				tui.fieldString(observer.f) shouldEqual "                     \n   1 2 3\n   -----\n1 |☒ 2 ☐\n2 |# 3 ☐\n3 |# 2 ☐"
+				tui.fieldString(observer.f) shouldEqual "                     \n   1 2 3\n   -----\n1 |# 2 ☐\n2 |# 3 ☐\n3 |# 2 ☐"
+
+				observer.w shouldBe(WonEvent())
 			}
-			"after losing" in {
+			"after winning and retrying" in {
 				tui.processLine("y")
 				observer.f.toString shouldEqual("# # #\n# # #\n# # #")
 				tui.fieldString(observer.f) shouldEqual "                     \n   1 2 3\n   -----\n1 |# # #\n2 |# # #\n3 |# # #"
@@ -156,7 +154,7 @@ class TuiSpec extends AnyWordSpec {
 				observer.f.toString shouldEqual("# # #\n# # #\n# # #")
 				tui.fieldString(observer.f) shouldEqual "                     \n   1 2 3\n   -----\n1 |# # #\n2 |# # #\n3 |# # #"
 			}
-			"after winning and quitting" in {
+			"after winning and not retrying" in {
 				tui.processLine("3 3")
 				observer.f.toString shouldEqual("# 2 ☐\n# 3 ☐\n# 2 ☐")
 				observer.w shouldBe(WonEvent())
@@ -164,9 +162,23 @@ class TuiSpec extends AnyWordSpec {
 				tui.processLine("n")
 				observer.e shouldBe(ExitEvent())
 			}
+			"after winning and quitting" in {
+				controller.setup()
+				tui.processLine("3 3")
+				observer.f.toString shouldEqual("# 2 ☐\n# 3 ☐\n# 2 ☐")
+				observer.w shouldBe(WonEvent())
+				tui.fieldString(observer.f) shouldEqual "                     \n   1 2 3\n   -----\n1 |# 2 ☐\n2 |# 3 ☐\n3 |# 2 ☐"
+				tui.processLine("q")
+				observer.e shouldBe(ExitEvent())
+			}
+			"after quitting" in {
+				controller.setup()
+				tui.processLine("q")
+				observer.e shouldBe(ExitEvent())
+			}
 		}
 		"it is a long matrix" should {
-			val controller = FieldController(TestFieldFactory(Vector.tabulate(1, 15)((y, x) => Cell(false, false))))
+			val controller = FieldController(TestFieldFactory(Vector.tabulate(1, 15)((y, x) => Cell(false, x == 2))))
 			val tui = Tui(controller)
 			val observer = TestObserver()
 			controller.addObserver(observer)
