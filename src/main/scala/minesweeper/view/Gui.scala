@@ -14,12 +14,11 @@ import scalafx.application.Platform
 import scalafx.scene.layout.GridPane
 import scalafx.scene.Node
 import minesweeper.model.Field
+import scalafx.scene.control.Button
 
 class Gui(controller: FieldController) extends JFXApp3 with Observer[Event] with EventVisitor {
     controller.addObserver(this)
-    private var isReady = false
-
-    def ready(): Boolean = isReady
+    private var setup_field: Field = null
 
     override def start() = {
         stage = new JFXApp3.PrimaryStage {
@@ -27,19 +26,21 @@ class Gui(controller: FieldController) extends JFXApp3 with Observer[Event] with
             title = "ScalaFX Hello World"
             scene = new Scene {
                 fill = Color.rgb(38, 38, 38)
+                content = createGrid(setup_field)
+            }
+            onCloseRequest = e => {
+                controller.exit()
             }
         }
-        isReady = true
-    }
-
-    override def stopApp(): Unit = {
-        controller.exit()
     }
 
     override def update(e: Event): Unit = {
-        Platform.runLater(() => {
-            e.accept(this)
-        })
+        e match {
+            case SetupEvent(field) => e.accept(this)
+            case _ => Platform.runLater(() => {
+                e.accept(this)
+            })
+        }
     }
 
     override def visitExit(event: ExitEvent): Unit = {
@@ -70,29 +71,26 @@ class Gui(controller: FieldController) extends JFXApp3 with Observer[Event] with
     }
 
     override def visitSetup(event: SetupEvent): Unit = {
-        // update the gui
-        stage = new JFXApp3.PrimaryStage {
-            //    initStyle(StageStyle.Unified)
-            title = "ScalaFX Hello World"
-            scene = new Scene {
-                fill = Color.rgb(38, 38, 38)
-                content = createGrid(event.field)
-            }
-        }
+        setup_field = event.field
     }
 
     private def createGrid(field: Field): GridPane = {
         var grid = new GridPane()
         for (ix <- 0 until field.dimension._1) {
             for (iy <- 0 until field.dimension._2) {
-                grid.add(new Text {
-                    text = field.getCell(ix, iy).get.toString
+                val cell = field.getCell(ix, iy).get
+                grid.add(new Button {
+                    text = cell.toString
                     // add a monospaced font with size 16
                     style = "-fx-font-family: monospace; -fx-font-size: 25;"
-                    fill = new LinearGradient(
-                        endX = 0,
-                        stops = Stops(Red, DarkRed)
-                    )
+                    onMouseClicked = if (cell.isRevealed) null else
+                        e => {
+                        if (e.getButton() == javafx.scene.input.MouseButton.PRIMARY) {
+                            controller.reveal(ix, iy)
+                        } else if (e.getButton() == javafx.scene.input.MouseButton.SECONDARY) {
+                            controller.flag(ix, iy)
+                        }
+                    }
                 }, ix, iy)
             }
         }
