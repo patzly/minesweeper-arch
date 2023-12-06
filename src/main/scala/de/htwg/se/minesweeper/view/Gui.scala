@@ -20,16 +20,21 @@ import de.htwg.se.minesweeper.observer.Observer
 
 class Gui(controller: FieldController) extends JFXApp3 with Observer[Event] with EventVisitor {
     controller.addObserver(this)
-    private var setup_field: Field = null
+    private var setup_field: Option[Field] = None
+
+    private var grid: GridPane = null
+    private var my_scene: Scene = null
 
     override def start() = {
+        grid = createGrid(setup_field.get)
+        my_scene = new Scene {
+            fill = Color.rgb(38, 38, 38)
+            content = grid
+        }
         stage = new JFXApp3.PrimaryStage {
             //    initStyle(StageStyle.Unified)
             title = "Minesweeper"
-            scene = new Scene {
-                fill = Color.rgb(38, 38, 38)
-                content = createGrid(setup_field)
-            }
+            scene = my_scene
             onCloseRequest = e => {
                 controller.exit()
             }
@@ -50,30 +55,59 @@ class Gui(controller: FieldController) extends JFXApp3 with Observer[Event] with
         stage.close()
     }
 
+    private def getEndScreen(str: String): Node = new scalafx.scene.layout.VBox(
+        new Text {
+            text = str
+            style = "-fx-font-size: 48;"
+            fill = Color.White
+        },
+        new Button {
+            text = "Retry"
+            style = "-fx-font-size: 24;"
+            onMouseClicked = e => {
+                controller.setup()
+            }
+        }
+    ) {
+        padding = Insets(10)
+        spacing = 10
+    }
+
     override def visitLost(event: LostEvent): Unit = {
         // show the lost screen
-        throw new NotImplementedError()
+        // and a retry button
+        my_scene.content = getEndScreen("You lost!")
     }
 
     override def visitWon(event: WonEvent): Unit = {
         // show the won screen
-        throw new NotImplementedError()
+        // and a retry button
+        my_scene.content = getEndScreen("You won!")
     }
 
     override def visitFieldUpdated(event: FieldUpdatedEvent): Unit = {
         // update the gui
-        stage = new JFXApp3.PrimaryStage {
-            //    initStyle(StageStyle.Unified)
-            title = "ScalaFX Hello World"
-            scene = new Scene {
-                fill = Color.rgb(38, 38, 38)
-                content = createGrid(event.field)
-            }
-        }
+        updateGrid(event.field)
     }
 
     override def visitSetup(event: SetupEvent): Unit = {
-        setup_field = event.field
+        setup_field match {
+            case None => setup_field = Some(event.field)
+            case Some(_) => Platform.runLater({
+                grid = createGrid(event.field)
+                my_scene.content = grid
+            })
+        }
+    }
+
+    private def updateGrid(field: Field): Unit = {
+        grid.getChildren().forEach(node => {
+            val button = node.asInstanceOf[javafx.scene.control.Button]
+            val x = javafx.scene.layout.GridPane.getColumnIndex(button)
+            val y = javafx.scene.layout.GridPane.getRowIndex(button)
+            val cell = field.getCell(x, y).get
+            button.setText(cell.toString)
+        })
     }
 
     private def createGrid(field: Field): GridPane = {

@@ -11,6 +11,7 @@ import de.htwg.se.minesweeper.observer.Observer
 
 class Tui(controller: FieldController) extends Observer[Event] with EventVisitor {
 	private var loop = true
+	private var retrying = false
 	controller.addObserver(this)
 
 	def fieldString(field: Field): String = {
@@ -46,7 +47,18 @@ class Tui(controller: FieldController) extends Observer[Event] with EventVisitor
 				case Success(value) => ()
 				case Failure(exception) => println(exception.getMessage)
 			}
-			case _ =>
+			case "y" => if retrying then {
+				controller.setup()
+			} else {
+				println("Invalid input: You are not in a retry state!")
+			}
+			case "n" => if retrying then {
+				println("Goodbye!")
+				controller.exit()
+			} else {
+				println("Invalid input: You are not in a retry state!")
+			}
+			case _ => {
 				val inputs = line.split(" ").toList
 				if inputs.length < 2 then {
 					return println("Invalid input: Format is <column> <row>!")
@@ -72,6 +84,7 @@ class Tui(controller: FieldController) extends Observer[Event] with EventVisitor
 					case Success(value) => ()
 					case Failure(exception) => println(exception.getMessage)
 				}
+			}
 		}
 	}
 
@@ -80,6 +93,7 @@ class Tui(controller: FieldController) extends Observer[Event] with EventVisitor
 	}
 	
 	override def visitSetup(event: SetupEvent): Unit = {
+		retrying = false
 		println(fieldString(event.field))
 	}
 
@@ -89,17 +103,20 @@ class Tui(controller: FieldController) extends Observer[Event] with EventVisitor
 
 	override def visitWon(event: WonEvent): Unit = {
 		println("You won!")
-		loop = false
+		println("retry? (y/n)")
+		retrying = true
 	}
 
 	override def visitLost(event: LostEvent): Unit = {
 		println("You lost!")
-		loop = false
+		println("retry? (y/n)")
+		retrying = true
 	}
 
 	override def visitExit(event: ExitEvent): Unit = {
 		println("Goodbye!")
 		loop = false
+		retrying = false
 	}
 
 	def play(): Unit = {

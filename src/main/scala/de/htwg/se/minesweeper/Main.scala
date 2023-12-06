@@ -9,7 +9,8 @@ import scala.util.Random
 import scala.concurrent.Await
 import scala.concurrent.Future
 
-def main(args: Array[String]): Unit = {
+@main
+def main(): Unit = {
 	val width = 16
 	val height = 16
 	val bomb_chance = 0.15f

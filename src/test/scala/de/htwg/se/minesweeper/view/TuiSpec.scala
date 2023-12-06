@@ -132,8 +132,36 @@ class TuiSpec extends AnyWordSpec {
 				observer.l shouldBe(LostEvent())
 				tui.fieldString(observer.f) shouldEqual "                     \n   1 2 3\n   -----\n1 |☒ 2 ☐\n2 |# 3 ☐\n3 |# 2 ☐"
 			}
-			"after quitting" in {
-				tui.processLine("q")
+			"after losing" in {
+				tui.processLine("y")
+				observer.f.toString shouldEqual("# # #\n# # #\n# # #")
+				tui.fieldString(observer.f) shouldEqual "                     \n   1 2 3\n   -----\n1 |# # #\n2 |# # #\n3 |# # #"
+			}
+			"when winning" in {
+				tui.processLine("3 3")
+				observer.f.toString shouldEqual("# 2 ☐\n# 3 ☐\n# 2 ☐")
+				observer.w shouldBe(WonEvent())
+				tui.fieldString(observer.f) shouldEqual "                     \n   1 2 3\n   -----\n1 |# 2 ☐\n2 |# 3 ☐\n3 |# 2 ☐"
+			}
+			"after retrying" in {
+				tui.processLine("y")
+				observer.f.toString shouldEqual("# # #\n# # #\n# # #")
+				tui.fieldString(observer.f) shouldEqual "                     \n   1 2 3\n   -----\n1 |# # #\n2 |# # #\n3 |# # #"
+			}
+			"when retrying without having lost or won" in {
+				tui.processLine("y")
+				observer.f.toString shouldEqual("# # #\n# # #\n# # #")
+				tui.fieldString(observer.f) shouldEqual "                     \n   1 2 3\n   -----\n1 |# # #\n2 |# # #\n3 |# # #"
+				tui.processLine("n")
+				observer.f.toString shouldEqual("# # #\n# # #\n# # #")
+				tui.fieldString(observer.f) shouldEqual "                     \n   1 2 3\n   -----\n1 |# # #\n2 |# # #\n3 |# # #"
+			}
+			"after winning and quitting" in {
+				tui.processLine("3 3")
+				observer.f.toString shouldEqual("# 2 ☐\n# 3 ☐\n# 2 ☐")
+				observer.w shouldBe(WonEvent())
+				tui.fieldString(observer.f) shouldEqual "                     \n   1 2 3\n   -----\n1 |# 2 ☐\n2 |# 3 ☐\n3 |# 2 ☐"
+				tui.processLine("n")
 				observer.e shouldBe(ExitEvent())
 			}
 		}

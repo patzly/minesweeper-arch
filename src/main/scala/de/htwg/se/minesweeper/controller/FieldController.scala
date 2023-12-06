@@ -15,6 +15,10 @@ class FieldController(val factory: FieldFactory) extends Observable[Event] {
 	}
 
 	def setup(): Unit = {
+		state = FirstMoveFieldControllerState(this)
+		undoStack = List.empty
+		redoStack = List.empty
+		field = factory.createField()
 		notifyObservers(SetupEvent(field))
 	}
 
