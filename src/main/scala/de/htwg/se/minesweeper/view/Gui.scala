@@ -17,7 +17,7 @@ import javafx.beans.property.SimpleIntegerProperty
 import scalafx.beans.binding.Bindings
 import scalafx.beans.property.{IntegerProperty, StringProperty}
 import scalafx.scene.image.{Image, ImageView}
-
+import scala.util.{Try, Success, Failure}
 
 class Gui(controller: FieldController) extends JFXApp3 with Observer[Event] with EventVisitor {
     controller.addObserver(this)
@@ -26,20 +26,43 @@ class Gui(controller: FieldController) extends JFXApp3 with Observer[Event] with
     private var grid: Option[GridPane] = None
     private var my_scene: Option[Scene] = None
 
+    private var images: Option[Map[String, Image]] = None
+
     override def start(): Unit = {
-        grid = Some(createGrid(setup_field.get))
+		images = createImages() match {
+			case Success(value) => Some(value)
+			case Failure(e) => throw new Exception("Could not load images!")
+		}
+		grid = Some(createGrid(setup_field.get))
 
-        my_scene = Some(makeScene(grid.get))
+		my_scene = Some(makeScene(grid.get))
 
-        stage = new JFXApp3.PrimaryStage {
-            //    initStyle(StageStyle.Unified)
-            title = "Minesweeper"
-            scene = my_scene.get
-            onCloseRequest = e => {
-                controller.exit()
-            }
-        }
-    }
+		stage = new JFXApp3.PrimaryStage {
+			//    initStyle(StageStyle.Unified)
+			title = "Minesweeper"
+			scene = my_scene.get
+			onCloseRequest = e => {
+				controller.exit()
+			}
+		}
+	}
+
+    private def createImages(): Try[Map[String, Image]] = {
+		Try(Map(
+			"unrevealed" -> new Image("file:img/unrevealed.png"),
+			"revealed" -> new Image("file:img/revealed.png"),
+			"flagged" -> new Image("file:img/flagged.png"),
+			"bomb" -> new Image("file:img/bomb.png"),
+			"1" -> new Image("file:img/1.png"),
+			"2" -> new Image("file:img/2.png"),
+			"3" -> new Image("file:img/3.png"),
+			"4" -> new Image("file:img/4.png"),
+			"5" -> new Image("file:img/5.png"),
+			"6" -> new Image("file:img/6.png"),
+			"7" -> new Image("file:img/7.png"),
+			"8" -> new Image("file:img/8.png")
+		))
+	}
 
     private def makeScene(gridPane: GridPane): Scene = {
         new Scene {
@@ -71,13 +94,11 @@ class Gui(controller: FieldController) extends JFXApp3 with Observer[Event] with
     }
 
     override def update(e: Event): Unit = {
-        e match {
-            case SetupEvent(field) => e.accept(this)
-            case _ => Platform.runLater(() => {
-                e.accept(this)
-            })
-        }
-    }
+		e match {
+			case SetupEvent(field) => e.accept(this)
+			case _ => Platform.runLater(() => e.accept(this))
+		}
+	}
 
     override def visitExit(event: ExitEvent): Unit = {
         // close the gui
@@ -139,11 +160,12 @@ class Gui(controller: FieldController) extends JFXApp3 with Observer[Event] with
             val y = javafx.scene.layout.GridPane.getRowIndex(button)
             val cell = field.getCell(x, y).get
 
-            if cell.isFlagged then button.setGraphic(new ImageView(new Image("file:img/flagged.png")))
+            if cell.isFlagged then button.setGraphic(new ImageView(images.get("flagged")))
             else if cell.isRevealed then
-                if cell.isBomb then button.setGraphic(new ImageView(new Image("file:img/bomb.png")))
-                else if cell.nearbyBombs != 0 then button.setGraphic(new ImageView(new Image(s"file:img/${cell.nearbyBombs}.png")))
-                else button.setGraphic(new ImageView(new Image("file:img/revealed.png")))
+                if cell.isBomb then button.setGraphic(new ImageView(images.get("bomb")))
+                else if cell.nearbyBombs != 0 then button.setGraphic(new ImageView(images.get(cell.nearbyBombs.toString)))
+                else button.setGraphic(new ImageView(images.get("revealed")))
+            else button.setGraphic(new ImageView(images.get("unrevealed")))
         })
     }
 
@@ -153,7 +175,7 @@ class Gui(controller: FieldController) extends JFXApp3 with Observer[Event] with
         for (ix <- 0 until field.dimension._1) {
             for (iy <- 0 until field.dimension._2) {
                 val cell = field.getCell(ix, iy).get
-                grid.add(new Button("", new ImageView(new Image("file:img/unrevealed.png"))) {
+                grid.add(new Button("", new ImageView(images.get("unrevealed"))) {
                     padding = Insets(-1)
                     onMouseClicked = if (cell.isRevealed) null else
                         e => {
