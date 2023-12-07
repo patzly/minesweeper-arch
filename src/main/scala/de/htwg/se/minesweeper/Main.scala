@@ -14,9 +14,10 @@ def main(): Unit = {
 	val width = 16
 	val height = 16
 	val bomb_chance = 0.15f
+	val undos = 3
 	val rand = Random()
 
-	val controller = FieldController(RandomFieldFactory(height, width, rand, bomb_chance))
+	val controller = FieldController(undos, RandomFieldFactory(height, width, rand, bomb_chance))
 	val tui = Tui(controller)
 	val gui = Gui(controller)
 	controller.setup()

@@ -1,42 +1,71 @@
 package de.htwg.se.minesweeper.view
 
 import scalafx.application.JFXApp3
-import scalafx.geometry.Insets
+import scalafx.geometry.{Insets, Pos}
 import scalafx.scene.Scene
-import scalafx.scene.effect.DropShadow
-import scalafx.scene.layout.HBox
-import scalafx.scene.paint.Color._
-import scalafx.scene.paint._
+import scalafx.scene.layout.*
+import scalafx.scene.paint.Color.*
+import scalafx.scene.paint.*
 import scalafx.scene.text.Text
 import scalafx.application.Platform
-import scalafx.scene.layout.GridPane
 import scalafx.scene.Node
-import de.htwg.se.minesweeper.model._
-import de.htwg.se.minesweeper.controller._
-import scalafx.scene.control.Button
-import de.htwg.se.minesweeper.observer._
-import de.htwg.se.minesweeper.model.Field
+import de.htwg.se.minesweeper.model.*
+import de.htwg.se.minesweeper.controller.*
+import scalafx.scene.control.*
 import de.htwg.se.minesweeper.observer.Observer
+import javafx.beans.property.SimpleIntegerProperty
+import scalafx.beans.binding.Bindings
+import scalafx.beans.property.{IntegerProperty, StringProperty}
+import scalafx.scene.image.{Image, ImageView}
+
 
 class Gui(controller: FieldController) extends JFXApp3 with Observer[Event] with EventVisitor {
     controller.addObserver(this)
     private var setup_field: Option[Field] = None
 
-    private var grid: GridPane = null
-    private var my_scene: Scene = null
+    private var grid: Option[GridPane] = None
+    private var my_scene: Option[Scene] = None
 
-    override def start() = {
-        grid = createGrid(setup_field.get)
-        my_scene = new Scene {
-            fill = Color.rgb(38, 38, 38)
-            content = grid
-        }
+    override def start(): Unit = {
+        grid = Some(createGrid(setup_field.get))
+
+        my_scene = Some(makeScene(grid.get))
+
         stage = new JFXApp3.PrimaryStage {
             //    initStyle(StageStyle.Unified)
             title = "Minesweeper"
-            scene = my_scene
+            scene = my_scene.get
             onCloseRequest = e => {
                 controller.exit()
+            }
+        }
+    }
+
+    private def makeScene(gridPane: GridPane): Scene = {
+        new Scene {
+            fill = Color.rgb(38, 38, 38)
+            content = new BorderPane() {
+                top = new Text {
+                    text <== new SimpleIntegerProperty(controller.undos).asString("Undos: %d")
+                }
+                center = gridPane
+                bottom = new VBox {
+                    alignment = Pos.Center
+                    padding = Insets(20)
+                    children = Seq(new HBox {
+                        alignment = Pos.Center
+                        spacing = 100
+                        children = Seq(
+                            new Button("Zum Menü"),
+                            new Button("Undo") {
+                                onMouseClicked = e => controller.undo()
+                            },
+                            new Button("Redo") {
+                                onMouseClicked = e => controller.redo()
+                            })
+                    })
+                }
+                padding = Insets(50)
             }
         }
     }
@@ -53,9 +82,10 @@ class Gui(controller: FieldController) extends JFXApp3 with Observer[Event] with
     override def visitExit(event: ExitEvent): Unit = {
         // close the gui
         stage.close()
+        System.exit(0)
     }
 
-    private def getEndScreen(str: String): Node = new scalafx.scene.layout.VBox(
+    private def getEndScreen(str: String): Node = new VBox(
         new Text {
             text = str
             style = "-fx-font-size: 48;"
@@ -69,6 +99,7 @@ class Gui(controller: FieldController) extends JFXApp3 with Observer[Event] with
             }
         }
     ) {
+        alignment = Pos.Center
         padding = Insets(10)
         spacing = 10
     }
@@ -76,13 +107,13 @@ class Gui(controller: FieldController) extends JFXApp3 with Observer[Event] with
     override def visitLost(event: LostEvent): Unit = {
         // show the lost screen
         // and a retry button
-        my_scene.content = getEndScreen("You lost!")
+        my_scene.get.content = getEndScreen("You lost!")
     }
 
     override def visitWon(event: WonEvent): Unit = {
         // show the won screen
         // and a retry button
-        my_scene.content = getEndScreen("You won!")
+        my_scene.get.content = getEndScreen("You won!")
     }
 
     override def visitFieldUpdated(event: FieldUpdatedEvent): Unit = {
@@ -94,39 +125,44 @@ class Gui(controller: FieldController) extends JFXApp3 with Observer[Event] with
         setup_field match {
             case None => setup_field = Some(event.field)
             case Some(_) => Platform.runLater({
-                grid = createGrid(event.field)
-                my_scene.content = grid
+                grid = Some(createGrid(event.field))
+                val newScene = makeScene(grid.get)
+                my_scene.get.content.setAll(newScene.content)
             })
         }
     }
 
     private def updateGrid(field: Field): Unit = {
-        grid.getChildren().forEach(node => {
+        grid.get.getChildren.forEach(node => {
             val button = node.asInstanceOf[javafx.scene.control.Button]
             val x = javafx.scene.layout.GridPane.getColumnIndex(button)
             val y = javafx.scene.layout.GridPane.getRowIndex(button)
             val cell = field.getCell(x, y).get
-            button.setText(cell.toString)
+
+            if cell.isFlagged then button.setGraphic(new ImageView(new Image("file:img/flagged.png")))
+            else if cell.isRevealed then
+                if cell.isBomb then button.setGraphic(new ImageView(new Image("file:img/bomb.png")))
+                else if cell.nearbyBombs != 0 then button.setGraphic(new ImageView(new Image(s"file:img/${cell.nearbyBombs}.png")))
+                else button.setGraphic(new ImageView(new Image("file:img/revealed.png")))
         })
     }
 
     private def createGrid(field: Field): GridPane = {
-        var grid = new GridPane()
+        val grid = new GridPane()
+
         for (ix <- 0 until field.dimension._1) {
             for (iy <- 0 until field.dimension._2) {
                 val cell = field.getCell(ix, iy).get
-                grid.add(new Button {
-                    text = cell.toString
-                    // add a monospaced font with size 16
-                    style = "-fx-font-family: monospace; -fx-font-size: 25;"
+                grid.add(new Button("", new ImageView(new Image("file:img/unrevealed.png"))) {
+                    padding = Insets(-1)
                     onMouseClicked = if (cell.isRevealed) null else
                         e => {
-                        if (e.getButton() == javafx.scene.input.MouseButton.PRIMARY) {
-                            controller.reveal(ix, iy)
-                        } else if (e.getButton() == javafx.scene.input.MouseButton.SECONDARY) {
-                            controller.flag(ix, iy)
+                            if (e.getButton == javafx.scene.input.MouseButton.PRIMARY) {
+                                controller.reveal(ix, iy)
+                            } else if (e.getButton == javafx.scene.input.MouseButton.SECONDARY) {
+                                controller.flag(ix, iy)
+                            }
                         }
-                    }
                 }, ix, iy)
             }
         }

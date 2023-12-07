@@ -6,7 +6,7 @@ import scala.util.Failure
 import de.htwg.se.minesweeper.model._
 import de.htwg.se.minesweeper.observer._
 
-class FieldController(val factory: FieldFactory) extends Observable[Event] {
+class FieldController(var undos: Int, val factory: FieldFactory) extends Observable[Event] {
 	private[controller] var field: Field = factory.createField()
 	private[controller] var state: FieldControllerState = FirstMoveFieldControllerState(this)
 
@@ -59,9 +59,11 @@ class FieldController(val factory: FieldFactory) extends Observable[Event] {
 		undoStack match {
 			case Nil => Failure(new NoSuchElementException("Nothing to undo!"))
 			case head :: tail => {
+				if undos <= 0 then return Failure(new RuntimeException("No more undo's left!"))
 				head.undo()
 				undoStack = tail
 				redoStack = head :: redoStack
+				undos -= 1
 				Success(())
 			}
 		}
