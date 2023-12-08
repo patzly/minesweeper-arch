@@ -93,8 +93,7 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 								},
 								new Button {
 									text = "Retry"
-									// black text
-									style = "-fx-font-size: 24; -fx-fill: black;"
+									id = "retry-btn"
 									onMouseClicked = e => {
 										end_screen_visible.setValue(false)
 										controller.setup()
@@ -121,7 +120,9 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 						alignment = Pos.Center
 						spacing = 100
 						children = Seq(
-							new Button("Zum Menü"),
+							new Button("Zum Menü") {
+								onMouseClicked = e => goToMain()
+							},
 							new Button("Undo") {
 								disable <== end_screen_visible.or(undo_prop.isEqualTo(0))
 								onMouseClicked = e => controller.undo()
@@ -133,6 +134,18 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 					})
 				}
 				padding = Insets(50)
+			}
+		}
+	}
+
+	def goToMain() : Unit = {
+		my_scene.get.content = new BorderPane() {
+			top = new HBox(
+				new Text("Minesweeper") {
+					style = "-fx-text-size: 64"
+				}
+			) {
+				alignment = Pos.Center
 			}
 		}
 	}
@@ -191,10 +204,13 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 
 			if cell.isFlagged then button.setGraphic(new ImageView(images.get("flagged")))
 			else if cell.isRevealed then
+				button.getStyleClass.add("revealed")
 				if cell.isBomb then button.setGraphic(new ImageView(images.get("bomb")))
 				else if cell.nearbyBombs != 0 then button.setGraphic(new ImageView(images.get(cell.nearbyBombs.toString)))
 				else button.setGraphic(new ImageView(images.get("revealed")))
-			else button.setGraphic(new ImageView(images.get("unrevealed")))
+			else
+				button.getStyleClass.remove("revealed")
+				button.setGraphic(new ImageView(images.get("unrevealed")))
 		})
 	}
 

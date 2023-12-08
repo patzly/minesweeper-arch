@@ -1,5 +1,14 @@
+.cell {
+    -fx-border-color: black;
+}
+
+.cell.revealed {
+    -fx-border-color: lightgray;
+    -fx-border-insets: -1;
+}
+
 .cell:hover {
-    -fx-effect: innershadow(gaussian, rgba(33, 33, 33, 0.5), 16, 1, 0, 0);
+    -fx-effect: innershadow(gaussian, rgba(33, 33, 33, 0.5), 24, 1, 0, 0);
 }
 
 .button {
@@ -32,4 +41,8 @@
 
 #end-screen {
     -fx-background-color: rgba(0, 0, 0, 0.6);
+}
+
+#retry-btn {
+    -fx-font-size: 32;
 }
