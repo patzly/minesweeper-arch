@@ -82,4 +82,6 @@ class FieldController(val undos_val: Int, val factory: FieldFactory) extends Obs
 			}
 		}
 	}
+
+	def cantRedo: Boolean = redoStack.isEmpty
 }

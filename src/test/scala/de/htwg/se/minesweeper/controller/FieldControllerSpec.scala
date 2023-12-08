@@ -61,11 +61,13 @@ class FieldControllerSpec extends AnyWordSpec {
             }
             "after undoing the flag" in {
                 controller.undo() shouldBe(Success(()))
-                observer.f.toString shouldBe("#")
+                controller.cantRedo shouldBe false
                 controller.undos shouldBe 1
+                observer.f.toString shouldBe("#")
             }
             "after redoing the flag" in {
                 controller.redo() shouldBe(Success(()))
+                controller.cantRedo shouldBe true
                 observer.f.toString shouldBe("⚑")
             }
             "return Failure (firstMove)" in {
@@ -88,6 +90,7 @@ class FieldControllerSpec extends AnyWordSpec {
             "after redoing the reveal" in {
                 controller.redo() shouldBe(Success(()))
                 observer.f.toString shouldBe("☐")
+                controller.cantRedo shouldBe true
             }
             "throw after redoing an empty stack" in {
                 controller.redo() shouldBe a [Failure[NoSuchElementException]]
