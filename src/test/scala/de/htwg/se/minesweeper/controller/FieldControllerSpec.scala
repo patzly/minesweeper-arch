@@ -43,7 +43,7 @@ class TestObserver extends Observer[Event] with EventVisitor {
 class FieldControllerSpec extends AnyWordSpec {
     "A FieldController" when {
         "it has a single cell field" should {
-            val controller = FieldController(TestFieldFactory(Vector(Vector(Cell(false, false)))))
+            val controller = FieldController(2, TestFieldFactory(Vector(Vector(Cell(false, false)))))
             val observer = TestObserver()
             controller.addObserver(observer)
 
@@ -62,6 +62,7 @@ class FieldControllerSpec extends AnyWordSpec {
             "after undoing the flag" in {
                 controller.undo() shouldBe(Success(()))
                 observer.f.toString shouldBe("#")
+                controller.undos shouldBe 1
             }
             "after redoing the flag" in {
                 controller.redo() shouldBe(Success(()))
@@ -82,14 +83,18 @@ class FieldControllerSpec extends AnyWordSpec {
             "after undoing the reveal" in {
                 controller.undo() shouldBe(Success(()))
                 observer.f.toString shouldBe("⚑")
+                controller.undos shouldBe 0
             }
             "after redoing the reveal" in {
                 controller.redo() shouldBe(Success(()))
                 observer.f.toString shouldBe("☐")
             }
-            "after redoing an empty stack" in {
+            "throw after redoing an empty stack" in {
                 controller.redo() shouldBe a [Failure[NoSuchElementException]]
                 observer.f.toString shouldBe("☐")
+            }
+            "throw after undoing without any undos left" in {
+                controller.undo() shouldBe a [Failure[RuntimeException]]
             }
             "return Failure" in {
                 controller.reveal(1, 1) shouldBe a [Failure[IndexOutOfBoundsException]]
@@ -101,7 +106,7 @@ class FieldControllerSpec extends AnyWordSpec {
             }
         }
         "it has a multi cell field" should {
-            val controller = FieldController(TestFieldFactory(Vector.tabulate(3, 3)((y, x) => Cell(false, x == 0))))
+            val controller = FieldController(1, TestFieldFactory(Vector.tabulate(3, 3)((y, x) => Cell(false, x == 0))))
             val observer = TestObserver()
             controller.addObserver(observer)
             "without revealing the cell" in {
@@ -127,7 +132,7 @@ class FieldControllerSpec extends AnyWordSpec {
         }
         "it has another multi cell field" should {
             var i = 0
-            val controller = FieldController(GeneratorTestFieldFactory(3, 3, (y, x) => Cell(false, {
+            val controller = FieldController(1, GeneratorTestFieldFactory(3, 3, (y, x) => Cell(false, {
                 if ((x, y) == (2, 0) && i < 3) then
                     i += 1
                     true
