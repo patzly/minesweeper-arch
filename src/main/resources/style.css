@@ -23,26 +23,54 @@
     -fx-background-color: rgb(79, 183, 250);
 }
 
-#undo-text {
+#bottom {
+    -fx-hgap: 100;
+    -fx-padding: 20;
+    -fx-alignment: center;
+    -fx-column-halignment: center;
+}
+
+.h1 {
+    -fx-font-size: 48;
+}
+
+.h2 {
     -fx-font-size: 24;
-    -fx-fill: white;
-    -fx-font-weight: bold;
-    -fx-font-family: monospace;
+}
+
+.h3 {
+    -fx-font-size: 16;
+}
+
+.text-center {
     -fx-text-alignment: center;
 }
 
-#end-text {
-    -fx-fill: white;
-    -fx-font-size: 48;
+.bold {
     -fx-font-weight: bold;
+}
+
+.white {
+    -fx-fill: white;
+}
+
+.mono {
     -fx-font-family: monospace;
-    -fx-text-alignment: center;
 }
 
 #end-screen {
     -fx-background-color: rgba(0, 0, 0, 0.6);
+    -fx-alignment: center;
+    -fx-orientation: vertical;
+    -fx-column-halignment: center;
 }
 
 #retry-btn {
     -fx-font-size: 32;
+}
+
+#main-menu-bottom {
+    -fx-orientation: vertical;
+    -fx-alignment: center;
+    -fx-column-halignment: center;
 }

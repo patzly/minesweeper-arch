@@ -1,54 +1,45 @@
 package de.htwg.se.minesweeper.view
 
-import scalafx.application.JFXApp3
+import de.htwg.se.minesweeper.controller.*
+import de.htwg.se.minesweeper.model.*
+import de.htwg.se.minesweeper.model.fieldComponent.FieldInterface
+import de.htwg.se.minesweeper.observer.Observer
+
+import scalafx.application.{JFXApp3, Platform}
+import scalafx.beans.property.*
 import scalafx.geometry.{Insets, Pos}
-import scalafx.scene.Scene
+import scalafx.scene.{Node, Scene}
+import scalafx.scene.control.*
+import scalafx.scene.image.{Image, ImageView}
 import scalafx.scene.layout.*
-import scalafx.scene.paint.Color.*
 import scalafx.scene.paint.*
 import scalafx.scene.text.Text
-import scalafx.application.Platform
-import scalafx.scene.Node
-import de.htwg.se.minesweeper.model.*
-import de.htwg.se.minesweeper.controller.*
-import scalafx.scene.control.*
-import de.htwg.se.minesweeper.observer.Observer
-import javafx.beans.property.{SimpleBooleanProperty, SimpleIntegerProperty, SimpleStringProperty}
-import scalafx.beans.binding.Bindings
-import scalafx.beans.property.{IntegerProperty, StringProperty}
-import scalafx.scene.image.{Image, ImageView}
 
 import scala.util.{Failure, Success, Try}
-import de.htwg.se.minesweeper.controller._
-import de.htwg.se.minesweeper.model.fieldComponent.FieldInterface
 
 class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] with EventVisitor {
 	controller.addObserver(this)
 	private var setup_field: Option[FieldInterface] = None
 
 	private var grid: Option[GridPane] = None
-	private var my_scene: Option[Scene] = None
 
 	private var images: Option[Map[String, Image]] = None
-	private val undo_prop = new SimpleIntegerProperty(controller.getUndos)
-	private val redo_prop = new SimpleBooleanProperty(controller.cantRedo)
+	private val undo_prop = IntegerProperty(controller.getUndos)
+	private val redo_prop = BooleanProperty(controller.cantRedo)
 
-	private val end_screen_visible = SimpleBooleanProperty(false)
-	private val end_screen_text = SimpleStringProperty("")
+	private val end_screen_visible = BooleanProperty(false)
+	private val end_screen_text = StringProperty("")
 
 	override def start(): Unit = {
 		images = createImages() match {
 			case Success(value) => Some(value)
 			case Failure(e) => throw new Exception("Could not load images!")
 		}
-		grid = Some(createGrid(setup_field.get))
-
-		my_scene = Some(makeScene(grid.get))
 
 		stage = new JFXApp3.PrimaryStage {
 			//    initStyle(StageStyle.Unified)
 			title = "Minesweeper"
-			scene = my_scene.get
+			scene = makeMainScene()
 			onCloseRequest = e => {
 				controller.exit()
 			}
@@ -72,80 +63,87 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 		))
 	}
 
-	private def makeScene(gridPane: GridPane): Scene = {
+	private def makeMainScene(): Scene = {
 		new Scene {
 			stylesheets = List(getClass.getResource("/style.css").toExternalForm)
 			fill = Color.rgb(38, 38, 38)
-			content = new BorderPane() {
-				// white text
-				top = new Text {
-					id = "undo-text"
-					text <== undo_prop.asString("Undos: %d")
+			content = new BorderPane {
+				top = new HBox(new Text("Minesweeper") {
+					styleClass = Seq("h1", "text-center", "bold", "white", "mono")
+				}) {
+					alignment = Pos.Center
 				}
-				center = new StackPane {
+				center = new FlowPane {
 					children = Seq(
-						gridPane,
-						new HBox(
-							new VBox(
-								new Text {
-									text <== end_screen_text
-									id = "end-text"
-								},
-								new Button {
-									text = "Retry"
-									id = "retry-btn"
-									onMouseClicked = e => {
-										end_screen_visible.setValue(false)
-										controller.setup()
-									}
-								},
-							) {
-								alignment = Pos.Center
-								spacing = 10
-								fillWidth = true
-							}
-						) {
-							id = "end-screen"
-							visible <== end_screen_visible
-							alignment = Pos.Center
-							spacing = 10
-							fillHeight = true
+						new Button("Spielen") {
+							onMouseClicked = e => controller.setup()
 						}
 					)
+					id = "main-menu-bottom"
 				}
-				bottom = new VBox {
-					alignment = Pos.Center
-					padding = Insets(20)
-					children = Seq(new HBox {
-						alignment = Pos.Center
-						spacing = 100
-						children = Seq(
-							new Button("Zum Menü") {
-								onMouseClicked = e => goToMain()
-							},
-							new Button("Undo") {
-								disable <== end_screen_visible.or(undo_prop.isEqualTo(0))
-								onMouseClicked = e => controller.undo()
-							},
-							new Button("Redo") {
-								disable <== end_screen_visible.or(redo_prop)
-								onMouseClicked = e => controller.redo()
-							})
-					})
+				bottom = new FlowPane {
+					children = Seq(
+						new Text("Software Engineering Projekt WS23/24") {
+							styleClass = Seq("h2", "text-center", "bold", "white", "mono")
+						}, new Text("Leon Gies und Hendrik Ziegler") {
+							styleClass = Seq("h3", "text-center", "bold", "white", "mono")
+						}
+					)
+					id = "main-menu-bottom"
 				}
 				padding = Insets(50)
 			}
 		}
 	}
 
-	def goToMain() : Unit = {
-		my_scene.get.content = new BorderPane() {
-			top = new HBox(
-				new Text("Minesweeper") {
-					style = "-fx-text-size: 64"
+	private def makeGameScene(gridPane: GridPane): Scene = {
+		new Scene {
+			stylesheets = List(getClass.getResource("/style.css").toExternalForm)
+			fill = Color.rgb(38, 38, 38)
+			content = new BorderPane() {
+				padding = Insets(50)
+				top = new Text {
+					styleClass = Seq("h2", "text-center", "bold", "white", "mono")
+					text <== undo_prop.asString("Undos: %d")
 				}
-			) {
-				alignment = Pos.Center
+				center = new StackPane {
+					children = Seq(
+						gridPane,
+						new FlowPane {
+							children = Seq(
+								new Text {
+									text <== end_screen_text
+									styleClass = Seq("h1", "text-center", "bold", "white", "mono")
+								},
+								new Button("Retry") {
+									id = "retry-btn"
+									onMouseClicked = e => {
+										end_screen_visible.setValue(false)
+										controller.setup()
+									}
+								}
+							)
+							id = "end-screen"
+							visible <== end_screen_visible
+						}
+					)
+				}
+				bottom = new FlowPane {
+					id = "bottom"
+					children = Seq(
+						new Button("Zum Menü") {
+							onMouseClicked = e => stage.setScene(makeMainScene())
+						},
+						new Button("Undo") {
+							disable <== end_screen_visible.or(undo_prop.isEqualTo(0))
+							onMouseClicked = e => controller.undo()
+						},
+						new Button("Redo") {
+							disable <== end_screen_visible.or(redo_prop)
+							onMouseClicked = e => controller.redo()
+						}
+					)
+				}
 			}
 		}
 	}
@@ -189,8 +187,7 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 			case None => setup_field = Some(event.field)
 			case Some(_) => Platform.runLater({
 				grid = Some(createGrid(event.field))
-				val newScene = makeScene(grid.get)
-				my_scene.get.content.setAll(newScene.content)
+				stage.setScene(makeGameScene(grid.get))
 			})
 		}
 	}
