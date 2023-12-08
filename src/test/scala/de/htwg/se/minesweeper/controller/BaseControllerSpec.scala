@@ -7,6 +7,7 @@ import scala.util.Success
 import scala.util.Failure
 import de.htwg.se.minesweeper.observer.Observer
 import de.htwg.se.minesweeper.controller._
+import de.htwg.se.minesweeper.controller.baseController._
 import de.htwg.se.minesweeper.model._
 import de.htwg.se.minesweeper.observer._
 
@@ -40,10 +41,10 @@ class TestObserver extends Observer[Event] with EventVisitor {
     }
 }
 
-class FieldControllerSpec extends AnyWordSpec {
-    "A FieldController" when {
+class BaseControllerSpec extends AnyWordSpec {
+    "A BaseController" when {
         "it has a single cell field" should {
-            val controller = FieldController(2, TestFieldFactory(Vector(Vector(Cell(false, false)))))
+            val controller = BaseController(2, TestFieldFactory(Vector(Vector(Cell(false, false)))))
             val observer = TestObserver()
             controller.addObserver(observer)
 
@@ -62,7 +63,7 @@ class FieldControllerSpec extends AnyWordSpec {
             "after undoing the flag" in {
                 controller.undo() shouldBe(Success(()))
                 observer.f.toString shouldBe("#")
-                controller.undos shouldBe 1
+                controller.getUndos shouldBe 1
             }
             "after redoing the flag" in {
                 controller.redo() shouldBe(Success(()))
@@ -72,10 +73,7 @@ class FieldControllerSpec extends AnyWordSpec {
                 controller.reveal(1, 1) shouldBe a[Failure[IndexOutOfBoundsException]]
             }
             "reveal the cell" in {
-                controller.state shouldBe a [FirstMoveFieldControllerState]
                 controller.reveal(0, 0) shouldBe(Success(()))
-                controller.undoStack.head shouldBe a [RevealCommand]
-                controller.undoStack.tail shouldBe a [scala.collection.immutable.::[Command]]
 
                 observer.f.toString shouldBe("☐")
                 observer.w shouldBe(WonEvent())
@@ -83,7 +81,7 @@ class FieldControllerSpec extends AnyWordSpec {
             "after undoing the reveal" in {
                 controller.undo() shouldBe(Success(()))
                 observer.f.toString shouldBe("⚑")
-                controller.undos shouldBe 0
+                controller.getUndos shouldBe 0
             }
             "after redoing the reveal" in {
                 controller.redo() shouldBe(Success(()))
@@ -106,7 +104,7 @@ class FieldControllerSpec extends AnyWordSpec {
             }
         }
         "it has a multi cell field" should {
-            val controller = FieldController(1, TestFieldFactory(Vector.tabulate(3, 3)((y, x) => Cell(false, x == 0))))
+            val controller = BaseController(1, TestFieldFactory(Vector.tabulate(3, 3)((y, x) => Cell(false, x == 0))))
             val observer = TestObserver()
             controller.addObserver(observer)
             "without revealing the cell" in {
@@ -132,7 +130,7 @@ class FieldControllerSpec extends AnyWordSpec {
         }
         "it has another multi cell field" should {
             var i = 0
-            val controller = FieldController(1, GeneratorTestFieldFactory(3, 3, (y, x) => Cell(false, {
+            val controller = BaseController(1, GeneratorTestFieldFactory(3, 3, (y, x) => Cell(false, {
                 if ((x, y) == (2, 0) && i < 3) then
                     i += 1
                     true

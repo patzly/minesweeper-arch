@@ -1,15 +1,16 @@
-package de.htwg.se.minesweeper.controller
+package de.htwg.se.minesweeper.controller.baseController
 
 import scala.util.Try
+import de.htwg.se.minesweeper.controller._
 
-private[controller] trait Command {
+private trait Command {
     def execute(): Try[Unit]
     def undo(): Unit
     def redo(): Try[Unit]
 }
 
-private[controller] class RevealCommand(controller: FieldController, x: Int, y: Int) extends Command {
-    private val field = controller.field
+private class RevealCommand(controller: BaseController, x: Int, y: Int) extends Command {
+    private val field = controller.getField
     override def execute(): Try[Unit] = controller.state.reveal(x, y)
     override def undo(): Unit = {
         controller.field = field
@@ -18,7 +19,7 @@ private[controller] class RevealCommand(controller: FieldController, x: Int, y: 
     override def redo(): Try[Unit] = controller.state.reveal(x, y)
 }
 
-private class FlagCommand(controller: FieldController, x: Int, y: Int) extends Command {
+private class FlagCommand(controller: BaseController, x: Int, y: Int) extends Command {
     override def execute(): Try[Unit] = controller.flag_impl(x, y)
     override def undo(): Unit = controller.flag_impl(x, y)
     override def redo(): Try[Unit] = controller.flag_impl(x, y)

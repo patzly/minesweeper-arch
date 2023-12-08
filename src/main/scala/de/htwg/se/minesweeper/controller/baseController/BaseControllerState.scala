@@ -1,16 +1,17 @@
-package de.htwg.se.minesweeper.controller
+package de.htwg.se.minesweeper.controller.baseController
 
 import de.htwg.se.minesweeper.model.{Field, FieldFactory}
 import scala.util.{Failure, Success, Try}
+import de.htwg.se.minesweeper.controller._
 
-private abstract class FieldControllerState(controller: FieldController) {
+private abstract class BaseControllerState(controller: BaseController) {
 	def reveal(x: Int, y: Int): Try[Unit] = {
-		controller.field.withRevealed(x, y) match {
+		controller.getField.withRevealed(x, y) match {
 			case Success(value) => controller.field = value
 			case Failure(exception) => return Failure(exception)
 		}
 
-		controller.notifyObservers(FieldUpdatedEvent(controller.field))
+		controller.notifyObservers(FieldUpdatedEvent(controller.getField))
 
 		controller.field.getCell(x, y) match {
 			case Success(cell) => {
@@ -26,7 +27,7 @@ private abstract class FieldControllerState(controller: FieldController) {
 	}
 }
 
-private class FirstMoveFieldControllerState(controller: FieldController) extends FieldControllerState(controller) {
+private class FirstMoveBaseControllerState(controller: BaseController) extends BaseControllerState(controller) {
 	override def reveal(x: Int, y: Int): Try[Unit] = {
 		while controller.field.getCell(x, y) match {
 			case Success(cell) => cell.nearbyBombs != 0 || cell.isBomb
@@ -36,12 +37,12 @@ private class FirstMoveFieldControllerState(controller: FieldController) extends
 		}
 
 		controller.undoStack = controller.undoStack.prepended(new RevealCommand(controller, x, y))
-		controller.changeState(AnyMoveFieldControllerState(controller))
+		controller.changeState(AnyMoveBaseControllerState(controller))
 
 		super.reveal(x, y)
 	}
 }
 
-private class AnyMoveFieldControllerState(controller: FieldController) extends FieldControllerState(controller) {
+private class AnyMoveBaseControllerState(controller: BaseController) extends BaseControllerState(controller) {
 
 }

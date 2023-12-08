@@ -8,6 +8,7 @@ import scala.util.Try
 import de.htwg.se.minesweeper.controller._
 import de.htwg.se.minesweeper.model.Field
 import de.htwg.se.minesweeper.observer.Observer
+import de.htwg.se.minesweeper.controller._
 
 private trait TuiState {
 	def processLine(line: String): Unit
@@ -66,7 +67,7 @@ class RetryTuiState(tui: Tui) extends TuiState {
 	}
 }
 
-class Tui(val controller: FieldController) extends Observer[Event] with EventVisitor {
+class Tui(val controller: ControllerInterface) extends Observer[Event] with EventVisitor {
 	private var loop = true
 	private var state: TuiState = DefaultTuiState(this)
 	controller.addObserver(this)

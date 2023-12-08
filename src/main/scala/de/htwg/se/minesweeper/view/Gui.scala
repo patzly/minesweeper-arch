@@ -18,8 +18,9 @@ import scalafx.beans.binding.Bindings
 import scalafx.beans.property.{IntegerProperty, StringProperty}
 import scalafx.scene.image.{Image, ImageView}
 import scala.util.{Try, Success, Failure}
+import de.htwg.se.minesweeper.controller._
 
-class Gui(controller: FieldController) extends JFXApp3 with Observer[Event] with EventVisitor {
+class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] with EventVisitor {
 	controller.addObserver(this)
 	private var setup_field: Option[Field] = None
 
@@ -27,7 +28,7 @@ class Gui(controller: FieldController) extends JFXApp3 with Observer[Event] with
 	private var my_scene: Option[Scene] = None
 
 	private var images: Option[Map[String, Image]] = None
-	private var undo_prop = new SimpleIntegerProperty(controller.undos)
+	private var undo_prop = new SimpleIntegerProperty(controller.getUndos)
 
 	override def start(): Unit = {
 		images = createImages() match {
@@ -186,7 +187,7 @@ class Gui(controller: FieldController) extends JFXApp3 with Observer[Event] with
 
 	override def visitFieldUpdated(event: FieldUpdatedEvent): Unit = {
 		// update the gui
-		Platform.runLater(undo_prop.setValue(controller.undos))
+		Platform.runLater(undo_prop.setValue(controller.getUndos))
 		updateGrid(event.field)
 	}
 

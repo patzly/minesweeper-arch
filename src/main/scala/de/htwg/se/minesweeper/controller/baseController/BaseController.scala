@@ -1,34 +1,38 @@
-package de.htwg.se.minesweeper.controller
+package de.htwg.se.minesweeper.controller.baseController
 
 import scala.util.Try
 import scala.util.Success
 import scala.util.Failure
 import de.htwg.se.minesweeper.model._
 import de.htwg.se.minesweeper.observer._
+import de.htwg.se.minesweeper.controller._
 
-class FieldController(val undos_val: Int, val factory: FieldFactory) extends Observable[Event] {
-	private[controller] var field: Field = factory.createField()
-	private[controller] var state: FieldControllerState = FirstMoveFieldControllerState(this)
-	var undos = undos_val
+class BaseController(val base_undos: Int, val factory: FieldFactory) extends Observable[Event] with ControllerInterface {
+	private[baseController] var field: Field = factory.createField()
+	private[baseController] var state: BaseControllerState = FirstMoveBaseControllerState(this)
+	private var undos = base_undos
 
-	private[controller] def changeState(newState: FieldControllerState): Unit = {
+	override def getUndos: Int = undos
+	override def getField: Field = field
+
+	private[baseController] def changeState(newState: BaseControllerState): Unit = {
 		state = newState
 	}
 
-	def setup(): Unit = {
-		undos = undos_val
-		state = FirstMoveFieldControllerState(this)
+	override def setup(): Unit = {
+		undos = base_undos
+		state = FirstMoveBaseControllerState(this)
 		undoStack = List.empty
 		redoStack = List.empty
 		field = factory.createField()
 		notifyObservers(SetupEvent(field))
 	}
 
-	def reveal(x: Int, y: Int): Try[Unit] = execute(RevealCommand(this, x, y))
+	override def reveal(x: Int, y: Int): Try[Unit] = execute(RevealCommand(this, x, y))
 
-	def flag(x: Int, y: Int): Try[Unit] = execute(FlagCommand(this, x, y))
+	override def flag(x: Int, y: Int): Try[Unit] = execute(FlagCommand(this, x, y))
 
-	private[controller] def flag_impl(x: Int, y: Int): Try[Unit] = {
+	private[baseController] def flag_impl(x: Int, y: Int): Try[Unit] = {
 		field.withToggledFlag(x, y) match {
 			case Success(newField) => {
 				field = newField
@@ -38,12 +42,12 @@ class FieldController(val undos_val: Int, val factory: FieldFactory) extends Obs
 		}
 	}
 
-	def exit(): Unit = {
+	override def exit(): Unit = {
 		notifyObservers(ExitEvent())
 	}
 
-	private[controller] var undoStack: List[Command] = List.empty
-	private[controller] var redoStack: List[Command] = List.empty
+	private[baseController] var undoStack: List[Command] = List.empty
+	private[baseController] var redoStack: List[Command] = List.empty
 
 	private def execute(command: Command): Try[Unit] = {
 		undoStack = command :: undoStack
@@ -57,7 +61,7 @@ class FieldController(val undos_val: Int, val factory: FieldFactory) extends Obs
 		}
 	}
 
-	def undo(): Try[Unit] = {
+	override def undo(): Try[Unit] = {
 		undoStack match {
 			case Nil => Failure(new NoSuchElementException("Nothing to undo!"))
 			case head :: tail => {
@@ -71,7 +75,7 @@ class FieldController(val undos_val: Int, val factory: FieldFactory) extends Obs
 		}
 	}
 
-	def redo(): Try[Unit] = {
+	override def redo(): Try[Unit] = {
 		redoStack match {
 			case Nil => Failure(new NoSuchElementException("Nothing to redo!"))
 			case head :: tail => {

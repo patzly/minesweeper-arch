@@ -1,7 +1,7 @@
 package de.htwg.se.minesweeper
 
 import de.htwg.se.minesweeper.model.RandomFieldFactory
-import de.htwg.se.minesweeper.controller.FieldController
+import de.htwg.se.minesweeper.controller.baseController.BaseController
 import de.htwg.se.minesweeper.view.Tui
 import de.htwg.se.minesweeper.view.Gui
 
@@ -17,7 +17,7 @@ def main(): Unit = {
 	val undos = 3
 	val rand = Random()
 
-	val controller = FieldController(undos, RandomFieldFactory(height, width, rand, bomb_chance))
+	val controller = BaseController(undos, RandomFieldFactory(height, width, rand, bomb_chance))
 	val tui = Tui(controller)
 	val gui = Gui(controller)
 	controller.setup()
