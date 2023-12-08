@@ -1,5 +1,6 @@
 .cell {
     -fx-border-color: black;
+    -fx-padding: 0;
 }
 
 .cell.revealed {
@@ -70,6 +71,12 @@
 }
 
 #main-menu-bottom {
+    -fx-orientation: vertical;
+    -fx-alignment: center;
+    -fx-column-halignment: center;
+}
+
+#main-menu-center {
     -fx-orientation: vertical;
     -fx-alignment: center;
     -fx-column-halignment: center;

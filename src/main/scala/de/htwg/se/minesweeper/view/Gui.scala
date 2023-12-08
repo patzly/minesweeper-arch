@@ -30,6 +30,9 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 	private val end_screen_visible = BooleanProperty(false)
 	private val end_screen_text = StringProperty("")
 
+	private val stylesheet = getClass.getResource("/style.css").toExternalForm
+	private val background_color = Color.rgb(38, 38, 38)
+
 	override def start(): Unit = {
 		images = createImages() match {
 			case Success(value) => Some(value)
@@ -65,8 +68,8 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 
 	private def makeMainScene(): Scene = {
 		new Scene {
-			stylesheets = List(getClass.getResource("/style.css").toExternalForm)
-			fill = Color.rgb(38, 38, 38)
+			stylesheets = List(stylesheet)
+			fill = background_color
 			content = new BorderPane {
 				top = new HBox(new Text("Minesweeper") {
 					styleClass = Seq("h1", "text-center", "bold", "white", "mono")
@@ -98,8 +101,8 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 
 	private def makeGameScene(gridPane: GridPane): Scene = {
 		new Scene {
-			stylesheets = List(getClass.getResource("/style.css").toExternalForm)
-			fill = Color.rgb(38, 38, 38)
+			stylesheets = List(stylesheet)
+			fill = background_color
 			content = new BorderPane() {
 				padding = Insets(50)
 				top = new Text {
