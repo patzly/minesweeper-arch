@@ -113,35 +113,63 @@ class Gui(controller: FieldController) extends JFXApp3 with Observer[Event] with
 		System.exit(0)
 	}
 
-	private def getEndScreen(str: String): Node = new StackPane {
-		children = Seq(
-			new HBox(
-				new VBox(
-					new Text {
-						text = str
-						style = "-fx-font-size: 48; -fx-font-weight: bold; -fx-font-family: monospace; -fx-text-alignment: center;"
-						fill = Color.White
-					},
-					new Button {
-						text = "Retry"
-						style = "-fx-font-size: 24;"
-						onMouseClicked = e => {
-							controller.setup()
-						}
+	private def getEndScreen(str: String): Node = new BorderPane() {
+		// white text 
+		top = new Text {
+			style = "-fx-font-size: 24; -fx-fill: white; -fx-font-weight: bold; -fx-font-family: monospace; -fx-text-alignment: center;"
+			text <== undo_prop.asString("Undos: %d")
+		}
+		center = new StackPane {
+			children = Seq (
+				grid.get,
+				new HBox(
+					new VBox(
+						new Text {
+							text = str
+							style = "-fx-font-size: 48; -fx-font-weight: bold; -fx-font-family: monospace; -fx-text-alignment: center;"
+							fill = Color.BLACK
+						},
+						new Button {
+							text = "Retry"
+							// black text
+							style = "-fx-font-size: 24; -fx-fill: black;"
+							onMouseClicked = e => {
+								controller.setup()
+							}
+						},
+					) {
+						alignment = Pos.Center
+						spacing = 10
+						fillWidth = true
 					}
 				) {
 					alignment = Pos.Center
 					spacing = 10
-					fillWidth = true
+					fillHeight = true
 				}
-			) {
+			)
+		}
+		bottom = new VBox {
+			alignment = Pos.Center
+			padding = Insets(20)
+			children = Seq(new HBox {
 				alignment = Pos.Center
-				spacing = 10
-				fillHeight = true
-			}
-		)
-		prefHeight = my_scene.get.height.value
-		prefWidth = my_scene.get.width.value
+				spacing = 100
+				children = Seq(
+					new Button("Zum Menü") {
+						style = "-fx-background-insets: 0 0 -1 0, 0, 1, 2;"
+					},
+					new Button("Undo") {
+						style = "-fx-background-insets: 0 0 -1 0, 0, 1, 2;"
+						//onMouseClicked = e => controller.undo()
+					},
+					new Button("Redo") {
+						//onMouseClicked = e => controller.redo()
+						style = "-fx-background-insets: 0 0 -1 0, 0, 1, 2;"
+					})
+			})
+		}
+		padding = Insets(50)
 	}
 
 	override def visitLost(event: LostEvent): Unit = {
