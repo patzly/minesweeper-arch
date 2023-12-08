@@ -6,15 +6,17 @@ import scala.util.Failure
 import de.htwg.se.minesweeper.model._
 import de.htwg.se.minesweeper.observer._
 
-class FieldController(var undos: Int, val factory: FieldFactory) extends Observable[Event] {
+class FieldController(val undos_val: Int, val factory: FieldFactory) extends Observable[Event] {
 	private[controller] var field: Field = factory.createField()
 	private[controller] var state: FieldControllerState = FirstMoveFieldControllerState(this)
+	var undos = undos_val
 
 	private[controller] def changeState(newState: FieldControllerState): Unit = {
 		state = newState
 	}
 
 	def setup(): Unit = {
+		undos = undos_val
 		state = FirstMoveFieldControllerState(this)
 		undoStack = List.empty
 		redoStack = List.empty
