@@ -30,8 +30,6 @@ jobs:
         java-version: '11'
         distribution: 'temurin'
         cache: 'sbt'
-    - name: Run tests
-      run: sbt test
     - name: Coveralls
       run: sbt clean coverage test coverageReport
     - name: Upload coveralls
