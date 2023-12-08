@@ -67,10 +67,12 @@ class BaseControllerSpec extends AnyWordSpec {
                 controller.undo() shouldBe(Success(()))
                 observer.f.toString shouldBe("#")
                 controller.getUndos shouldBe 1
+                controller.cantRedo shouldBe false
             }
             "after redoing the flag" in {
                 controller.redo() shouldBe(Success(()))
                 observer.f.toString shouldBe("⚑")
+                controller.cantRedo shouldBe true
             }
             "return Failure (firstMove)" in {
                 controller.reveal(1, 1) shouldBe a[Failure[IndexOutOfBoundsException]]
@@ -89,6 +91,7 @@ class BaseControllerSpec extends AnyWordSpec {
             "after redoing the reveal" in {
                 controller.redo() shouldBe(Success(()))
                 observer.f.toString shouldBe("☐")
+                controller.cantRedo shouldBe true
             }
             "throw after redoing an empty stack" in {
                 controller.redo() shouldBe a [Failure[NoSuchElementException]]

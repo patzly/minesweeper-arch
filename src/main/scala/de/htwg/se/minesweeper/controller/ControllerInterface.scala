@@ -7,6 +7,7 @@ import scala.util.Try
 trait ControllerInterface extends Observable[Event] {
     def getUndos: Int
     def getField: FieldInterface
+    def cantRedo: Boolean
 
     def setup(): Unit
     def reveal(x: Int, y: Int): Try[Unit]
