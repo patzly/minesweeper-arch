@@ -1,14 +1,12 @@
 package de.htwg.se.minesweeper.view
 
-import de.htwg.se.minesweeper.model.Field
+import de.htwg.se.minesweeper.model.fieldComponent.FieldInterface
 import de.htwg.se.minesweeper.observer.Observer
 import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
 import de.htwg.se.minesweeper.controller._
-import de.htwg.se.minesweeper.model.Field
 import de.htwg.se.minesweeper.observer.Observer
-import de.htwg.se.minesweeper.controller._
 
 private trait TuiState {
 	def processLine(line: String): Unit
@@ -72,7 +70,7 @@ class Tui(val controller: ControllerInterface) extends Observer[Event] with Even
 	private var state: TuiState = DefaultTuiState(this)
 	controller.addObserver(this)
 
-	def fieldString(field: Field): String = {
+	def fieldString(field: FieldInterface): String = {
 		val (rows, cols) = field.dimension
 		val l = cols.toString.length + 2
 

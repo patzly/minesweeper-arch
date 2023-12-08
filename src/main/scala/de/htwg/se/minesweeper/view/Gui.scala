@@ -19,10 +19,11 @@ import scalafx.beans.property.{IntegerProperty, StringProperty}
 import scalafx.scene.image.{Image, ImageView}
 import scala.util.{Try, Success, Failure}
 import de.htwg.se.minesweeper.controller._
+import de.htwg.se.minesweeper.model.fieldComponent.FieldInterface
 
 class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] with EventVisitor {
 	controller.addObserver(this)
-	private var setup_field: Option[Field] = None
+	private var setup_field: Option[FieldInterface] = None
 
 	private var grid: Option[GridPane] = None
 	private var my_scene: Option[Scene] = None
@@ -202,7 +203,7 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 		}
 	}
 
-	private def updateGrid(field: Field): Unit = {
+	private def updateGrid(field: FieldInterface): Unit = {
 		grid.get.getChildren.forEach(node => {
 			val button = node.asInstanceOf[javafx.scene.control.Button]
 			val x = javafx.scene.layout.GridPane.getColumnIndex(button)
@@ -218,7 +219,7 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 		})
 	}
 
-	private def createGrid(field: Field): GridPane = {
+	private def createGrid(field: FieldInterface): GridPane = {
 		val grid = new GridPane()
 
 		for (ix <- 0 until field.dimension._1) {

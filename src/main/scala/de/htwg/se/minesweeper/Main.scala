@@ -1,6 +1,6 @@
 package de.htwg.se.minesweeper
 
-import de.htwg.se.minesweeper.model.RandomFieldFactory
+import de.htwg.se.minesweeper.model.fieldComponent.field.RandomFieldFactory
 import de.htwg.se.minesweeper.controller.baseController.BaseController
 import de.htwg.se.minesweeper.view.Tui
 import de.htwg.se.minesweeper.view.Gui

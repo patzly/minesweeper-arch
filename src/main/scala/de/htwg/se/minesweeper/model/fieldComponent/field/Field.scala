@@ -1,14 +1,16 @@
-package de.htwg.se.minesweeper.model
+package de.htwg.se.minesweeper.model.fieldComponent.field
 
 import scala.util.Random
 import scala.util.Try
 import scala.util.Success
 import scala.util.Failure
 import org.scalactic.Fail
+import de.htwg.se.minesweeper.model.fieldComponent.FieldInterface
+import de.htwg.se.minesweeper.model.Cell
 
 type CellMatrix = Vector[Vector[Cell]]
 
-class Field(cellMatrix: CellMatrix) {
+class Field(cellMatrix: CellMatrix) extends FieldInterface {
 	private val matrix: CellMatrix = {
 		cellMatrix.zipWithIndex.map((row, y) =>
 			row.zipWithIndex.map((cell, x) =>
@@ -19,21 +21,17 @@ class Field(cellMatrix: CellMatrix) {
 
 	override def toString: String = matrix.map(r => r.mkString(" ")).mkString("\n")
 	
-	def getCell(x: Int, y: Int): Try[Cell] = Try(matrix(y)(x))
+	override def getCell(x: Int, y: Int): Try[Cell] = Try(matrix(y)(x))
 
-	def getRow(row: Int): Try[Vector[Cell]] = Try(matrix(row))
+	override def getRow(row: Int): Try[Vector[Cell]] = Try(matrix(row))
 	
-	def dimension: (Int, Int) = if matrix.isEmpty then (0,0) else (matrix.size, matrix(0).size)
+	override def dimension: (Int, Int) = if matrix.isEmpty then (0,0) else (matrix.size, matrix(0).size)
 
 	private def revealCell(x: Int, y: Int, cellMatrix: CellMatrix): CellMatrix = {
 		cellMatrix.updated(y, cellMatrix(y).updated(x, cellMatrix(y)(x).asRevealed))
 	}
 
-	def isInBounds(x: Int, y: Int): Boolean = {
-		x >= 0 && y >= 0 && matrix.length > y && matrix(y).length > x
-	}
-
-	def withRevealed(x: Int, y: Int): Try[Field] = {
+	override def withRevealed(x: Int, y: Int): Try[Field] = {
 		val newMatrix = Try(revealRec(x, y,
 			revealCell(x, y, matrix), // definitely reveal the clicked cell
 			Set.empty
@@ -44,7 +42,7 @@ class Field(cellMatrix: CellMatrix) {
 		}
 	}
 
-	def withToggledFlag(x: Int, y: Int) : Try[Field] = {
+	override def withToggledFlag(x: Int, y: Int) : Try[Field] = {
 		Try(matrix.updated(y, matrix(y).updated(x, matrix(y)(x).asFlagToggled))) match {
 			case Success(flagged) => Success(Field(flagged))
 			case Failure(exception) => Failure(exception)
@@ -79,11 +77,11 @@ class Field(cellMatrix: CellMatrix) {
 		matrix.slice(y-1, y+2).transpose.slice(x-1, x+2).flatten.count(c => c.isBomb) - (if (matrix(y)(x).isBomb) 1 else 0)
 	}
 
-	def countNearbyMines(x: Int, y: Int): Try[Int] = {
+	override def countNearbyMines(x: Int, y: Int): Try[Int] = {
 		Try(countNearbyMinesImpl(x, y, matrix))
 	}
 
-	def hasWon: Boolean = {
+	override def hasWon: Boolean = {
 		matrix.flatten.forall(cell => cell.isRevealed || cell.isBomb)
 	}
 }

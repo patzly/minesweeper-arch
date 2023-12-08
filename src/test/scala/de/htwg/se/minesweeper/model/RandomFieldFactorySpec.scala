@@ -2,7 +2,7 @@ package de.htwg.se.minesweeper.model
 
 import org.scalatest.matchers.should.Matchers._
 import org.scalatest.wordspec.AnyWordSpec
-import de.htwg.se.minesweeper.model.RandomFieldFactory
+import de.htwg.se.minesweeper.model.fieldComponent.field.RandomFieldFactory
 
 class NRand(val result: Int) extends scala.util.Random {
 	override def nextInt(n: Int): Int = result

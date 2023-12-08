@@ -1,12 +1,12 @@
 package de.htwg.se.minesweeper.controller
 
-import de.htwg.se.minesweeper.model.Field
+import de.htwg.se.minesweeper.model.fieldComponent.FieldInterface
 import de.htwg.se.minesweeper.observer.Observable
 import scala.util.Try
 
 trait ControllerInterface extends Observable[Event] {
     def getUndos: Int
-    def getField: Field
+    def getField: FieldInterface
 
     def setup(): Unit
     def reveal(x: Int, y: Int): Try[Unit]

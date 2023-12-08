@@ -6,14 +6,16 @@ import scala.util.Failure
 import de.htwg.se.minesweeper.model._
 import de.htwg.se.minesweeper.observer._
 import de.htwg.se.minesweeper.controller._
+import de.htwg.se.minesweeper.model.fieldComponent.FieldFactory
+import de.htwg.se.minesweeper.model.fieldComponent.FieldInterface
 
 class BaseController(val base_undos: Int, val factory: FieldFactory) extends Observable[Event] with ControllerInterface {
-	private[baseController] var field: Field = factory.createField()
+	private[baseController] var field: FieldInterface = factory.createField()
 	private[baseController] var state: BaseControllerState = FirstMoveBaseControllerState(this)
 	private var undos = base_undos
 
 	override def getUndos: Int = undos
-	override def getField: Field = field
+	override def getField: FieldInterface = field
 
 	private[baseController] def changeState(newState: BaseControllerState): Unit = {
 		state = newState

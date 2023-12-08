@@ -2,12 +2,12 @@ package de.htwg.se.minesweeper.view
 
 import org.scalatest.matchers.should.Matchers._
 import org.scalatest.wordspec.AnyWordSpec
-import de.htwg.se.minesweeper.model.{Field, Cell}
 import de.htwg.se.minesweeper.observer.Observer
 import de.htwg.se.minesweeper.view.Tui
 import de.htwg.se.minesweeper.controller._
 import de.htwg.se.minesweeper.controller.spieController.SpieController
 import de.htwg.se.minesweeper.model._
+import de.htwg.se.minesweeper.model.fieldComponent.field._
 
 class TestObserver extends Observer[Event] with EventVisitor {
 	var w: WonEvent = null

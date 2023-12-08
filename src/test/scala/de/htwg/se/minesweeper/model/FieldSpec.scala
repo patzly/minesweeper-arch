@@ -4,7 +4,7 @@ import org.scalatest.matchers.should.Matchers._
 import org.scalatest.wordspec.AnyWordSpec
 import scala.util.Success
 import scala.util.Failure
-import de.htwg.se.minesweeper.model._
+import de.htwg.se.minesweeper.model.fieldComponent.field._
 
 class FieldSpec extends AnyWordSpec {
 	"A Field" when {
@@ -18,15 +18,6 @@ class FieldSpec extends AnyWordSpec {
 			val fieldHidden = Field(Vector(Vector(Cell(false, false))))
 			val fieldRevealed = Field(Vector(Vector(Cell(true, false))))
 			val fieldBomb = Field(Vector(Vector(Cell(true, true))))
-
-			"check bounds correctly" in {
-				fieldHidden.isInBounds(0, 0) shouldBe(true)
-				fieldHidden.isInBounds(1, 0) shouldBe(false)
-				fieldHidden.isInBounds(0, 1) shouldBe(false)
-				fieldHidden.isInBounds(1, 1) shouldBe(false)
-				fieldHidden.isInBounds(-1, 0) shouldBe(false)
-				fieldHidden.isInBounds(0, -1) shouldBe(false)
-			}
 
 			"print a single hidden Cell" in {
 				fieldHidden.toString shouldBe("#")
@@ -55,23 +46,6 @@ class FieldSpec extends AnyWordSpec {
 		}
 		"it has 3 rows and columns and is empty" should {
 			val fieldRevealed = Field(Vector.tabulate(3, 3)((x,y) => Cell(true, false)))
-
-			"check bounds correctly" in {
-				fieldRevealed.isInBounds(0, 0) shouldBe(true)
-				fieldRevealed.isInBounds(1, 0) shouldBe(true)
-				fieldRevealed.isInBounds(2, 0) shouldBe(true)
-				fieldRevealed.isInBounds(0, 1) shouldBe(true)
-				fieldRevealed.isInBounds(1, 1) shouldBe(true)
-				fieldRevealed.isInBounds(2, 1) shouldBe(true)
-				fieldRevealed.isInBounds(0, 2) shouldBe(true)
-				fieldRevealed.isInBounds(1, 2) shouldBe(true)
-				fieldRevealed.isInBounds(2, 2) shouldBe(true)
-				fieldRevealed.isInBounds(3, 0) shouldBe(false)
-				fieldRevealed.isInBounds(0, 3) shouldBe(false)
-				fieldRevealed.isInBounds(3, 3) shouldBe(false)
-				fieldRevealed.isInBounds(-1, 0) shouldBe(false)
-				fieldRevealed.isInBounds(0, -1) shouldBe(false)
-			}
 
 			"be printed correctly if all Cells are revealed" in {
 				fieldRevealed.toString shouldBe("☐ ☐ ☐\n☐ ☐ ☐\n☐ ☐ ☐")

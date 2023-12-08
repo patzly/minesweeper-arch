@@ -1,6 +1,6 @@
 package de.htwg.se.minesweeper.controller.baseController
 
-import de.htwg.se.minesweeper.model.{Field, FieldFactory}
+import de.htwg.se.minesweeper.model.fieldComponent._
 import scala.util.{Failure, Success, Try}
 import de.htwg.se.minesweeper.controller._
 

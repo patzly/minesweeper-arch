@@ -8,11 +8,14 @@ import scala.util.Failure
 import de.htwg.se.minesweeper.observer.Observer
 import de.htwg.se.minesweeper.controller._
 import de.htwg.se.minesweeper.controller.baseController._
+import de.htwg.se.minesweeper.model.fieldComponent.field._
 import de.htwg.se.minesweeper.model._
 import de.htwg.se.minesweeper.observer._
+import de.htwg.se.minesweeper.model.fieldComponent.FieldInterface
+import de.htwg.se.minesweeper.model.fieldComponent.field.TestFieldFactory
 
 class TestObserver extends Observer[Event] with EventVisitor {
-    var f: Field = null
+    var f: FieldInterface = null
     var w: WonEvent = null
     var l: LostEvent = null
     var e: ExitEvent = null

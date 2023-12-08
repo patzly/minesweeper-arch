@@ -1,16 +1,16 @@
 package de.htwg.se.minesweeper.controller
 
-import de.htwg.se.minesweeper.model.Field
+import de.htwg.se.minesweeper.model.fieldComponent.FieldInterface
 
 trait Event {
     def accept(visitor: EventVisitor): Unit
 }
 
-case class SetupEvent(field: Field) extends Event {
+case class SetupEvent(field: FieldInterface) extends Event {
     override def accept(visitor: EventVisitor): Unit = visitor.visitSetup(this)
 }
 
-case class FieldUpdatedEvent(field: Field) extends Event {
+case class FieldUpdatedEvent(field: FieldInterface) extends Event {
     override def accept(visitor: EventVisitor): Unit = visitor.visitFieldUpdated(this)
 }
 
