@@ -113,29 +113,35 @@ class Gui(controller: FieldController) extends JFXApp3 with Observer[Event] with
 		System.exit(0)
 	}
 
-	private def getEndScreen(str: String): Node = new HBox(
-		new VBox(
-			new Text {
-				text = str
-				style = "-fx-font-size: 48; -fx-font-weight: bold; -fx-font-family: monospace; -fx-text-alignment: center;"
-				fill = Color.White
-			},
-			new Button {
-				text = "Retry"
-				style = "-fx-font-size: 24;"
-				onMouseClicked = e => {
-					controller.setup()
+	private def getEndScreen(str: String): Node = new StackPane {
+		children = Seq(
+			new HBox(
+				new VBox(
+					new Text {
+						text = str
+						style = "-fx-font-size: 48; -fx-font-weight: bold; -fx-font-family: monospace; -fx-text-alignment: center;"
+						fill = Color.White
+					},
+					new Button {
+						text = "Retry"
+						style = "-fx-font-size: 24;"
+						onMouseClicked = e => {
+							controller.setup()
+						}
+					}
+				) {
+					alignment = Pos.Center
+					spacing = 10
+					fillWidth = true
 				}
+			) {
+				alignment = Pos.Center
+				spacing = 10
+				fillHeight = true
 			}
-		) {
-			alignment = Pos.Center
-			padding = Insets(10)
-			spacing = 10
-		}
-	) {
-		alignment = Pos.Center
-		padding = Insets(10)
-		spacing = 10
+		)
+		prefHeight = my_scene.get.height.value
+		prefWidth = my_scene.get.width.value
 	}
 
 	override def visitLost(event: LostEvent): Unit = {
