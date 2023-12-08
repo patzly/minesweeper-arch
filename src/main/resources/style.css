@@ -1,0 +1,35 @@
+.cell:hover {
+    -fx-effect: innershadow(gaussian, rgba(33, 33, 33, 0.5), 16, 1, 0, 0);
+}
+
+.button {
+    -fx-background-insets: 0 0 -1 0, 0, 1, 2;
+    -fx-background-color: rgb(59, 130, 246);
+    -fx-background-radius: 5;
+    -fx-text-fill: white;
+    -fx-padding: 10;
+}
+
+.button:hover {
+    -fx-background-color: rgb(79, 183, 250);
+}
+
+#undo-text {
+    -fx-font-size: 24;
+    -fx-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-family: monospace;
+    -fx-text-alignment: center;
+}
+
+#end-text {
+    -fx-fill: white;
+    -fx-font-size: 48;
+    -fx-font-weight: bold;
+    -fx-font-family: monospace;
+    -fx-text-alignment: center;
+}
+
+#end-screen {
+    -fx-background-color: rgba(0, 0, 0, 0.6);
+}

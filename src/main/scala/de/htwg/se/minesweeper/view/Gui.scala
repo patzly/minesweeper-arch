@@ -13,11 +13,12 @@ import de.htwg.se.minesweeper.model.*
 import de.htwg.se.minesweeper.controller.*
 import scalafx.scene.control.*
 import de.htwg.se.minesweeper.observer.Observer
-import javafx.beans.property.SimpleIntegerProperty
+import javafx.beans.property.{SimpleBooleanProperty, SimpleIntegerProperty, SimpleStringProperty}
 import scalafx.beans.binding.Bindings
 import scalafx.beans.property.{IntegerProperty, StringProperty}
 import scalafx.scene.image.{Image, ImageView}
-import scala.util.{Try, Success, Failure}
+
+import scala.util.{Failure, Success, Try}
 import de.htwg.se.minesweeper.controller._
 import de.htwg.se.minesweeper.model.fieldComponent.FieldInterface
 
@@ -29,7 +30,11 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 	private var my_scene: Option[Scene] = None
 
 	private var images: Option[Map[String, Image]] = None
-	private var undo_prop = new SimpleIntegerProperty(controller.getUndos)
+	private val undo_prop = new SimpleIntegerProperty(controller.getUndos)
+	private val redo_prop = new SimpleBooleanProperty(controller.cantRedo)
+
+	private val end_screen_visible = SimpleBooleanProperty(false)
+	private val end_screen_text = SimpleStringProperty("")
 
 	override def start(): Unit = {
 		images = createImages() match {
@@ -69,14 +74,46 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 
 	private def makeScene(gridPane: GridPane): Scene = {
 		new Scene {
+			stylesheets = List(getClass.getResource("/style.css").toExternalForm)
 			fill = Color.rgb(38, 38, 38)
 			content = new BorderPane() {
-				// white text 
+				// white text
 				top = new Text {
-					style = "-fx-font-size: 24; -fx-fill: white; -fx-font-weight: bold; -fx-font-family: monospace; -fx-text-alignment: center;"
+					id = "undo-text"
 					text <== undo_prop.asString("Undos: %d")
 				}
-				center = gridPane
+				center = new StackPane {
+					children = Seq(
+						gridPane,
+						new HBox(
+							new VBox(
+								new Text {
+									text <== end_screen_text
+									id = "end-text"
+								},
+								new Button {
+									text = "Retry"
+									// black text
+									style = "-fx-font-size: 24; -fx-fill: black;"
+									onMouseClicked = e => {
+										end_screen_visible.setValue(false)
+										controller.setup()
+									}
+								},
+							) {
+								alignment = Pos.Center
+								spacing = 10
+								fillWidth = true
+							}
+						) {
+							id = "end-screen"
+							visible <== end_screen_visible
+							alignment = Pos.Center
+							spacing = 10
+							fillHeight = true
+						}
+					)
+				}
 				bottom = new VBox {
 					alignment = Pos.Center
 					padding = Insets(20)
@@ -84,16 +121,14 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 						alignment = Pos.Center
 						spacing = 100
 						children = Seq(
-							new Button("Zum Menü") {
-								style = "-fx-background-insets: 0 0 -1 0, 0, 1, 2;"
-							},
+							new Button("Zum Menü"),
 							new Button("Undo") {
-								style = "-fx-background-insets: 0 0 -1 0, 0, 1, 2;"
+								disable <== end_screen_visible.or(undo_prop.isEqualTo(0))
 								onMouseClicked = e => controller.undo()
 							},
 							new Button("Redo") {
+								disable <== end_screen_visible.or(redo_prop)
 								onMouseClicked = e => controller.redo()
-								style = "-fx-background-insets: 0 0 -1 0, 0, 1, 2;"
 							})
 					})
 				}
@@ -115,80 +150,24 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 		System.exit(0)
 	}
 
-	private def getEndScreen(str: String): Node = new BorderPane() {
-		// white text 
-		top = new Text {
-			style = "-fx-font-size: 24; -fx-fill: white; -fx-font-weight: bold; -fx-font-family: monospace; -fx-text-alignment: center;"
-			text <== undo_prop.asString("Undos: %d")
-		}
-		center = new StackPane {
-			children = Seq (
-				grid.get,
-				new HBox(
-					new VBox(
-						new Text {
-							text = str
-							style = "-fx-font-size: 48; -fx-font-weight: bold; -fx-font-family: monospace; -fx-text-alignment: center;"
-							fill = Color.BLACK
-						},
-						new Button {
-							text = "Retry"
-							// black text
-							style = "-fx-font-size: 24; -fx-fill: black;"
-							onMouseClicked = e => {
-								controller.setup()
-							}
-						},
-					) {
-						alignment = Pos.Center
-						spacing = 10
-						fillWidth = true
-					}
-				) {
-					alignment = Pos.Center
-					spacing = 10
-					fillHeight = true
-				}
-			)
-		}
-		bottom = new VBox {
-			alignment = Pos.Center
-			padding = Insets(20)
-			children = Seq(new HBox {
-				alignment = Pos.Center
-				spacing = 100
-				children = Seq(
-					new Button("Zum Menü") {
-						style = "-fx-background-insets: 0 0 -1 0, 0, 1, 2;"
-					},
-					new Button("Undo") {
-						style = "-fx-background-insets: 0 0 -1 0, 0, 1, 2;"
-						//onMouseClicked = e => controller.undo()
-					},
-					new Button("Redo") {
-						//onMouseClicked = e => controller.redo()
-						style = "-fx-background-insets: 0 0 -1 0, 0, 1, 2;"
-					})
-			})
-		}
-		padding = Insets(50)
-	}
-
 	override def visitLost(event: LostEvent): Unit = {
 		// show the lost screen
 		// and a retry button
-		my_scene.get.content = getEndScreen("You lost!")
+		end_screen_visible.setValue(true)
+		end_screen_text.setValue("You lost!")
 	}
 
 	override def visitWon(event: WonEvent): Unit = {
 		// show the won screen
 		// and a retry button
-		my_scene.get.content = getEndScreen("You won!")
+		end_screen_visible.setValue(true)
+		end_screen_text.setValue("You won!")
 	}
 
 	override def visitFieldUpdated(event: FieldUpdatedEvent): Unit = {
 		// update the gui
 		Platform.runLater(undo_prop.setValue(controller.getUndos))
+		Platform.runLater(redo_prop.setValue(controller.cantRedo))
 		updateGrid(event.field)
 	}
 
@@ -226,7 +205,8 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 			for (iy <- 0 until field.dimension._2) {
 				val cell = field.getCell(ix, iy).get
 				grid.add(new Button("", new ImageView(images.get("unrevealed"))) {
-					padding = Insets(-1)
+					styleClass = Seq("cell")
+					padding = Insets(0)
 					onMouseClicked = if (cell.isRevealed) null else
 						e => {
 							if (e.getButton == javafx.scene.input.MouseButton.PRIMARY) {
