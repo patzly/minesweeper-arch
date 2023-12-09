@@ -13,15 +13,11 @@ private abstract class BaseControllerState(controller: BaseController) {
 
 		controller.notifyObservers(FieldUpdatedEvent(controller.getField))
 
-		controller.field.getCell(x, y) match {
-			case Success(cell) => {
-				if cell.isBomb then {
-					controller.notifyObservers(LostEvent())
-				} else if controller.field.hasWon then {
-					controller.notifyObservers(WonEvent())
-				}
-			}
-			case Failure(exception) => return Failure(exception)
+		// .get because failure isn't possible
+		if controller.field.getCell(x, y).get.isBomb then {
+			controller.notifyObservers(LostEvent())
+		} else if controller.field.hasWon then {
+			controller.notifyObservers(WonEvent())
 		}
 		Success(())
 	}
