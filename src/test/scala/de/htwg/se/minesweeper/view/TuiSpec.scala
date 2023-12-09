@@ -3,11 +3,12 @@ package de.htwg.se.minesweeper.view
 import org.scalatest.matchers.should.Matchers._
 import org.scalatest.wordspec.AnyWordSpec
 import de.htwg.se.minesweeper.observer.Observer
-import de.htwg.se.minesweeper.view.Tui
 import de.htwg.se.minesweeper.controller._
 import de.htwg.se.minesweeper.controller.spieController.SpieController
 import de.htwg.se.minesweeper.model._
 import de.htwg.se.minesweeper.model.fieldComponent.field._
+import scala.concurrent._
+import scala.concurrent.duration._
 
 class TestObserver extends Observer[Event] with EventVisitor {
 	var w: WonEvent = null
@@ -31,6 +32,24 @@ class TestObserver extends Observer[Event] with EventVisitor {
 
 class TuiSpec extends AnyWordSpec {
 	"A Tui" when {
+		"play is called on input q" should {
+			"quit" in {
+				val controller = SpieController(1, TestFieldFactory(Vector(Vector(Cell(false, false)))))
+				val tui = Tui(controller)
+				val observer = TestObserver()
+				controller.addObserver(observer)
+
+				val out = new java.io.ByteArrayOutputStream()
+				implicit val ec = ExecutionContext.global
+				Await.result(Future {
+					Console.withOut(out) {
+						Console.withIn(new java.io.StringReader("q"))(tui.play())
+					}
+				}, 2.minutes)
+
+				out.toString should include("Goodbye!")
+			}
+		}
 		"it has a single cell field" should {
 			val controller = SpieController(1, TestFieldFactory(Vector(Vector(Cell(false, false)))))
 			val tui = Tui(controller)
@@ -77,6 +96,10 @@ class TuiSpec extends AnyWordSpec {
 			"after flagging the cell again" in {
 				tui.processLine("1 1 flag")
 				controller.getField.toString shouldEqual("#")
+			}
+			"after revealing out of bounds" in {
+				tui.processLine("0 0")
+				controller.getField.toString shouldEqual "#"
 			}
 			"after revealing the cell" in {
 				tui.processLine("1 1")
