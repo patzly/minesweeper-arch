@@ -14,23 +14,6 @@
 .bold { -fx-font-weight: bold; }
 .white { -fx-fill: white; }
 
-.cell {
-    -fx-border-width: 1;
-    -fx-border-color: black;
-    -fx-padding: 0;
-}
-
-.cell.revealed {
-    -fx-border-color: lightgray;
-}
-
-.cell:hover {
-    -fx-effect: innershadow(gaussian, rgba(33, 33, 33, 0.5), 24, 1, 0, 0);
-}
-
-/*#cell-grid {
-}*/
-
 .button {
     -fx-background-insets: 0 0 -1 0, 0, 1, 2;
     -fx-background-color: -fx-primary-color;
@@ -43,40 +26,31 @@
     -fx-background-color: -fx-secondary-color;
 }
 
-#bottom {
-    -fx-hgap: 100;
-    -fx-padding: 20;
+#main {
+    -fx-padding: 5em;
+}
+
+#main-top {
     -fx-alignment: center;
-    -fx-column-halignment: center;
 }
 
-#end-screen {
-    -fx-background-color: rgba(0, 0, 0, 0.6);
-    -fx-alignment: center;
-    -fx-orientation: vertical;
-    -fx-column-halignment: center;
-}
-
-#retry-btn {
-    -fx-font-size: 32;
-}
-
-#main-menu-bottom {
+#main-center {
     -fx-orientation: vertical;
     -fx-alignment: center;
     -fx-column-halignment: center;
+    -fx-padding: 1em;
+    -fx-min-height: 5em;
+    -fx-max-height: 20em;
 }
 
-#main-menu-center {
-    -fx-orientation: vertical;
-    -fx-alignment: center;
-    -fx-column-halignment: center;
-}
-
-#controls-pane {
+#main-controls-pane {
     -fx-hgap: 1em;
     -fx-vgap: 1em;
     -fx-padding: 2em;
+}
+
+.spinner {
+    -fx-max-width: 8em;
 }
 
 .spinner .text-field {
@@ -101,4 +75,52 @@
 .spinner .increment-arrow-button .increment-arrow,
 .spinner .decrement-arrow-button .decrement-arrow {
     -fx-background-color: white;
+}
+
+#main-bottom {
+    -fx-orientation: vertical;
+    -fx-alignment: center;
+    -fx-column-halignment: center;
+    -fx-max-height: 4em;
+}
+
+#game-top {
+    -fx-hgap: 2em;
+    -fx-alignment: center;
+    -fx-column-halignment: center;
+}
+
+/*#game-cell-grid {
+}*/
+
+.cell {
+    -fx-border-width: 1;
+    -fx-border-color: black;
+    -fx-padding: 0;
+}
+
+.cell.revealed {
+    -fx-border-color: lightgray;
+}
+
+.cell:hover {
+    -fx-effect: innershadow(gaussian, rgba(33, 33, 33, 0.5), 24, 1, 0, 0);
+}
+
+#game-bottom {
+    -fx-hgap: 100;
+    -fx-padding: 20;
+    -fx-alignment: center;
+    -fx-column-halignment: center;
+}
+
+#game-end-screen {
+    -fx-background-color: rgba(0, 0, 0, 0.6);
+    -fx-alignment: center;
+    -fx-orientation: vertical;
+    -fx-column-halignment: center;
+}
+
+#game-retry-btn {
+    -fx-font-size: 32;
 }
