@@ -9,7 +9,10 @@ import de.htwg.se.minesweeper.controller._
 import de.htwg.se.minesweeper.model.fieldComponent.FieldFactory
 import de.htwg.se.minesweeper.model.fieldComponent.FieldInterface
 
-class BaseController(val base_undos: Int, val factory: FieldFactory) extends Observable[Event] with ControllerInterface {
+import com.google.inject.Inject
+import com.google.inject.name.Named
+
+class BaseController @Inject() (@Named("undos") val base_undos: Int, val factory: FieldFactory) extends Observable[Event] with ControllerInterface {
 	private[baseController] var field: FieldInterface = factory.createField()
 	private[baseController] var state: BaseControllerState = FirstMoveBaseControllerState(this)
 	private var undos = base_undos

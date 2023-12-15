@@ -22,4 +22,6 @@ lazy val root = project
       Seq("base", "controls", "fxml", "graphics", "media", "swing", "web")
         .map(m => "org.openjfx" % s"javafx-$m" % "16" classifier osName)
     },
+    libraryDependencies += "com.google.inject" % "guice" % "7.0.0",
+    libraryDependencies += "net.codingwell" %% "scala-guice" % "5.1.1"
   )
