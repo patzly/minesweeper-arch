@@ -4,10 +4,9 @@ import de.htwg.se.minesweeper.controller.*
 import de.htwg.se.minesweeper.model.*
 import de.htwg.se.minesweeper.model.fieldComponent.FieldInterface
 import de.htwg.se.minesweeper.observer.Observer
-
 import scalafx.application.{JFXApp3, Platform}
 import scalafx.beans.property.*
-import scalafx.geometry.{Insets, Pos}
+import scalafx.geometry.{HPos, Insets, Pos}
 import scalafx.scene.{Node, Scene}
 import scalafx.scene.control.*
 import scalafx.scene.image.{Image, ImageView}
@@ -67,17 +66,32 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 	}
 
 	private def makeMainScene(): Scene = {
+		val controls = new GridPane() { id = "controls-pane" }
+		controls.add(new Text("Breite") {styleClass = Seq("white")}, 0, 0)
+		controls.add(new Text("Höhe") {styleClass = Seq("white")}, 0, 1)
+		controls.add(new Text("Bomben Verteilung") {styleClass = Seq("white")}, 0, 2)
+		controls.add(new Spinner(1, 16, 8) {
+			maxWidth = 100
+		}, 1, 0)
+		controls.add(new Spinner(1, 16, 8) {
+			maxWidth = 100
+		}, 1, 1)
+		controls.add(new Spinner[Double](0.0, 1.0, 0.15, 0.1) {
+			maxWidth = 100
+		}, 1, 2)
+
 		new Scene {
 			stylesheets = List(stylesheet)
 			fill = background_color
 			content = new BorderPane {
 				top = new HBox(new Text("Minesweeper") {
-					styleClass = Seq("h1", "text-center", "bold", "white", "mono")
+					styleClass = Seq("h1", "text-center", "bold", "white")
 				}) {
 					alignment = Pos.Center
 				}
 				center = new FlowPane {
 					children = Seq(
+						controls,
 						new Button("Spielen") {
 							onMouseClicked = e => controller.setup()
 						}
@@ -87,9 +101,9 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 				bottom = new FlowPane {
 					children = Seq(
 						new Text("Software Engineering Projekt WS23/24") {
-							styleClass = Seq("h2", "text-center", "bold", "white", "mono")
+							styleClass = Seq("h2", "text-center", "bold", "white")
 						}, new Text("Leon Gies und Hendrik Ziegler") {
-							styleClass = Seq("h3", "text-center", "bold", "white", "mono")
+							styleClass = Seq("h3", "text-center", "bold", "white")
 						}
 					)
 					id = "main-menu-bottom"
@@ -106,17 +120,21 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 			content = new BorderPane() {
 				padding = Insets(50)
 				top = new Text {
-					styleClass = Seq("h2", "text-center", "bold", "white", "mono")
+					styleClass = Seq("h2", "text-center", "bold", "white")
 					text <== undo_prop.asString("Undos: %d")
 				}
 				center = new StackPane {
 					children = Seq(
-						gridPane,
+						new FlowPane {
+							alignment = Pos.Center
+							columnHalignment = HPos.Center
+							children = gridPane
+						},
 						new FlowPane {
 							children = Seq(
 								new Text {
 									text <== end_screen_text
-									styleClass = Seq("h1", "text-center", "bold", "white", "mono")
+									styleClass = Seq("h1", "text-center", "bold", "white")
 								},
 								new Button("Retry") {
 									id = "retry-btn"
@@ -215,7 +233,9 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 	}
 
 	private def createGrid(field: FieldInterface): GridPane = {
-		val grid = new GridPane()
+		val grid = new GridPane() {
+			id = "cell-grid"
+		}
 
 		for (ix <- 0 until field.dimension._1) {
 			for (iy <- 0 until field.dimension._2) {

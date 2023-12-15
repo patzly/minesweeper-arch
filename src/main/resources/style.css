@@ -1,27 +1,46 @@
+* {
+    -fx-primary-color: #3B82F6;
+    -fx-secondary-color: #4FB7FA;
+
+    -fx-focus-color: -fx-secondary-color;
+    -fx-font-family: monospace;
+}
+
+.h1 { -fx-font-size: 4em; }
+.h2 { -fx-font-size: 2em; }
+.h3 { -fx-font-size: 1em; }
+
+.text-center { -fx-text-alignment: center; }
+.bold { -fx-font-weight: bold; }
+.white { -fx-fill: white; }
+
 .cell {
+    -fx-border-width: 1;
     -fx-border-color: black;
     -fx-padding: 0;
 }
 
 .cell.revealed {
     -fx-border-color: lightgray;
-    -fx-border-insets: -1;
 }
 
 .cell:hover {
     -fx-effect: innershadow(gaussian, rgba(33, 33, 33, 0.5), 24, 1, 0, 0);
 }
 
+/*#cell-grid {
+}*/
+
 .button {
     -fx-background-insets: 0 0 -1 0, 0, 1, 2;
-    -fx-background-color: rgb(59, 130, 246);
-    -fx-background-radius: 5;
+    -fx-background-color: -fx-primary-color;
+    -fx-background-radius: .5em;
     -fx-text-fill: white;
     -fx-padding: 10;
 }
 
 .button:hover {
-    -fx-background-color: rgb(79, 183, 250);
+    -fx-background-color: -fx-secondary-color;
 }
 
 #bottom {
@@ -29,34 +48,6 @@
     -fx-padding: 20;
     -fx-alignment: center;
     -fx-column-halignment: center;
-}
-
-.h1 {
-    -fx-font-size: 48;
-}
-
-.h2 {
-    -fx-font-size: 24;
-}
-
-.h3 {
-    -fx-font-size: 16;
-}
-
-.text-center {
-    -fx-text-alignment: center;
-}
-
-.bold {
-    -fx-font-weight: bold;
-}
-
-.white {
-    -fx-fill: white;
-}
-
-.mono {
-    -fx-font-family: monospace;
 }
 
 #end-screen {
@@ -80,4 +71,34 @@
     -fx-orientation: vertical;
     -fx-alignment: center;
     -fx-column-halignment: center;
+}
+
+#controls-pane {
+    -fx-hgap: 1em;
+    -fx-vgap: 1em;
+    -fx-padding: 2em;
+}
+
+.spinner .text-field {
+    -fx-text-fill: white;
+    -fx-background-color: #333;
+}
+
+.spinner .increment-arrow-button,
+.spinner .decrement-arrow-button {
+    -fx-background-color: -fx-primary-color;
+}
+.spinner .increment-arrow-button:hover,
+.spinner .decrement-arrow-button:hover {
+    -fx-background-color: -fx-secondary-color;
+}
+.spinner .increment-arrow-button:hover:pressed,
+.spinner .decrement-arrow-button:hover:pressed,
+.spinner .increment-arrow-button:pressed,
+.spinner .decrement-arrow-button:pressed {
+    -fx-background-color: -fx-secondary-color;
+}
+.spinner .increment-arrow-button .increment-arrow,
+.spinner .decrement-arrow-button .decrement-arrow {
+    -fx-background-color: white;
 }
