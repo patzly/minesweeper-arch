@@ -6,15 +6,12 @@ import de.htwg.se.minesweeper.model.fieldComponent.FieldInterface
 import de.htwg.se.minesweeper.observer.Observer
 import scalafx.application.{JFXApp3, Platform}
 import scalafx.beans.property.*
-import scalafx.geometry.{HPos, Insets, Pos}
-import scalafx.scene.{Node, Scene}
-import scalafx.scene.control.*
-import scalafx.scene.image.{Image, ImageView}
 import scalafx.scene.layout.*
-import scalafx.scene.paint.*
+import scalafx.scene.control.*
+import scalafx.scene.{Node, Scene}
+import scalafx.scene.image.{Image, ImageView}
 import scalafx.scene.text.Text
 import java.util.{Timer, TimerTask}
-
 import scala.util.{Failure, Success, Try}
 
 class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] with EventVisitor {
@@ -31,8 +28,7 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 	private val end_screen_text = StringProperty("")
 
 	private val stylesheet = getClass.getResource("/style.css").toExternalForm
-	private val background_color = Color.rgb(38, 38, 38)
-	
+
 	private var gui_thread_ready = false
 	override def start(): Unit = {
 		val t = new java.util.Timer()
@@ -79,24 +75,27 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 		controls.add(new Text("Breite") {styleClass = Seq("white")}, 0, 0)
 		controls.add(new Text("Höhe") {styleClass = Seq("white")}, 0, 1)
 		controls.add(new Text("Bomben Verteilung") {styleClass = Seq("white")}, 0, 2)
-		val width_spinner = new Spinner[Int](1, 16, 8)
-		val height_spinner = new Spinner[Int](1, 16, 8)
+		controls.add(new Text("Anzahl Undos") {styleClass = Seq("white")}, 0, 3)
+
+		val width_spinner = new Spinner[Int](1, 32, 8)
+		val height_spinner = new Spinner[Int](1, 32, 8)
 		val bomb_spinner = new Spinner[Double](0.0, 1.0, 0.15, 0.01)
+		val undo_spinner = new Spinner[Int](0, 5, 3)
+
 		controls.add(width_spinner, 1, 0)
 		controls.add(height_spinner, 1, 1)
 		controls.add(bomb_spinner, 1, 2)
+		controls.add(undo_spinner, 1, 3)
 
 		new Scene {
 			stylesheets = List(stylesheet)
-			fill = background_color
-			content = new BorderPane {
-				hgrow = Priority.Always
-				vgrow = Priority.Always
+			root = new BorderPane {
 				id = "main"
 				top = new HBox(new Text("Minesweeper") {
 					styleClass = Seq("h1", "text-center", "bold", "white")
 				}) {
 					id = "main-top"
+					maxWidth = Double.MaxValue
 				}
 				center = new FlowPane {
 					children = Seq(
@@ -104,9 +103,9 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 						new Button("Spielen") {
 
 							onMouseClicked = e => {
-								val (width_val, height_val, bomb_chance) = (width_spinner.valueProperty().getValue, height_spinner.valueProperty().getValue, bomb_spinner.valueProperty().getValue)
+								val (width_val, height_val, bomb_chance, undos) = (width_spinner.valueProperty().getValue, height_spinner.valueProperty().getValue, bomb_spinner.valueProperty().getValue, undo_spinner.valueProperty().getValue)
 
-								controller.startGame(width_val, height_val, bomb_chance.toFloat)
+								controller.startGame(width_val, height_val, bomb_chance.toFloat, undos)
 							}
 						}
 					)
@@ -129,9 +128,8 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 	private def makeGameScene(gridPane: GridPane): Scene = {
 		new Scene {
 			stylesheets = List(stylesheet)
-			fill = background_color
-			content = new BorderPane() {
-				padding = Insets(50)
+			root = new BorderPane() {
+				id = "game"
 				top = new FlowPane {
 					id = "game-top"
 					children = Seq(
@@ -148,8 +146,7 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 				center = new StackPane {
 					children = Seq(
 						new FlowPane {
-							alignment = Pos.Center
-							columnHalignment = HPos.Center
+							id = "game-center"
 							children = gridPane
 						},
 						new FlowPane {
@@ -163,7 +160,7 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 									onMouseClicked = e => {
 										end_screen_visible.setValue(false)
 										val (width, height) = controller.getField.dimension
-										controller.startGame(width, height, controller.getBombChance)
+										controller.startGame(width, height, controller.getBombChance, controller.getUndos)
 									}
 								}
 							)

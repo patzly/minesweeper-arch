@@ -28,6 +28,7 @@
 
 #main {
     -fx-padding: 5em;
+    -fx-background-color: #262626
 }
 
 #main-top {
@@ -84,8 +85,18 @@
     -fx-max-height: 4em;
 }
 
+#game {
+    -fx-background-color: #262626;
+    -fx-padding: 5em;
+}
+
 #game-top {
     -fx-hgap: 2em;
+    -fx-alignment: center;
+    -fx-column-halignment: center;
+}
+
+#game-center {
     -fx-alignment: center;
     -fx-column-halignment: center;
 }

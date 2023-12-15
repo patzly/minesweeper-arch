@@ -11,10 +11,7 @@ import scala.concurrent.Future
 
 @main
 def main(): Unit = {
-	val undos = 3
-	val rand = Random()
-
-	val controller = BaseController(undos, RandomFieldFactory(rand))
+	val controller = BaseController(RandomFieldFactory(Random()))
 	val tui = Tui(controller)
 	val gui = Gui(controller)
 	controller.setup()

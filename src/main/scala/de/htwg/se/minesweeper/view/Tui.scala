@@ -1,10 +1,8 @@
 package de.htwg.se.minesweeper.view
 
 import de.htwg.se.minesweeper.model.fieldComponent.FieldInterface
-import de.htwg.se.minesweeper.observer.Observer
 import scala.util.Failure
 import scala.util.Success
-import scala.util.Try
 import de.htwg.se.minesweeper.controller._
 import de.htwg.se.minesweeper.observer.Observer
 
@@ -14,24 +12,24 @@ private trait TuiState {
 
 private class StartGameState(tui: Tui) extends TuiState {
 	println("Welcome to Minesweeper!")
-	println("Please enter width and height to start a new game or q to quit.")
+	println("Please enter width, height, bomb chance, and number of undos to start a new game or q to quit.")
 	override def processLine(line: String): Unit = {
 		line match {
 			case "q" => tui.controller.exit()
 			case _ => {
 				val inputs = line.split(" ").toList
-				if inputs.length < 3 then {
-					return println("Invalid input: Format is <width> <height> <bomb_chance>!")
+				if inputs.length < 4 then {
+					return println("Invalid input: Format is <width> <height> <bomb_chance> <undos>!")
 				}
 
-				val (width, height, bomb_chance) = (inputs(0).toIntOption, inputs(1).toIntOption, inputs(2).toFloatOption) match {
-				    case (Some(width), Some(height), Some(bomb_chance)) => (width, height, bomb_chance)
+				val (width, height, bomb_chance, undos) = (inputs(0).toIntOption, inputs(1).toIntOption, inputs(2).toFloatOption, inputs(3).toIntOption) match {
+				    case (Some(width), Some(height), Some(bomb_chance), Some(undos)) => (width, height, bomb_chance, undos)
 				    case _ => return println("Invalid input: Please enter numbers!")
 				}
 
-				println(s"Starting game with width $width, height $height and bomb_chance $bomb_chance")
+				println(s"Starting game with width=$width, height=$height, bomb_chance=$bomb_chance and undos=$undos")
 
-				tui.controller.startGame(width, height, bomb_chance)
+				tui.controller.startGame(width, height, bomb_chance, undos)
 			}
 		}
 	}
@@ -86,7 +84,7 @@ class RetryTuiState(tui: Tui) extends TuiState {
 		line match {
 			case "y" => {
 				val (width, height) = (tui.controller.getField.dimension)
-				tui.controller.startGame(width, height, tui.controller.getBombChance)
+				tui.controller.startGame(width, height, tui.controller.getBombChance, tui.controller.getUndos)
 			}
 			case "menu" => tui.controller.setup()
 			case "n" | "q" => tui.controller.exit()

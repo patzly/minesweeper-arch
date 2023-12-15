@@ -9,14 +9,14 @@ import de.htwg.se.minesweeper.controller._
 import de.htwg.se.minesweeper.model.fieldComponent.FieldFactory
 import de.htwg.se.minesweeper.model.fieldComponent.FieldInterface
 
-class BaseController(val base_undos: Int, val factory: FieldFactory) extends Observable[Event] with ControllerInterface {
+class BaseController(val factory: FieldFactory) extends Observable[Event] with ControllerInterface {
 	private[baseController] var width: Int = 0
 	private[baseController] var height: Int = 0
 	private[baseController] var bomb_chance: Float = 0
+	private var undos = 0
 
 	private[baseController] var field: FieldInterface = factory.createField(0, 0, 0)
 	private[baseController] var state: BaseControllerState = FirstMoveBaseControllerState(this)
-	private var undos = base_undos
 
 	override def getUndos: Int = undos
 	override def getField: FieldInterface = field
@@ -28,7 +28,6 @@ class BaseController(val base_undos: Int, val factory: FieldFactory) extends Obs
 	}
 
 	override def setup(): Unit = {
-		undos = base_undos
 		state = FirstMoveBaseControllerState(this)
 		undoStack = List.empty
 		redoStack = List.empty
@@ -36,10 +35,11 @@ class BaseController(val base_undos: Int, val factory: FieldFactory) extends Obs
 		notifyObservers(SetupEvent())
 	}
 
-	override def startGame(width: Int, height: Int, bomb_chance: Float): Unit = {
+	override def startGame(width: Int, height: Int, bomb_chance: Float, undos: Int): Unit = {
 		this.width = width
 		this.height = height
 		this.bomb_chance = bomb_chance
+		this.undos = undos
 		field = factory.createField(width, height, bomb_chance)
 		state = FirstMoveBaseControllerState(this)
 		notifyObservers(StartGameEvent(field))
