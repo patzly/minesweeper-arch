@@ -18,8 +18,6 @@ import scala.util.{Failure, Success, Try}
 
 class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] with EventVisitor {
 	controller.addObserver(this)
-	private var setup_field: Option[FieldInterface] = None
-
 	private var grid: Option[GridPane] = None
 
 	private var images: Option[Map[String, Image]] = None
@@ -31,7 +29,8 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 
 	private val stylesheet = getClass.getResource("/style.css").toExternalForm
 	private val background_color = Color.rgb(38, 38, 38)
-
+	
+	private var gui_thread_ready = false
 	override def start(): Unit = {
 		images = createImages() match {
 			case Success(value) => Some(value)
@@ -46,6 +45,7 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 				controller.exit()
 			}
 		}
+		gui_thread_ready = true
 	}
 
 	private def createImages(): Try[Map[String, Image]] = {
@@ -70,15 +70,18 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 		controls.add(new Text("Breite") {styleClass = Seq("white")}, 0, 0)
 		controls.add(new Text("Höhe") {styleClass = Seq("white")}, 0, 1)
 		controls.add(new Text("Bomben Verteilung") {styleClass = Seq("white")}, 0, 2)
-		controls.add(new Spinner(1, 16, 8) {
+		val width_spinner = new Spinner[Int](1, 16, 8) {
 			maxWidth = 100
-		}, 1, 0)
-		controls.add(new Spinner(1, 16, 8) {
+		}
+		val height_spinner = new Spinner[Int](1, 16, 8) {
 			maxWidth = 100
-		}, 1, 1)
-		controls.add(new Spinner[Double](0.0, 1.0, 0.15, 0.1) {
+		}
+		val bomb_spinner = new Spinner[Double](0.0, 1.0, 0.15, 0.1) {
 			maxWidth = 100
-		}, 1, 2)
+		}
+		controls.add(width_spinner, 1, 0)
+		controls.add(height_spinner, 1, 1)
+		controls.add(bomb_spinner, 1, 2)
 
 		new Scene {
 			stylesheets = List(stylesheet)
@@ -93,7 +96,12 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 					children = Seq(
 						controls,
 						new Button("Spielen") {
-							onMouseClicked = e => controller.setup()
+
+							onMouseClicked = e => {
+								val (width_val, height_val, bomb_chance) = (width_spinner.valueProperty().getValue(), height_spinner.valueProperty().getValue(), bomb_spinner.valueProperty().getValue())
+
+								controller.startGame(width_val, height_val, bomb_chance.toFloat)
+							}
 						}
 					)
 					id = "main-menu-bottom"
@@ -140,7 +148,8 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 									id = "retry-btn"
 									onMouseClicked = e => {
 										end_screen_visible.setValue(false)
-										controller.setup()
+										val (width, height) = controller.getField.dimension
+										controller.startGame(width, height, controller.getBombChance)
 									}
 								}
 							)
@@ -153,7 +162,7 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 					id = "bottom"
 					children = Seq(
 						new Button("Zum Menü") {
-							onMouseClicked = e => stage.setScene(makeMainScene())
+							onMouseClicked = e => controller.setup()
 						},
 						new Button("Undo") {
 							disable <== end_screen_visible.or(undo_prop.isEqualTo(0))
@@ -171,7 +180,7 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 
 	override def update(e: Event): Unit = {
 		e match {
-			case SetupEvent(field) => e.accept(this)
+			case SetupEvent() => if gui_thread_ready then Platform.runLater(() => e.accept(this))
 			case _ => Platform.runLater(() => e.accept(this))
 		}
 	}
@@ -204,13 +213,18 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 	}
 
 	override def visitSetup(event: SetupEvent): Unit = {
-		setup_field match {
-			case None => setup_field = Some(event.field)
-			case Some(_) => Platform.runLater({
-				grid = Some(createGrid(event.field))
-				stage.setScene(makeGameScene(grid.get))
-			})
-		}
+		end_screen_visible.setValue(false)
+		stage.setScene(makeMainScene())
+	}
+
+	override def visitStartGame(event: StartGameEvent): Unit = {
+		Platform.runLater({
+			end_screen_visible.setValue(false)
+			undo_prop.setValue(controller.getUndos)
+			redo_prop.setValue(controller.cantRedo)
+			grid = Some(createGrid(event.field))
+			stage.setScene(makeGameScene(grid.get))
+		})
 	}
 
 	private def updateGrid(field: FieldInterface): Unit = {
@@ -233,12 +247,14 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 	}
 
 	private def createGrid(field: FieldInterface): GridPane = {
+		println(s"creating grid with width ${field.dimension._1} and height ${field.dimension._2}")
 		val grid = new GridPane() {
 			id = "cell-grid"
 		}
 
-		for (ix <- 0 until field.dimension._1) {
-			for (iy <- 0 until field.dimension._2) {
+		val (width, height) = field.dimension
+		for (ix <- 0 until width) {
+			for (iy <- 0 until height) {
 				val cell = field.getCell(ix, iy).get
 				grid.add(new Button("", new ImageView(images.get("unrevealed"))) {
 					styleClass = Seq("cell")

@@ -4,8 +4,8 @@ import scala.util.Random
 import de.htwg.se.minesweeper.model._
 import de.htwg.se.minesweeper.model.fieldComponent.FieldFactory
 
-class RandomFieldFactory(rows: Int, cols: Int, rand: Random, bomb_chance: Float) extends FieldFactory {
-	override def createField(): Field = {
-		Field(Vector.tabulate(rows, cols)((y, x) => Cell(false, rand.nextInt((1/bomb_chance).toInt) == 0)))
+class RandomFieldFactory(rand: Random) extends FieldFactory {
+	override def createField(width: Int, height: Int, bomb_chance: Float): Field = {
+		Field(Vector.tabulate(height, width)((y, x) => Cell(false, rand.nextInt((1/bomb_chance).toInt) == 0)))
 	}
 }

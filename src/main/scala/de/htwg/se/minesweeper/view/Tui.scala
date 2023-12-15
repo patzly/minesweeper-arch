@@ -12,10 +12,36 @@ private trait TuiState {
 	def processLine(line: String): Unit
 }
 
-private class DefaultTuiState(tui: Tui) extends TuiState {
-	def processLine(line: String): Unit = {
+private class StartGameState(tui: Tui) extends TuiState {
+	println("Welcome to Minesweeper!")
+	println("Please enter width and height to start a new game or q to quit.")
+	override def processLine(line: String): Unit = {
 		line match {
 			case "q" => tui.controller.exit()
+			case _ => {
+				val inputs = line.split(" ").toList
+				if inputs.length < 3 then {
+					return println("Invalid input: Format is <width> <height> <bomb_chance>!")
+				}
+
+				val (width, height, bomb_chance) = (inputs(0).toIntOption, inputs(1).toIntOption, inputs(2).toFloatOption) match {
+				    case (Some(width), Some(height), Some(bomb_chance)) => (width, height, bomb_chance)
+				    case _ => return println("Invalid input: Please enter numbers!")
+				}
+
+				println(s"Starting game with width $width, height $height and bomb_chance $bomb_chance")
+
+				tui.controller.startGame(width, height, bomb_chance)
+			}
+		}
+	}
+}
+
+private class DefaultTuiState(tui: Tui) extends TuiState {
+	override def processLine(line: String): Unit = {
+		line match {
+			case "q" => tui.controller.exit()
+			case "menu" => tui.controller.setup()
 			case "u" => tui.controller.undo() match {
 				case Success(value) => ()
 				case Failure(exception) => println(exception.getMessage)
@@ -58,7 +84,11 @@ private class DefaultTuiState(tui: Tui) extends TuiState {
 class RetryTuiState(tui: Tui) extends TuiState {
 	override def processLine(line: String): Unit = {
 		line match {
-			case "y" => tui.controller.setup()
+			case "y" => {
+				val (width, height) = (tui.controller.getField.dimension)
+				tui.controller.startGame(width, height, tui.controller.getBombChance)
+			}
+			case "menu" => tui.controller.setup()
 			case "n" | "q" => tui.controller.exit()
 			case _ => println("Invalid input: Please enter q, y or n!")
 		}
@@ -71,7 +101,7 @@ class Tui(val controller: ControllerInterface) extends Observer[Event] with Even
 	controller.addObserver(this)
 
 	def fieldString(field: FieldInterface): String = {
-		val (rows, cols) = field.dimension
+		val (cols, rows) = field.dimension
 		val l = cols.toString.length + 2
 
 		val pad = " " * l
@@ -84,7 +114,7 @@ class Tui(val controller: ControllerInterface) extends Observer[Event] with Even
 
 		val lines = pad + "-" * (cols*2 - 1)
 
-		val rowStrings = Range.apply(0, field.dimension._1).map(
+		val rowStrings = Range.apply(0, rows).map(
 				r => (r+1).toString.padTo(l-1, ' ') + '|' + field.getRow(r).get.mkString(" ")
 			)
 			.mkString("\n")
@@ -101,6 +131,11 @@ class Tui(val controller: ControllerInterface) extends Observer[Event] with Even
 	}
 	
 	override def visitSetup(event: SetupEvent): Unit = {
+		state = StartGameState(this)
+		loop = true
+	}
+
+	override def visitStartGame(event: StartGameEvent): Unit = {
 		state = DefaultTuiState(this)
 		loop = true
 		println(fieldString(event.field))
