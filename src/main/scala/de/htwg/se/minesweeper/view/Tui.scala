@@ -15,7 +15,7 @@ private class StartGameState(tui: Tui) extends TuiState {
 	println("Please enter width, height, bomb chance, and number of undos to start a new game or q to quit.")
 	override def processLine(line: String): Unit = {
 		line match {
-			case "q" => tui.controller.exit()
+			case "q" | null => tui.controller.exit()
 			case _ => {
 				val inputs = line.split(" ").toList
 				if inputs.length < 4 then {
@@ -38,7 +38,7 @@ private class StartGameState(tui: Tui) extends TuiState {
 private class DefaultTuiState(tui: Tui) extends TuiState {
 	override def processLine(line: String): Unit = {
 		line match {
-			case "q" => tui.controller.exit()
+			case "q" | null => tui.controller.exit()
 			case "menu" => tui.controller.setup()
 			case "u" => tui.controller.undo() match {
 				case Success(value) => ()
@@ -87,7 +87,7 @@ class RetryTuiState(tui: Tui) extends TuiState {
 				tui.controller.startGame(width, height, tui.controller.getBombChance, tui.controller.getUndos)
 			}
 			case "menu" => tui.controller.setup()
-			case "n" | "q" => tui.controller.exit()
+			case "n" | "q" | null => tui.controller.exit()
 			case _ => println("Invalid input: Please enter q, y or n!")
 		}
 	}
