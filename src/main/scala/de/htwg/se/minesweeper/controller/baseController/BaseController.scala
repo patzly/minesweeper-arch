@@ -13,11 +13,13 @@ class BaseController(val factory: FieldFactory) extends Observable[Event] with C
 	private[baseController] var width: Int = 0
 	private[baseController] var height: Int = 0
 	private[baseController] var bomb_chance: Float = 0
+	private var maxUndos = 0
 	private var undos = 0
 
 	private[baseController] var field: FieldInterface = factory.createField(0, 0, 0)
 	private[baseController] var state: BaseControllerState = FirstMoveBaseControllerState(this)
 
+	override def getMaxUndos: Int = maxUndos
 	override def getUndos: Int = undos
 	override def getField: FieldInterface = field
 
@@ -35,11 +37,14 @@ class BaseController(val factory: FieldFactory) extends Observable[Event] with C
 		notifyObservers(SetupEvent())
 	}
 
-	override def startGame(width: Int, height: Int, bomb_chance: Float, undos: Int): Unit = {
+	override def startGame(width: Int, height: Int, bomb_chance: Float, maxUndos: Int): Unit = {
 		this.width = width
 		this.height = height
 		this.bomb_chance = bomb_chance
-		this.undos = undos
+		this.maxUndos = maxUndos
+		undos = maxUndos
+		undoStack = undoStack.empty
+		redoStack = redoStack.empty
 		field = factory.createField(width, height, bomb_chance)
 		state = FirstMoveBaseControllerState(this)
 		notifyObservers(StartGameEvent(field))
@@ -67,14 +72,13 @@ class BaseController(val factory: FieldFactory) extends Observable[Event] with C
 	private[baseController] var redoStack: List[Command] = List.empty
 
 	private def execute(command: Command): Try[Unit] = {
-		undoStack = command :: undoStack
-		redoStack = List.empty
 		command.execute() match {
-			case Success(_) => Success(())
-			case Failure(exception) => {
-				undoStack = undoStack.tail
-				Failure(exception)
+			case Success(_) => {
+				undoStack = command :: undoStack
+				redoStack = List.empty
+				Success(())
 			}
+			case Failure(exception) => Failure(exception)
 		}
 	}
 
@@ -105,4 +109,5 @@ class BaseController(val factory: FieldFactory) extends Observable[Event] with C
 	}
 
 	override def cantRedo: Boolean = redoStack.isEmpty
+	override def cantUndo: Boolean = undos <= 0 || undoStack.isEmpty
 }

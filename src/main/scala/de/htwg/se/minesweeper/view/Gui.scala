@@ -22,6 +22,7 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 
 	private val time_prop = IntegerProperty(0)
 	private val undo_prop = IntegerProperty(controller.getUndos)
+	private val cant_undo_prop = BooleanProperty(controller.cantUndo)
 	private val redo_prop = BooleanProperty(controller.cantRedo)
 
 	private val end_screen_visible = BooleanProperty(false)
@@ -160,7 +161,7 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 									onMouseClicked = e => {
 										end_screen_visible.setValue(false)
 										val (width, height) = controller.getField.dimension
-										controller.startGame(width, height, controller.getBombChance, controller.getUndos)
+										controller.startGame(width, height, controller.getBombChance, controller.getMaxUndos)
 									}
 								}
 							)
@@ -176,7 +177,7 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 							onMouseClicked = e => controller.setup()
 						},
 						new Button("Undo") {
-							disable <== end_screen_visible.or(undo_prop.isEqualTo(0))
+							disable <== end_screen_visible.or(cant_undo_prop)
 							onMouseClicked = e => controller.undo()
 						},
 						new Button("Redo") {
@@ -219,6 +220,7 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 	override def visitFieldUpdated(event: FieldUpdatedEvent): Unit = {
 		// update the gui
 		Platform.runLater(undo_prop.setValue(controller.getUndos))
+		Platform.runLater(cant_undo_prop.setValue(controller.cantUndo))
 		Platform.runLater(redo_prop.setValue(controller.cantRedo))
 		updateGrid(event.field)
 	}
@@ -233,6 +235,7 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 			time_prop.value = 0
 			end_screen_visible.setValue(false)
 			undo_prop.setValue(controller.getUndos)
+			cant_undo_prop.setValue(controller.cantUndo)
 			redo_prop.setValue(controller.cantRedo)
 			grid = Some(createGrid(event.field))
 			stage.setScene(makeGameScene(grid.get))
@@ -245,6 +248,7 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 			val x = javafx.scene.layout.GridPane.getColumnIndex(button)
 			val y = javafx.scene.layout.GridPane.getRowIndex(button)
 			val cell = field.getCell(x, y).get
+			button.getStyleClass.remove("revealed")
 
 			if cell.isFlagged then button.setGraphic(new ImageView(images.get("flagged")))
 			else if cell.isRevealed then
@@ -253,7 +257,6 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 				else if cell.nearbyBombs != 0 then button.setGraphic(new ImageView(images.get(cell.nearbyBombs.toString)))
 				else button.setGraphic(new ImageView(images.get("revealed")))
 			else
-				button.getStyleClass.remove("revealed")
 				button.setGraphic(new ImageView(images.get("unrevealed")))
 		})
 	}

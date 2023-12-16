@@ -5,8 +5,10 @@ import de.htwg.se.minesweeper.observer.Observable
 import scala.util.Try
 
 trait ControllerInterface extends Observable[Event] {
+    def getMaxUndos: Int
     def getUndos: Int
     def getField: FieldInterface
+    def cantUndo: Boolean
     def cantRedo: Boolean
     def getBombChance: Float
 

@@ -84,7 +84,7 @@ class RetryTuiState(tui: Tui) extends TuiState {
 		line match {
 			case "y" => {
 				val (width, height) = (tui.controller.getField.dimension)
-				tui.controller.startGame(width, height, tui.controller.getBombChance, tui.controller.getUndos)
+				tui.controller.startGame(width, height, tui.controller.getBombChance, tui.controller.getMaxUndos)
 			}
 			case "menu" => tui.controller.setup()
 			case "n" | "q" | null => tui.controller.exit()
