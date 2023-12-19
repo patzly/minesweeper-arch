@@ -49,6 +49,9 @@
     -fx-vgap: 1em;
     -fx-padding: 2em;
 }
+#main-controls-pane .label {
+    -fx-text-fill: white;
+}
 
 .spinner {
     -fx-max-width: 8em;
@@ -109,8 +112,8 @@
 }
 
 .cell {
-    -fx-min-width: 32;
-    -fx-min-height: 32;
+    -fx-min-width: 16;
+    -fx-min-height: 16;
     -fx-max-width: 128;
     -fx-max-height: 128;
     -fx-background-image: url("img/unrevealed.png");
