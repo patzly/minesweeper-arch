@@ -52,6 +52,7 @@
 
 .spinner {
     -fx-max-width: 8em;
+    -fx-background-color: #333;
 }
 
 .spinner .text-field {

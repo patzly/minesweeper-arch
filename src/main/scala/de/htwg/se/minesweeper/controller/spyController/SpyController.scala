@@ -1,10 +1,10 @@
-package de.htwg.se.minesweeper.controller.spieController
+package de.htwg.se.minesweeper.controller.spyController
 
 import de.htwg.se.minesweeper.controller._
 import de.htwg.se.minesweeper.controller.baseController.BaseController
 import de.htwg.se.minesweeper.model.fieldComponent.FieldFactory
 
-class SpieController(val field_factory: FieldFactory) extends BaseController(field_factory) with ControllerInterface {
+class SpyController(val field_factory: FieldFactory) extends BaseController(field_factory) with ControllerInterface {
     var didWin = false
     var didLose = false
     var didExit = false

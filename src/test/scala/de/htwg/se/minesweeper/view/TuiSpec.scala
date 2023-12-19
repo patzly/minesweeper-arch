@@ -4,7 +4,7 @@ import org.scalatest.matchers.should.Matchers._
 import org.scalatest.wordspec.AnyWordSpec
 import de.htwg.se.minesweeper.observer.Observer
 import de.htwg.se.minesweeper.controller._
-import de.htwg.se.minesweeper.controller.spieController.SpieController
+import de.htwg.se.minesweeper.controller.spyController.SpyController
 import de.htwg.se.minesweeper.model._
 import de.htwg.se.minesweeper.model.fieldComponent.field._
 import scala.concurrent._
@@ -34,7 +34,7 @@ class TuiSpec extends AnyWordSpec {
 	"A Tui" when {
 		"play is called on input q" should {
 			"quit" in {
-				val controller = SpieController(1, TestFieldFactory(Vector(Vector(Cell(false, false)))))
+				val controller = SpyController(1, TestFieldFactory(Vector(Vector(Cell(false, false)))))
 				val tui = Tui(controller)
 				val observer = TestObserver()
 				controller.addObserver(observer)
@@ -51,7 +51,7 @@ class TuiSpec extends AnyWordSpec {
 			}
 		}
 		"it has a single cell field" should {
-			val controller = SpieController(1, TestFieldFactory(Vector(Vector(Cell(false, false)))))
+			val controller = SpyController(1, TestFieldFactory(Vector(Vector(Cell(false, false)))))
 			val tui = Tui(controller)
 			val observer = TestObserver()
 			controller.addObserver(observer)
@@ -114,7 +114,7 @@ class TuiSpec extends AnyWordSpec {
 			}
 		}
 		"it has a multi cell field" should {
-			val controller = SpieController(1, TestFieldFactory(Vector.tabulate(3, 3)((y, x) => Cell(false, x == 0))))
+			val controller = SpyController(1, TestFieldFactory(Vector.tabulate(3, 3)((y, x) => Cell(false, x == 0))))
 			val tui = Tui(controller)
 			val observer = TestObserver()
 			controller.addObserver(observer)
@@ -192,7 +192,7 @@ class TuiSpec extends AnyWordSpec {
 			}
 		}
 		"it is a long matrix" should {
-			val controller = SpieController(1, TestFieldFactory(Vector.tabulate(1, 15)((y, x) => Cell(false, x == 2))))
+			val controller = SpyController(1, TestFieldFactory(Vector.tabulate(1, 15)((y, x) => Cell(false, x == 2))))
 			val tui = Tui(controller)
 			val observer = TestObserver()
 			controller.addObserver(observer)
@@ -203,7 +203,7 @@ class TuiSpec extends AnyWordSpec {
 			}
 		}
 		"when it has some matrix" should {
-			val controller = SpieController(1, TestFieldFactory(Vector.tabulate(10, 10)((y, x) => Cell(false, x == 5))))
+			val controller = SpyController(1, TestFieldFactory(Vector.tabulate(10, 10)((y, x) => Cell(false, x == 5))))
 			val tui = Tui(controller)
 			val observer = TestObserver()
 			controller.addObserver(observer)

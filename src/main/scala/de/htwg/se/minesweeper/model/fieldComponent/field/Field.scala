@@ -1,10 +1,8 @@
 package de.htwg.se.minesweeper.model.fieldComponent.field
 
-import scala.util.Random
 import scala.util.Try
 import scala.util.Success
 import scala.util.Failure
-import org.scalactic.Fail
 import de.htwg.se.minesweeper.model.fieldComponent.FieldInterface
 import de.htwg.se.minesweeper.model.Cell
 

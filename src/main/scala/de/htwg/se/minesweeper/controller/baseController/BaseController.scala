@@ -6,8 +6,7 @@ import scala.util.Failure
 import de.htwg.se.minesweeper.model._
 import de.htwg.se.minesweeper.observer._
 import de.htwg.se.minesweeper.controller._
-import de.htwg.se.minesweeper.model.fieldComponent.FieldFactory
-import de.htwg.se.minesweeper.model.fieldComponent.FieldInterface
+import de.htwg.se.minesweeper.model.fieldComponent.{FieldFactory, FieldInterface}
 
 class BaseController(val factory: FieldFactory) extends Observable[Event] with ControllerInterface {
 	private[baseController] var width: Int = 0
