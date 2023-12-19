@@ -5,20 +5,18 @@ import de.htwg.se.minesweeper.model.*
 import de.htwg.se.minesweeper.model.fieldComponent.FieldInterface
 import de.htwg.se.minesweeper.observer.Observer
 import scalafx.application.{JFXApp3, Platform}
+import scalafx.beans.binding.Bindings
 import scalafx.beans.property.*
 import scalafx.scene.layout.*
 import scalafx.scene.control.*
 import scalafx.scene.{Node, Scene}
-import scalafx.scene.image.{Image, ImageView}
 import scalafx.scene.text.Text
+
 import java.util.{Timer, TimerTask}
-import scala.util.{Failure, Success, Try}
 
 class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] with EventVisitor {
 	controller.addObserver(this)
 	private var grid: Option[GridPane] = None
-
-	private var images: Option[Map[String, Image]] = None
 
 	private val time_prop = IntegerProperty(0)
 	private val undo_prop = IntegerProperty(controller.getUndos)
@@ -38,11 +36,6 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 		}
 		t.schedule(task, 1000L, 1000L)
 
-		images = createImages() match {
-			case Success(value) => Some(value)
-			case Failure(e) => throw new Exception("Could not load images!")
-		}
-
 		stage = new JFXApp3.PrimaryStage {
 			//    initStyle(StageStyle.Unified)
 			title = "Minesweeper"
@@ -51,24 +44,8 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 				controller.exit()
 			}
 		}
-		gui_thread_ready = true
-	}
 
-	private def createImages(): Try[Map[String, Image]] = {
-		Try(Map(
-			"unrevealed" -> new Image("file:img/unrevealed.png"),
-			"revealed" -> new Image("file:img/revealed.png"),
-			"flagged" -> new Image("file:img/flagged.png"),
-			"bomb" -> new Image("file:img/bomb.png"),
-			"1" -> new Image("file:img/1.png"),
-			"2" -> new Image("file:img/2.png"),
-			"3" -> new Image("file:img/3.png"),
-			"4" -> new Image("file:img/4.png"),
-			"5" -> new Image("file:img/5.png"),
-			"6" -> new Image("file:img/6.png"),
-			"7" -> new Image("file:img/7.png"),
-			"8" -> new Image("file:img/8.png")
-		))
+		gui_thread_ready = true
 	}
 
 	private def makeMainScene(): Scene = {
@@ -145,12 +122,12 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 					)
 				}
 				center = new StackPane {
+					id = "game-center"
 					children = Seq(
+						gridPane,
 						new FlowPane {
-							id = "game-center"
-							children = gridPane
-						},
-						new FlowPane {
+							id = "game-end-screen"
+							visible <== end_screen_visible
 							children = Seq(
 								new Text {
 									text <== end_screen_text
@@ -165,8 +142,6 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 									}
 								}
 							)
-							id = "game-end-screen"
-							visible <== end_screen_visible
 						}
 					)
 				}
@@ -248,30 +223,34 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 			val x = javafx.scene.layout.GridPane.getColumnIndex(button)
 			val y = javafx.scene.layout.GridPane.getRowIndex(button)
 			val cell = field.getCell(x, y).get
-			button.getStyleClass.remove("revealed")
+			button.getStyleClass.clear()
+			button.getStyleClass.add("cell")
+			button.setViewOrder(0)
 
-			if cell.isFlagged then button.setGraphic(new ImageView(images.get("flagged")))
+			if cell.isFlagged then button.getStyleClass.add("flagged")
 			else if cell.isRevealed then
-				button.getStyleClass.add("revealed")
-				if cell.isBomb then button.setGraphic(new ImageView(images.get("bomb")))
-				else if cell.nearbyBombs != 0 then button.setGraphic(new ImageView(images.get(cell.nearbyBombs.toString)))
-				else button.setGraphic(new ImageView(images.get("revealed")))
+				button.setViewOrder(1)
+				if cell.isBomb then button.getStyleClass.add("bomb")
+				else if cell.nearbyBombs != 0 then button.getStyleClass.add("n"+cell.nearbyBombs.toString)
+				else button.getStyleClass.add("revealed")
 			else
-				button.setGraphic(new ImageView(images.get("unrevealed")))
+				button.getStyleClass.add("unrevealed")
 		})
 	}
 
 	private def createGrid(field: FieldInterface): GridPane = {
 		println(s"creating grid with width ${field.dimension._1} and height ${field.dimension._2}")
+
 		val grid = new GridPane() {
 			id = "game-cell-grid"
 		}
 
-		val (width, height) = field.dimension
-		for (ix <- 0 until width) {
-			for (iy <- 0 until height) {
+		val (gridWidth, gridHeight) = field.dimension
+		for (ix <- 0 until gridWidth) {
+			for (iy <- 0 until gridHeight) {
 				val cell = field.getCell(ix, iy).get
-				grid.add(new Button("", new ImageView(images.get("unrevealed"))) {
+
+				grid.add(new Button {
 					styleClass = Seq("cell")
 					onMouseClicked = if (cell.isRevealed) null else
 						e => {
@@ -281,6 +260,8 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 								controller.flag(ix, iy)
 							}
 						}
+					prefWidth <== Bindings.min(grid.widthProperty().divide(gridWidth.doubleValue), grid.heightProperty().divide(gridHeight.doubleValue))
+					prefHeight <== Bindings.min(grid.widthProperty().divide(gridWidth.doubleValue), grid.heightProperty().divide(gridHeight.doubleValue))
 				}, ix, iy)
 			}
 		}

@@ -97,29 +97,45 @@
 }
 
 #game-center {
+}
+
+#game-cell-grid {
+    -fx-vgap: -2;
+    -fx-hgap: -2;
     -fx-alignment: center;
     -fx-column-halignment: center;
+    -fx-row-valignment: center;
 }
-
-/*#game-cell-grid {
-}*/
 
 .cell {
-    -fx-border-width: 1;
-    -fx-border-color: black;
-    -fx-padding: 0;
-}
-
-.cell.revealed {
-    -fx-border-color: lightgray;
+    -fx-min-width: 32;
+    -fx-min-height: 32;
+    -fx-max-width: 128;
+    -fx-max-height: 128;
+    -fx-background-image: url("img/unrevealed.png");
+    -fx-background-repeat: no-repeat;
+    -fx-background-size: cover;
 }
 
 .cell:hover {
-    -fx-effect: innershadow(gaussian, rgba(33, 33, 33, 0.5), 24, 1, 0, 0);
+    -fx-effect: innershadow(gaussian, rgba(33, 33, 33, 0.5), 999, 1, 0, 0);
 }
 
+.cell.unrevealed { -fx-background-image: url("img/unrevealed.png"); }
+.cell.revealed { -fx-background-image: url("img/revealed.png"); }
+.cell.flagged { -fx-background-image: url("img/flagged.png"); }
+.cell.bomb { -fx-background-image: url("img/bomb.png"); }
+.cell.n1 { -fx-background-image: url("img/1.png"); }
+.cell.n2 { -fx-background-image: url("img/2.png"); }
+.cell.n3 { -fx-background-image: url("img/3.png"); }
+.cell.n4 { -fx-background-image: url("img/4.png"); }
+.cell.n5 { -fx-background-image: url("img/5.png"); }
+.cell.n6 { -fx-background-image: url("img/6.png"); }
+.cell.n7 { -fx-background-image: url("img/7.png"); }
+.cell.n8 { -fx-background-image: url("img/8.png"); }
+
 #game-bottom {
-    -fx-hgap: 100;
+    -fx-hgap: 5em;
     -fx-padding: 20;
     -fx-alignment: center;
     -fx-column-halignment: center;
