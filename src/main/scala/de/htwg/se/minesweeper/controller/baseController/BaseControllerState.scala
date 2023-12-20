@@ -29,7 +29,7 @@ private class FirstMoveBaseControllerState(controller: BaseController) extends B
 			case Success(cell) => cell.nearbyBombs != 0 || cell.isBomb
 			case Failure(exception) => return Failure(exception)
 		} do {
-			controller.field = controller.factory.createField()
+			controller.field = controller.factory.createField(controller.width, controller.height, controller.bomb_chance)
 		}
 
 		controller.undoStack = controller.undoStack.prepended(new RevealCommand(controller, x, y))

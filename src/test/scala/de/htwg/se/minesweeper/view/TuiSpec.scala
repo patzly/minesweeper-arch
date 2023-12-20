@@ -17,6 +17,7 @@ class TestObserver extends Observer[Event] with EventVisitor {
 		ev.accept(this)
 	}
 
+	override def visitStartGame(event: StartGameEvent): Unit = {}
 	override def visitExit(event: ExitEvent): Unit = {}
 	override def visitFieldUpdated(event: FieldUpdatedEvent): Unit = {}
 	override def visitSetup(event: SetupEvent): Unit = {}
@@ -34,7 +35,7 @@ class TuiSpec extends AnyWordSpec {
 	"A Tui" when {
 		"play is called on input q" should {
 			"quit" in {
-				val controller = SpyController(1, TestFieldFactory(Vector(Vector(Cell(false, false)))))
+				val controller = SpyController(TestFieldFactory(Vector(Vector(Cell(false, false)))))
 				val tui = Tui(controller)
 				val observer = TestObserver()
 				controller.addObserver(observer)
@@ -51,13 +52,18 @@ class TuiSpec extends AnyWordSpec {
 			}
 		}
 		"it has a single cell field" should {
-			val controller = SpyController(1, TestFieldFactory(Vector(Vector(Cell(false, false)))))
+			val controller = SpyController(TestFieldFactory(Vector(Vector(Cell(false, false)))))
 			val tui = Tui(controller)
 			val observer = TestObserver()
 			controller.addObserver(observer)
 
-			"without revealing the cell" in {
+			"start correctly" should {
 				controller.setup()
+				tui.processLine("Invalid!")
+				tui.processLine("fail: not a number")
+				tui.processLine("1 1 0 1")
+			}
+			"without revealing the cell" in {
 				tui.fieldString(controller.getField) shouldEqual "                     \n   1\n   -\n1 |#"
 				controller.getField.toString shouldEqual("#")
 				tui.processLine("abc 2")
@@ -108,19 +114,23 @@ class TuiSpec extends AnyWordSpec {
 				tui.processLine("2 2")
 				controller.getField.toString shouldEqual("☐")
 			}
+			"after going to menu" in {
+				tui.processLine("menu")
+			}
 			"after quitting" in {
 				tui.processLine("q")
 				controller.didExit shouldBe(true)
 			}
 		}
 		"it has a multi cell field" should {
-			val controller = SpyController(1, TestFieldFactory(Vector.tabulate(3, 3)((y, x) => Cell(false, x == 0))))
+			val controller = SpyController(TestFieldFactory(Vector.tabulate(3, 3)((y, x) => Cell(false, x == 0))))
 			val tui = Tui(controller)
 			val observer = TestObserver()
 			controller.addObserver(observer)
 
 			"without revealing the cell" in {
 				controller.setup()
+				controller.startGame(3, 3, 0, 1)
 				tui.fieldString(controller.getField) shouldEqual "                     \n   1 2 3\n   -----\n1 |# # #\n2 |# # #\n3 |# # #"
 				controller.getField.toString shouldEqual("# # #\n# # #\n# # #")
 				tui.processLine("abc 2")
@@ -178,6 +188,7 @@ class TuiSpec extends AnyWordSpec {
 			}
 			"after winning and quitting" in {
 				controller.setup()
+				controller.startGame(3, 3, 0, 1)
 				tui.processLine("3 3")
 				controller.getField.toString shouldEqual("# 2 ☐\n# 3 ☐\n# 2 ☐")
 				observer.w shouldBe(WonEvent())
@@ -192,27 +203,33 @@ class TuiSpec extends AnyWordSpec {
 			}
 		}
 		"it is a long matrix" should {
-			val controller = SpyController(1, TestFieldFactory(Vector.tabulate(1, 15)((y, x) => Cell(false, x == 2))))
+			val controller = SpyController(TestFieldFactory(Vector.tabulate(1, 15)((y, x) => Cell(false, x == 2))))
 			val tui = Tui(controller)
 			val observer = TestObserver()
 			controller.addObserver(observer)
 
 			"print correctly" in {
 				controller.setup()
+				controller.startGame(15, 1, 0, 1)
 				tui.fieldString(controller.getField) shouldEqual "                      1 1 1 1 1 1\n    1 2 3 4 5 6 7 8 9 0 1 2 3 4 5\n    -----------------------------\n1  |# # # # # # # # # # # # # # #"
 			}
 		}
 		"when it has some matrix" should {
-			val controller = SpyController(1, TestFieldFactory(Vector.tabulate(10, 10)((y, x) => Cell(false, x == 5))))
+			val controller = SpyController(TestFieldFactory(Vector.tabulate(10, 10)((y, x) => Cell(false, x == 5))))
 			val tui = Tui(controller)
 			val observer = TestObserver()
 			controller.addObserver(observer)
+			controller.startGame(10, 10, 0, 1)
 
 			"should lose" in {
 				println(controller.getField.toString)
 				tui.processLine("1 1")
 				tui.processLine("6 1")
 				observer.l shouldBe(LostEvent())
+			}
+			"retry and go to menu" in {
+				tui.processLine("y")
+				tui.processLine("menu")
 			}
 		}
 	}

@@ -1,10 +1,8 @@
 package de.htwg.se.minesweeper.model.fieldComponent.field
 
-import scala.util.Random
 import scala.util.Try
 import scala.util.Success
 import scala.util.Failure
-import org.scalactic.Fail
 import de.htwg.se.minesweeper.model.fieldComponent.FieldInterface
 import de.htwg.se.minesweeper.model.Cell
 
@@ -25,7 +23,7 @@ class Field(cellMatrix: CellMatrix) extends FieldInterface {
 
 	override def getRow(row: Int): Try[Vector[Cell]] = Try(matrix(row))
 	
-	override def dimension: (Int, Int) = if matrix.isEmpty then (0,0) else (matrix.size, matrix(0).size)
+	override def dimension: (Int, Int) = if matrix.isEmpty then (0,0) else (matrix(0).size, matrix.size)
 
 	private def revealCell(x: Int, y: Int, cellMatrix: CellMatrix): CellMatrix = {
 		cellMatrix.updated(y, cellMatrix(y).updated(x, cellMatrix(y)(x).asRevealed))

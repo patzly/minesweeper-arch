@@ -4,141 +4,165 @@ import de.htwg.se.minesweeper.controller.*
 import de.htwg.se.minesweeper.model.*
 import de.htwg.se.minesweeper.model.fieldComponent.FieldInterface
 import de.htwg.se.minesweeper.observer.Observer
-
 import scalafx.application.{JFXApp3, Platform}
-import scalafx.beans.property.*
-import scalafx.geometry.{Insets, Pos}
-import scalafx.scene.{Node, Scene}
-import scalafx.scene.control.*
-import scalafx.scene.image.{Image, ImageView}
+import scalafx.beans.binding.Bindings
+import scalafx.beans.property.{IntegerProperty, BooleanProperty, StringProperty}
 import scalafx.scene.layout.*
-import scalafx.scene.paint.*
+import scalafx.scene.control.*
+import scalafx.scene.{Node, Scene}
 import scalafx.scene.text.Text
 
-import scala.util.{Failure, Success, Try}
+import java.util.{Timer, TimerTask}
+import javafx.scene.layout.GridPane as JGridPane
+import javafx.scene.input.MouseButton
 
 class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] with EventVisitor {
 	controller.addObserver(this)
-	private var setup_field: Option[FieldInterface] = None
 
-	private var grid: Option[GridPane] = None
-
-	private var images: Option[Map[String, Image]] = None
+	private val time_prop = IntegerProperty(0)
 	private val undo_prop = IntegerProperty(controller.getUndos)
+	private val cant_undo_prop = BooleanProperty(controller.cantUndo)
 	private val redo_prop = BooleanProperty(controller.cantRedo)
 
 	private val end_screen_visible = BooleanProperty(false)
 	private val end_screen_text = StringProperty("")
 
-	private val stylesheet = getClass.getResource("/style.css").toExternalForm
-	private val background_color = Color.rgb(38, 38, 38)
+	private final val stylesheet = getClass.getResource("/style.css").toExternalForm
+
+	private var gui_thread_ready = false
 
 	override def start(): Unit = {
-		images = createImages() match {
-			case Success(value) => Some(value)
-			case Failure(e) => throw new Exception("Could not load images!")
+		val t = new java.util.Timer()
+		val task = new java.util.TimerTask {
+			def run(): Unit = time_prop.value = time_prop.value + 1
 		}
+		t.schedule(task, 1000L, 1000L)
 
 		stage = new JFXApp3.PrimaryStage {
-			//    initStyle(StageStyle.Unified)
+			minWidth = 700
+			minHeight = 600
 			title = "Minesweeper"
 			scene = makeMainScene()
-			onCloseRequest = e => {
-				controller.exit()
-			}
+			onCloseRequest = e => controller.exit()
 		}
-	}
 
-	private def createImages(): Try[Map[String, Image]] = {
-		Try(Map(
-			"unrevealed" -> new Image("file:img/unrevealed.png"),
-			"revealed" -> new Image("file:img/revealed.png"),
-			"flagged" -> new Image("file:img/flagged.png"),
-			"bomb" -> new Image("file:img/bomb.png"),
-			"1" -> new Image("file:img/1.png"),
-			"2" -> new Image("file:img/2.png"),
-			"3" -> new Image("file:img/3.png"),
-			"4" -> new Image("file:img/4.png"),
-			"5" -> new Image("file:img/5.png"),
-			"6" -> new Image("file:img/6.png"),
-			"7" -> new Image("file:img/7.png"),
-			"8" -> new Image("file:img/8.png")
-		))
+		gui_thread_ready = true
 	}
 
 	private def makeMainScene(): Scene = {
+		val controls = new GridPane() { id = "main-controls-pane" }
+		val width_spinner = new Spinner[Int](1, 32, 8)
+		val height_spinner = new Spinner[Int](1, 32, 8)
+		val bomb_spinner = new Spinner[Double](0.0, 1.0, 0.15, 0.01)
+		val undo_spinner = new Spinner[Int](0, 5, 3)
+
+		controls.addColumn(0, new Label("Breite"), new Label("Höhe"), new Label("Bomben Verteilung"), new Label("Anzahl Undos"))
+		controls.addColumn(1, width_spinner, height_spinner, bomb_spinner, undo_spinner)
+
 		new Scene {
 			stylesheets = List(stylesheet)
-			fill = background_color
-			content = new BorderPane {
+			root = new BorderPane {
+				id = "main"
 				top = new HBox(new Text("Minesweeper") {
-					styleClass = Seq("h1", "text-center", "bold", "white", "mono")
+					styleClass = Seq("h1", "text-center", "bold", "white")
 				}) {
-					alignment = Pos.Center
+					id = "main-top"
+					maxWidth = Double.MaxValue
 				}
 				center = new FlowPane {
+					id = "main-center"
 					children = Seq(
+						controls,
 						new Button("Spielen") {
-							onMouseClicked = e => controller.setup()
+							onMouseClicked = e => controller.startGame(width_spinner.getValue, height_spinner.getValue, bomb_spinner.getValue.toFloat, undo_spinner.getValue)
 						}
 					)
-					id = "main-menu-bottom"
 				}
 				bottom = new FlowPane {
+					id = "main-bottom"
 					children = Seq(
 						new Text("Software Engineering Projekt WS23/24") {
-							styleClass = Seq("h2", "text-center", "bold", "white", "mono")
+							styleClass = Seq("h2", "text-center", "bold", "white")
 						}, new Text("Leon Gies und Hendrik Ziegler") {
-							styleClass = Seq("h3", "text-center", "bold", "white", "mono")
+							styleClass = Seq("h3", "text-center", "bold", "white")
 						}
 					)
-					id = "main-menu-bottom"
 				}
-				padding = Insets(50)
 			}
 		}
 	}
 
-	private def makeGameScene(gridPane: GridPane): Scene = {
+	private def makeGameScene(field: FieldInterface): Scene = {
+		// create grid
+		val grid = new GridPane {
+			id = "game-cell-grid"
+		}
+
+		val (gridWidth, gridHeight) = field.dimension
+		for (ix <- 0 until gridWidth) {
+			for (iy <- 0 until gridHeight) {
+				grid.add(new Button {
+					styleClass = Seq("cell")
+					onMouseClicked = e => e.getButton match {
+						case MouseButton.PRIMARY => controller.reveal(ix, iy)
+						case MouseButton.SECONDARY => controller.flag(ix, iy)
+						case _ => ()
+					}
+					prefWidth <== Bindings.min(grid.widthProperty().divide(gridWidth.doubleValue), grid.heightProperty().divide(gridHeight.doubleValue))
+					prefHeight <== Bindings.min(grid.widthProperty().divide(gridWidth.doubleValue), grid.heightProperty().divide(gridHeight.doubleValue))
+				}, ix, iy)
+			}
+		}
+
 		new Scene {
 			stylesheets = List(stylesheet)
-			fill = background_color
-			content = new BorderPane() {
-				padding = Insets(50)
-				top = new Text {
-					styleClass = Seq("h2", "text-center", "bold", "white", "mono")
-					text <== undo_prop.asString("Undos: %d")
+			root = new BorderPane {
+				id = "game"
+				top = new FlowPane {
+					id = "game-top"
+					children = Seq(
+						new Text {
+							styleClass = Seq("h2", "text-center", "bold", "white")
+							text <== undo_prop.asString("Undos: %d")
+						},
+						new Text {
+							styleClass = Seq("h2", "text-center", "bold", "white")
+							text <== time_prop.asString("Zeit: %ds")
+						}
+					)
 				}
 				center = new StackPane {
+					id = "game-center"
 					children = Seq(
-						gridPane,
+						grid,
 						new FlowPane {
+							id = "game-end-screen"
+							visible <== end_screen_visible
 							children = Seq(
 								new Text {
 									text <== end_screen_text
-									styleClass = Seq("h1", "text-center", "bold", "white", "mono")
+									styleClass = Seq("h1", "text-center", "bold", "white")
 								},
 								new Button("Retry") {
-									id = "retry-btn"
+									id = "game-retry-btn"
 									onMouseClicked = e => {
 										end_screen_visible.setValue(false)
-										controller.setup()
+										val (width, height) = controller.getField.dimension
+										controller.startGame(width, height, controller.getBombChance, controller.getMaxUndos)
 									}
 								}
 							)
-							id = "end-screen"
-							visible <== end_screen_visible
 						}
 					)
 				}
 				bottom = new FlowPane {
-					id = "bottom"
+					id = "game-bottom"
 					children = Seq(
 						new Button("Zum Menü") {
-							onMouseClicked = e => stage.setScene(makeMainScene())
+							onMouseClicked = e => controller.setup()
 						},
 						new Button("Undo") {
-							disable <== end_screen_visible.or(undo_prop.isEqualTo(0))
+							disable <== end_screen_visible.or(cant_undo_prop)
 							onMouseClicked = e => controller.undo()
 						},
 						new Button("Redo") {
@@ -153,7 +177,7 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 
 	override def update(e: Event): Unit = {
 		e match {
-			case SetupEvent(field) => e.accept(this)
+			case SetupEvent() => if gui_thread_ready then Platform.runLater(() => e.accept(this))
 			case _ => Platform.runLater(() => e.accept(this))
 		}
 	}
@@ -181,59 +205,41 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 	override def visitFieldUpdated(event: FieldUpdatedEvent): Unit = {
 		// update the gui
 		Platform.runLater(undo_prop.setValue(controller.getUndos))
+		Platform.runLater(cant_undo_prop.setValue(controller.cantUndo))
 		Platform.runLater(redo_prop.setValue(controller.cantRedo))
-		updateGrid(event.field)
-	}
 
-	override def visitSetup(event: SetupEvent): Unit = {
-		setup_field match {
-			case None => setup_field = Some(event.field)
-			case Some(_) => Platform.runLater({
-				grid = Some(createGrid(event.field))
-				stage.setScene(makeGameScene(grid.get))
-			})
-		}
-	}
-
-	private def updateGrid(field: FieldInterface): Unit = {
-		grid.get.getChildren.forEach(node => {
+		// update the grid
+		val grid = stage.getScene.lookup("#game-cell-grid").asInstanceOf[JGridPane] // get grid by ID
+		grid.getChildren.forEach(node => {
 			val button = node.asInstanceOf[javafx.scene.control.Button]
-			val x = javafx.scene.layout.GridPane.getColumnIndex(button)
-			val y = javafx.scene.layout.GridPane.getRowIndex(button)
-			val cell = field.getCell(x, y).get
+			val cell = event.field.getCell(JGridPane.getColumnIndex(button), JGridPane.getRowIndex(button)).get
+			button.getStyleClass.retainAll("cell")
+			button.setViewOrder(0)
 
-			if cell.isFlagged then button.setGraphic(new ImageView(images.get("flagged")))
+			if cell.isFlagged then button.getStyleClass.add("flagged")
 			else if cell.isRevealed then
-				button.getStyleClass.add("revealed")
-				if cell.isBomb then button.setGraphic(new ImageView(images.get("bomb")))
-				else if cell.nearbyBombs != 0 then button.setGraphic(new ImageView(images.get(cell.nearbyBombs.toString)))
-				else button.setGraphic(new ImageView(images.get("revealed")))
+				button.setViewOrder(1)
+				if cell.isBomb then button.getStyleClass.add("bomb")
+				else if cell.nearbyBombs != 0 then button.getStyleClass.add("n" + cell.nearbyBombs.toString)
+				else button.getStyleClass.add("revealed")
 			else
-				button.getStyleClass.remove("revealed")
-				button.setGraphic(new ImageView(images.get("unrevealed")))
+				button.getStyleClass.add("unrevealed")
 		})
 	}
 
-	private def createGrid(field: FieldInterface): GridPane = {
-		val grid = new GridPane()
+	override def visitSetup(event: SetupEvent): Unit = {
+		end_screen_visible.setValue(false)
+		stage.setScene(makeMainScene())
+	}
 
-		for (ix <- 0 until field.dimension._1) {
-			for (iy <- 0 until field.dimension._2) {
-				val cell = field.getCell(ix, iy).get
-				grid.add(new Button("", new ImageView(images.get("unrevealed"))) {
-					styleClass = Seq("cell")
-					padding = Insets(0)
-					onMouseClicked = if (cell.isRevealed) null else
-						e => {
-							if (e.getButton == javafx.scene.input.MouseButton.PRIMARY) {
-								controller.reveal(ix, iy)
-							} else if (e.getButton == javafx.scene.input.MouseButton.SECONDARY) {
-								controller.flag(ix, iy)
-							}
-						}
-				}, ix, iy)
-			}
-		}
-		grid
+	override def visitStartGame(event: StartGameEvent): Unit = {
+		Platform.runLater({
+			time_prop.value = 0
+			end_screen_visible.setValue(false)
+			undo_prop.setValue(controller.getUndos)
+			cant_undo_prop.setValue(controller.cantUndo)
+			redo_prop.setValue(controller.cantRedo)
+			stage.setScene(makeGameScene(controller.getField))
+		})
 	}
 }

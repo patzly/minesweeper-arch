@@ -19,12 +19,17 @@ class TestObserver extends Observer[Event] with EventVisitor {
     var w: WonEvent = null
     var l: LostEvent = null
     var e: ExitEvent = null
+    var s: SetupEvent = null
     override def update(ev: Event): Unit = {
         ev.accept(this)
     }
 
-    override def visitSetup(event: SetupEvent): Unit = {
+    override def visitStartGame(event: StartGameEvent): Unit = {
         f = event.field
+    }
+
+    override def visitSetup(event: SetupEvent): Unit = {
+        s = event
     }
 
     override def visitFieldUpdated(event: FieldUpdatedEvent): Unit = {
@@ -47,26 +52,30 @@ class TestObserver extends Observer[Event] with EventVisitor {
 class BaseControllerSpec extends AnyWordSpec {
     "A BaseController" when {
         "it has a single cell field" should {
-            val controller = BaseController(2, TestFieldFactory(Vector(Vector(Cell(false, false)))))
+            val controller = BaseController(TestFieldFactory(Vector(Vector(Cell(false, false)))))
             val observer = TestObserver()
             controller.addObserver(observer)
 
             "without revealing the cell" in {
                 controller.setup()
+                controller.startGame(1, 1, 0, 2)
                 observer.f.toString shouldBe("#")
             }
             "after undoing an empty stack" in {
+                controller.cantUndo shouldBe true
                 val fail = controller.undo() shouldBe a [Failure[NoSuchElementException]]
                 observer.f.toString shouldBe("#")
             }
             "flag the cell" in { // has to be tested before reveal() is called!
                 controller.flag(0, 0) shouldBe(Success(()))
                 observer.f.toString shouldBe ("⚑")
+                controller.cantUndo shouldBe false
             }
             "after undoing the flag" in {
                 controller.undo() shouldBe(Success(()))
                 observer.f.toString shouldBe("#")
                 controller.getUndos shouldBe 1
+                controller.cantUndo shouldBe true
                 controller.cantRedo shouldBe false
             }
             "after redoing the flag" in {
@@ -87,6 +96,7 @@ class BaseControllerSpec extends AnyWordSpec {
                 controller.undo() shouldBe(Success(()))
                 observer.f.toString shouldBe("⚑")
                 controller.getUndos shouldBe 0
+                controller.cantUndo shouldBe true
             }
             "after redoing the reveal" in {
                 controller.redo() shouldBe(Success(()))
@@ -98,6 +108,7 @@ class BaseControllerSpec extends AnyWordSpec {
                 observer.f.toString shouldBe("☐")
             }
             "throw after undoing without any undos left" in {
+                controller.cantUndo shouldBe true
                 controller.undo() shouldBe a [Failure[RuntimeException]]
             }
             "return Failure" in {
@@ -110,11 +121,12 @@ class BaseControllerSpec extends AnyWordSpec {
             }
         }
         "it has a multi cell field" should {
-            val controller = BaseController(1, TestFieldFactory(Vector.tabulate(3, 3)((y, x) => Cell(false, x == 0))))
+            val controller = BaseController(TestFieldFactory(Vector.tabulate(3, 3)((y, x) => Cell(false, x == 0))))
             val observer = TestObserver()
             controller.addObserver(observer)
             "without revealing the cell" in {
                 controller.setup()
+                controller.startGame(3, 3, 0, 1)
                 observer.f.toString shouldBe("# # #\n# # #\n# # #")
             }
             "reveal the cell recursively" in {
@@ -136,7 +148,7 @@ class BaseControllerSpec extends AnyWordSpec {
         }
         "it has another multi cell field" should {
             var i = 0
-            val controller = BaseController(1, GeneratorTestFieldFactory(3, 3, (y, x) => Cell(false, {
+            val controller = BaseController(GeneratorTestFieldFactory((y, x) => Cell(false, {
                 if ((x, y) == (2, 0) && i < 3) then
                     i += 1
                     true
@@ -147,6 +159,7 @@ class BaseControllerSpec extends AnyWordSpec {
 
             "without revealing the cell" in {
                 controller.setup()
+                controller.startGame(3, 3, 0, 1)
                 observer.f.toString shouldBe("# # #\n# # #\n# # #")
             }
             "make sure the cell revealed first is not a bomb and then reveal recursively" in {

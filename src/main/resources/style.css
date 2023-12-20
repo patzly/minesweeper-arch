@@ -1,83 +1,157 @@
-.cell {
-    -fx-border-color: black;
-    -fx-padding: 0;
+* {
+    -fx-primary-color: #3B82F6;
+    -fx-secondary-color: #4FB7FA;
+
+    -fx-focus-color: -fx-secondary-color;
+    -fx-font-family: monospace;
 }
 
-.cell.revealed {
-    -fx-border-color: lightgray;
-    -fx-border-insets: -1;
-}
+.h1 { -fx-font-size: 4em; }
+.h2 { -fx-font-size: 2em; }
+.h3 { -fx-font-size: 1em; }
 
-.cell:hover {
-    -fx-effect: innershadow(gaussian, rgba(33, 33, 33, 0.5), 24, 1, 0, 0);
-}
+.text-center { -fx-text-alignment: center; }
+.bold { -fx-font-weight: bold; }
+.white { -fx-fill: white; }
 
 .button {
     -fx-background-insets: 0 0 -1 0, 0, 1, 2;
-    -fx-background-color: rgb(59, 130, 246);
-    -fx-background-radius: 5;
+    -fx-background-color: -fx-primary-color;
+    -fx-background-radius: .5em;
     -fx-text-fill: white;
     -fx-padding: 10;
 }
 
 .button:hover {
-    -fx-background-color: rgb(79, 183, 250);
+    -fx-background-color: -fx-secondary-color;
 }
 
-#bottom {
-    -fx-hgap: 100;
+#main {
+    -fx-padding: 5em;
+    -fx-background-color: #262626
+}
+
+#main-top {
+    -fx-alignment: center;
+}
+
+#main-center {
+    -fx-orientation: vertical;
+    -fx-alignment: center;
+    -fx-column-halignment: center;
+    -fx-padding: 1em;
+    -fx-min-height: 5em;
+    -fx-max-height: 20em;
+}
+
+#main-controls-pane {
+    -fx-hgap: 1em;
+    -fx-vgap: 1em;
+    -fx-padding: 2em;
+}
+#main-controls-pane .label {
+    -fx-text-fill: white;
+}
+
+.spinner {
+    -fx-max-width: 8em;
+    -fx-background-color: #333;
+}
+
+.spinner .text-field {
+    -fx-text-fill: white;
+    -fx-background-color: #333;
+}
+
+.spinner .increment-arrow-button,
+.spinner .decrement-arrow-button {
+    -fx-background-color: -fx-primary-color;
+}
+.spinner .increment-arrow-button:hover,
+.spinner .decrement-arrow-button:hover {
+    -fx-background-color: -fx-secondary-color;
+}
+.spinner .increment-arrow-button:hover:pressed,
+.spinner .decrement-arrow-button:hover:pressed,
+.spinner .increment-arrow-button:pressed,
+.spinner .decrement-arrow-button:pressed {
+    -fx-background-color: -fx-secondary-color;
+}
+.spinner .increment-arrow-button .increment-arrow,
+.spinner .decrement-arrow-button .decrement-arrow {
+    -fx-background-color: white;
+}
+
+#main-bottom {
+    -fx-orientation: vertical;
+    -fx-alignment: center;
+    -fx-column-halignment: center;
+    -fx-max-height: 4em;
+}
+
+#game {
+    -fx-background-color: #262626;
+    -fx-padding: 5em;
+}
+
+#game-top {
+    -fx-hgap: 2em;
+    -fx-alignment: center;
+    -fx-column-halignment: center;
+}
+
+#game-center {
+}
+
+#game-cell-grid {
+    -fx-vgap: -2;
+    -fx-hgap: -2;
+    -fx-alignment: center;
+    -fx-column-halignment: center;
+    -fx-row-valignment: center;
+}
+
+.cell {
+    -fx-min-width: 16;
+    -fx-min-height: 16;
+    -fx-max-width: 128;
+    -fx-max-height: 128;
+    -fx-background-image: url("img/unrevealed.png");
+    -fx-background-repeat: no-repeat;
+    -fx-background-size: cover;
+}
+
+.cell:hover {
+    -fx-effect: innershadow(gaussian, rgba(33, 33, 33, 0.5), 999, 1, 0, 0);
+}
+
+.cell.unrevealed { -fx-background-image: url("img/unrevealed.png"); }
+.cell.revealed { -fx-background-image: url("img/revealed.png"); }
+.cell.flagged { -fx-background-image: url("img/flagged.png"); }
+.cell.bomb { -fx-background-image: url("img/bomb.png"); }
+.cell.n1 { -fx-background-image: url("img/1.png"); }
+.cell.n2 { -fx-background-image: url("img/2.png"); }
+.cell.n3 { -fx-background-image: url("img/3.png"); }
+.cell.n4 { -fx-background-image: url("img/4.png"); }
+.cell.n5 { -fx-background-image: url("img/5.png"); }
+.cell.n6 { -fx-background-image: url("img/6.png"); }
+.cell.n7 { -fx-background-image: url("img/7.png"); }
+.cell.n8 { -fx-background-image: url("img/8.png"); }
+
+#game-bottom {
+    -fx-hgap: 5em;
     -fx-padding: 20;
     -fx-alignment: center;
     -fx-column-halignment: center;
 }
 
-.h1 {
-    -fx-font-size: 48;
-}
-
-.h2 {
-    -fx-font-size: 24;
-}
-
-.h3 {
-    -fx-font-size: 16;
-}
-
-.text-center {
-    -fx-text-alignment: center;
-}
-
-.bold {
-    -fx-font-weight: bold;
-}
-
-.white {
-    -fx-fill: white;
-}
-
-.mono {
-    -fx-font-family: monospace;
-}
-
-#end-screen {
+#game-end-screen {
     -fx-background-color: rgba(0, 0, 0, 0.6);
     -fx-alignment: center;
     -fx-orientation: vertical;
     -fx-column-halignment: center;
 }
 
-#retry-btn {
+#game-retry-btn {
     -fx-font-size: 32;
-}
-
-#main-menu-bottom {
-    -fx-orientation: vertical;
-    -fx-alignment: center;
-    -fx-column-halignment: center;
-}
-
-#main-menu-center {
-    -fx-orientation: vertical;
-    -fx-alignment: center;
-    -fx-column-halignment: center;
 }
