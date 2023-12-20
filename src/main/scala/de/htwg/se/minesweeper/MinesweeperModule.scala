@@ -11,10 +11,7 @@ import scala.util.Random
 
 class MinesweeperModule extends AbstractModule {
     override def configure(): Unit = {
-        val rand = Random()
-        val field_factory = RandomFieldFactory(rand)
-
-        bind(classOf[FieldFactory]).toInstance(field_factory)
+        bind(classOf[FieldFactory]).toInstance(RandomFieldFactory(Random()))
         bind(classOf[ControllerInterface]).to(classOf[BaseController]).asEagerSingleton()
     }
 }
