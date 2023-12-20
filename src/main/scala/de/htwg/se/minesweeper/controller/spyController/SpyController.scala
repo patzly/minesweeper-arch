@@ -7,7 +7,7 @@ import de.htwg.se.minesweeper.model.fieldComponent.FieldFactory
 import com.google.inject.Inject
 import com.google.inject.name.Named
 
-class SpyController @Inject() (@Named("undos") base_undos: Int, val field_factory: FieldFactory) extends BaseController(base_undos, field_factory) with ControllerInterface {
+class SpyController @Inject() (val field_factory: FieldFactory) extends BaseController(field_factory) with ControllerInterface {
     var didWin = false
     var didLose = false
     var didExit = false
