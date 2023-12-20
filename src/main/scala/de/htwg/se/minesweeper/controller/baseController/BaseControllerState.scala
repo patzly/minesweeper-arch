@@ -5,7 +5,9 @@ import scala.util.{Failure, Success, Try}
 import de.htwg.se.minesweeper.controller._
 
 private abstract class BaseControllerState(controller: BaseController) {
-	def reveal(x: Int, y: Int): Try[Unit] = {
+	// returns the field before the reveal
+	def reveal(x: Int, y: Int): Try[FieldInterface] = {
+		val field = controller.getField
 		controller.getField.withRevealed(x, y) match {
 			case Success(value) => controller.field = value
 			case Failure(exception) => return Failure(exception)
@@ -19,12 +21,12 @@ private abstract class BaseControllerState(controller: BaseController) {
 		} else if controller.field.hasWon then {
 			controller.notifyObservers(WonEvent())
 		}
-		Success(())
+		Success(field)
 	}
 }
 
 private class FirstMoveBaseControllerState(controller: BaseController) extends BaseControllerState(controller) {
-	override def reveal(x: Int, y: Int): Try[Unit] = {
+	override def reveal(x: Int, y: Int): Try[FieldInterface] = {
 		while controller.field.getCell(x, y) match {
 			case Success(cell) => cell.nearbyBombs != 0 || cell.isBomb
 			case Failure(exception) => return Failure(exception)
@@ -32,10 +34,14 @@ private class FirstMoveBaseControllerState(controller: BaseController) extends B
 			controller.field = controller.factory.createField(controller.width, controller.height, controller.bomb_chance)
 		}
 
-		controller.undoStack = controller.undoStack.prepended(new RevealCommand(controller, x, y))
 		controller.changeState(AnyMoveBaseControllerState(controller))
-
-		super.reveal(x, y)
+		val field = controller.getField
+		super.reveal(x, y) match {
+			case Success(_) => Success(field)
+			case Failure(exception) => {
+				Failure(exception)
+			}
+		}
 	}
 }
 

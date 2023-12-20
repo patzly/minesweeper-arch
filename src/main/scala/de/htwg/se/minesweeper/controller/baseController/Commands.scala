@@ -10,13 +10,24 @@ private trait Command {
 }
 
 private class RevealCommand(controller: BaseController, x: Int, y: Int) extends Command {
-    private val field = controller.getField
-    override def execute(): Try[Unit] = controller.state.reveal(x, y)
+    private var field = controller.getField
+    override def execute(): Try[Unit] = {
+        controller.state.reveal(x, y) match {
+            case scala.util.Success(field) => {
+                this.field = field
+                scala.util.Success(())
+            }
+            case scala.util.Failure(exception) => scala.util.Failure(exception)
+        }
+    }
     override def undo(): Unit = {
         controller.field = field
         controller.notifyObservers(FieldUpdatedEvent(field))
     }
-    override def redo(): Try[Unit] = controller.state.reveal(x, y)
+    override def redo(): Try[Unit] = controller.state.reveal(x, y) match {
+        case scala.util.Success(_) => scala.util.Success(())
+        case scala.util.Failure(exception) => scala.util.Failure(exception)
+    }
 }
 
 private class FlagCommand(controller: BaseController, x: Int, y: Int) extends Command {
