@@ -1,6 +1,6 @@
 package de.htwg.se.minesweeper.controller.baseController
 
-import scala.util.Try
+import scala.util.{Try, Success, Failure}
 import de.htwg.se.minesweeper.controller._
 
 private trait Command {
@@ -13,11 +13,11 @@ private class RevealCommand(controller: BaseController, x: Int, y: Int) extends 
     private var field = controller.getField
     override def execute(): Try[Unit] = {
         controller.state.reveal(x, y) match {
-            case scala.util.Success(field) => {
+            case Success(field) => {
                 this.field = field
-                scala.util.Success(())
+                Success(())
             }
-            case scala.util.Failure(exception) => scala.util.Failure(exception)
+            case Failure(exception) => Failure(exception)
         }
     }
     override def undo(): Unit = {

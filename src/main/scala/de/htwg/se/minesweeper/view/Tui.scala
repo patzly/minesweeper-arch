@@ -27,6 +27,8 @@ private class StartGameState(tui: Tui) extends TuiState {
 				    case _ => return println("Invalid input: Please enter numbers!")
 				}
 
+				if width == 0 || height == 0 then return println("Invalid input: width or height can't be 0!")
+
 				println(s"Starting game with width=$width, height=$height, bomb_chance=$bomb_chance and undos=$undos")
 
 				tui.controller.startGame(width, height, bomb_chance, undos)

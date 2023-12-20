@@ -110,8 +110,7 @@ case class GameScene(controller: ControllerInterface) extends Scene {
 		redo_prop.setValue(controller.cantRedo)
 
 		// update the grid
-		grid.getChildren.forEach(node => {
-			val button = node.asInstanceOf[javafx.scene.control.Button]
+		grid.getChildren.forEach(button => {
 			val cell = event.field.getCell(JGridPane.getColumnIndex(button), JGridPane.getRowIndex(button)).get
 			button.getStyleClass.retainAll("cell")
 			button.setViewOrder(0)

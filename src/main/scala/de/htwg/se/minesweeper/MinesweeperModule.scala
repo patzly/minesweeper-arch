@@ -1,7 +1,6 @@
 package de.htwg.se.minesweeper
 
 import com.google.inject.AbstractModule
-import com.google.inject.name.Names
 
 import de.htwg.se.minesweeper.controller._
 import de.htwg.se.minesweeper.controller.baseController._

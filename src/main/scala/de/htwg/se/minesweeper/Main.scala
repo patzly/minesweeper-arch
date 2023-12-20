@@ -1,13 +1,11 @@
 package de.htwg.se.minesweeper
 
-import de.htwg.se.minesweeper.model.fieldComponent.field.RandomFieldFactory
 import de.htwg.se.minesweeper.controller.ControllerInterface
 import de.htwg.se.minesweeper.view.Tui
 import de.htwg.se.minesweeper.view.Gui
 
-import scala.util.Random
-import scala.concurrent.Await
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future, ExecutionContext}
+import scala.concurrent.duration.Duration
 
 import com.google.inject.Guice
 
@@ -20,11 +18,11 @@ def main(): Unit = {
 	val gui = Gui(controller)
 	controller.setup()
 
-	implicit val context = scala.concurrent.ExecutionContext.global
+	implicit val context = ExecutionContext.global
 	val f = Future {
 		gui.main(Array[String]())
 	}
 
 	tui.play()
-	Await.ready(f, scala.concurrent.duration.Duration.Inf)
+	Await.ready(f, Duration.Inf)
 }

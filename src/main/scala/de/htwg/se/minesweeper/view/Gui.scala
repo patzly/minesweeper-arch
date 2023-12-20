@@ -4,6 +4,7 @@ import de.htwg.se.minesweeper.controller.*
 import de.htwg.se.minesweeper.observer.Observer
 import scalafx.application.{JFXApp3, Platform}
 import scalafx.scene.Scene
+import scalafx.scene.image.Image
 
 class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] with EventVisitor {
 	controller.addObserver(this)
@@ -18,7 +19,9 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 			title = "Minesweeper"
 			scene = MainScene(controller)
 			onCloseRequest = e => controller.exit()
+			icons.add(new Image("file:icon.png"))
 		}
+
 
 		gui_thread_ready = true
 	}
@@ -36,18 +39,9 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 		System.exit(0)
 	}
 
-	override def visitLost(event: LostEvent): Unit = {
-		gameScene.get.showLossScreen()
-	}
-
-	override def visitWon(event: WonEvent): Unit = {
-		gameScene.get.showWinScreen()
-	}
-
-	override def visitFieldUpdated(event: FieldUpdatedEvent): Unit = {
-		// update the gui
-		gameScene.get.update(event)
-	}
+	override def visitLost(event: LostEvent): Unit = gameScene.get.showLossScreen()
+	override def visitWon(event: WonEvent): Unit = gameScene.get.showWinScreen()
+	override def visitFieldUpdated(event: FieldUpdatedEvent): Unit = gameScene.get.update(event)
 
 	override def visitSetup(event: SetupEvent): Unit = {
 		gameScene = None

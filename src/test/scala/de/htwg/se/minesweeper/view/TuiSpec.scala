@@ -61,6 +61,7 @@ class TuiSpec extends AnyWordSpec {
 				controller.setup()
 				tui.processLine("Invalid!")
 				tui.processLine("fail: not a number")
+				tui.processLine("0 0 0 0") // should fail
 				tui.processLine("1 1 0 1")
 			}
 			"without revealing the cell" in {

@@ -13,7 +13,7 @@ case class MainScene(controller: ControllerInterface) extends Scene {
 	private val width_spinner = new Spinner[Int](1, 32, 8)
 	private val height_spinner = new Spinner[Int](1, 32, 8)
 	private val bomb_spinner = new Spinner[Double](0.0, 1.0, 0.15, 0.01)
-	private val undo_spinner = new Spinner[Int](0, 5, 3)
+	private val undo_spinner = new Spinner[Int](0, 10, 3)
 
 	controls.addColumn(0, new Label("Breite"), new Label("Höhe"), new Label("Bomben Verteilung"), new Label("Anzahl Undos"))
 	controls.addColumn(1, width_spinner, height_spinner, bomb_spinner, undo_spinner)
@@ -25,7 +25,6 @@ case class MainScene(controller: ControllerInterface) extends Scene {
 			styleClass = Seq("h1", "text-center", "bold", "white")
 		}) {
 			id = "main-top"
-			maxWidth = Double.MaxValue
 		}
 		center = new FlowPane {
 			id = "main-center"

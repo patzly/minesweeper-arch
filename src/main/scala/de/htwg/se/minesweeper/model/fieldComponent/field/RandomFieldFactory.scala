@@ -1,7 +1,7 @@
 package de.htwg.se.minesweeper.model.fieldComponent.field
 
 import scala.util.Random
-import de.htwg.se.minesweeper.model._
+import de.htwg.se.minesweeper.model.*
 import de.htwg.se.minesweeper.model.fieldComponent.FieldFactory
 
 class RandomFieldFactory(rand: Random) extends FieldFactory {

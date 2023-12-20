@@ -1,8 +1,6 @@
 package de.htwg.se.minesweeper.controller.baseController
 
-import scala.util.Try
-import scala.util.Success
-import scala.util.Failure
+import scala.util.{Try, Success, Failure}
 import de.htwg.se.minesweeper.model._
 import de.htwg.se.minesweeper.observer._
 import de.htwg.se.minesweeper.controller._
