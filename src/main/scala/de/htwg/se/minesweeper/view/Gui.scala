@@ -39,6 +39,8 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 		t.schedule(task, 1000L, 1000L)
 
 		stage = new JFXApp3.PrimaryStage {
+			minWidth = 700
+			minHeight = 600
 			title = "Minesweeper"
 			scene = makeMainScene()
 			onCloseRequest = e => controller.exit()
