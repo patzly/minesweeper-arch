@@ -51,6 +51,16 @@ class TuiSpec extends AnyWordSpec {
 				out.toString should include("Goodbye!")
 			}
 		}
+		"it has an empty field" should {
+			val controller = SpyController(TestFieldFactory(Vector.empty))
+			val tui = Tui(controller)
+			val observer = TestObserver()
+			controller.addObserver(observer)
+
+			"have an empty fieldSting" in {
+				tui.fieldString(controller.getField) shouldBe ""
+			}
+		}
 		"it has a single cell field" should {
 			val controller = SpyController(TestFieldFactory(Vector(Vector(Cell(false, false)))))
 			val tui = Tui(controller)

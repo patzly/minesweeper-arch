@@ -102,6 +102,8 @@ class Tui(val controller: ControllerInterface) extends Observer[Event] with Even
 
 	def fieldString(field: FieldInterface): String = {
 		val (cols, rows) = field.dimension
+		if cols == 0 || rows == 0 then return ""
+
 		val l = cols.toString.length + 2
 
 		val pad = " " * l
