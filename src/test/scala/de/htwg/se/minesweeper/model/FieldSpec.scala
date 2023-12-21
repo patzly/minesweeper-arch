@@ -19,6 +19,9 @@ class FieldSpec extends AnyWordSpec {
 			"fail on countNearbyMines" in {
 				zeroField.countNearbyMines(0, 0) shouldBe a [Failure[IllegalStateException]]
 			}
+			"fail on withRevealed" in {
+				zeroField.withRevealed(0, 0) shouldBe a [Failure[IndexOutOfBoundsException]]
+			}
 		}
 		"it has 1 row and 0 columns" should {
 			val zeroField = Field(Vector(Vector()))
@@ -30,6 +33,9 @@ class FieldSpec extends AnyWordSpec {
 			}
 			"fail on countNearbyMines" in {
 				zeroField.countNearbyMines(0, 0) shouldBe a[Failure[IllegalStateException]]
+			}
+			"fail on withRevealed" in {
+				zeroField.withRevealed(0, 0) shouldBe a[Failure[IndexOutOfBoundsException]]
 			}
 		}
 		"it has 1 rows and columns" should {
