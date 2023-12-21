@@ -13,6 +13,24 @@ class FieldSpec extends AnyWordSpec {
 			"have 0 rows and columns" in {
 				zeroField.dimension shouldBe (0,0)
 			}
+			"not print anything" in {
+				zeroField.toString shouldBe ""
+			}
+			"fail on countNearbyMines" in {
+				zeroField.countNearbyMines(0, 0) shouldBe a [Failure[IllegalStateException]]
+			}
+		}
+		"it has 1 row and 0 columns" should {
+			val zeroField = Field(Vector(Vector()))
+			"have 1 rows and 0 columns" in {
+				zeroField.dimension shouldBe(0, 1)
+			}
+			"not print anything" in {
+				zeroField.toString shouldBe ""
+			}
+			"fail on countNearbyMines" in {
+				zeroField.countNearbyMines(0, 0) shouldBe a[Failure[IllegalStateException]]
+			}
 		}
 		"it has 1 rows and columns" should {
 			val fieldHidden = Field(Vector(Vector(Cell(false, false))))

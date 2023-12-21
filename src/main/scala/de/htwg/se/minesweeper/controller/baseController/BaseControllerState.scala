@@ -36,12 +36,8 @@ private class FirstMoveBaseControllerState(controller: BaseController) extends B
 
 		controller.changeState(AnyMoveBaseControllerState(controller))
 		val field = controller.getField
-		super.reveal(x, y) match {
-			case Success(_) => Success(field)
-			case Failure(exception) => {
-				Failure(exception)
-			}
-		}
+		super.reveal(x, y) // not checked because it can't fail
+		Success(field)
 	}
 }
 
