@@ -17,7 +17,7 @@ class FieldSpec extends AnyWordSpec {
 				zeroField.toString shouldBe ""
 			}
 			"fail on countNearbyMines" in {
-				zeroField.countNearbyMines(0, 0) shouldBe a [Failure[IllegalStateException]]
+				zeroField.countNearbyMines(0, 0) shouldBe a [Failure[IndexOutOfBoundsException]]
 			}
 			"fail on withRevealed" in {
 				zeroField.withRevealed(0, 0) shouldBe a [Failure[IndexOutOfBoundsException]]
@@ -32,7 +32,7 @@ class FieldSpec extends AnyWordSpec {
 				zeroField.toString shouldBe ""
 			}
 			"fail on countNearbyMines" in {
-				zeroField.countNearbyMines(0, 0) shouldBe a[Failure[IllegalStateException]]
+				zeroField.countNearbyMines(0, 0) shouldBe a[Failure[IndexOutOfBoundsException]]
 			}
 			"fail on withRevealed" in {
 				zeroField.withRevealed(0, 0) shouldBe a[Failure[IndexOutOfBoundsException]]

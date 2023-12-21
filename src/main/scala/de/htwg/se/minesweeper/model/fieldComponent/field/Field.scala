@@ -76,7 +76,6 @@ class Field(cellMatrix: CellMatrix) extends FieldInterface {
 	}
 
 	override def countNearbyMines(x: Int, y: Int): Try[Int] = {
-		if matrix.isEmpty then return Failure(IllegalStateException("field matrix can't be empty"))
 		Try(countNearbyMinesImpl(x, y, matrix))
 	}
 
