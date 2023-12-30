@@ -4,6 +4,8 @@ import org.scalatest.matchers.should.Matchers._
 import org.scalatest.wordspec.AnyWordSpec
 import de.htwg.se.minesweeper.model.Cell
 import de.htwg.se.minesweeper.model.Cell
+import scala.xml.Utility.trim
+import scala.xml.XML
 
 class CellSpec extends AnyWordSpec {
 	"A Cell" when {
@@ -13,6 +15,17 @@ class CellSpec extends AnyWordSpec {
 			"be printed as the bomb char" in {
 				cell.toString() should be("☒")
 			}
+
+			"be converted to XML" in {
+				val actualXML = XML.loadString(cell.toXML().toString)
+				val expectedXML = XML.loadString("<cell><isRevealed>true</isRevealed><isBomb>true</isBomb><isFlagged>false</isFlagged><nearbyBombs>0</nearbyBombs></cell>")
+
+				actualXML should be(expectedXML)
+			}
+
+			"be created from XML" in {
+				Cell.fromXML(<cell><isRevealed>true</isRevealed><isBomb>true</isBomb><isFlagged>false</isFlagged><nearbyBombs>0</nearbyBombs></cell>) should be(cell)
+			}
 		}
 
 		"it's a bomb and hidden" should {
@@ -20,6 +33,15 @@ class CellSpec extends AnyWordSpec {
 
 			"be printed as the hidden char" in {
 				cell.toString() should be("#")
+			}
+
+			"be converted to XML" in {
+				val actualXML = XML.loadString(cell.toXML().toString)
+				val expectedXML = XML.loadString("<cell><isRevealed>true</isRevealed><isBomb>true</isBomb><isFlagged>false</isFlagged><nearbyBombs>0</nearbyBombs></cell>")
+			}
+
+			"be created from XML" in {
+				Cell.fromXML(<cell><isRevealed>false</isRevealed><isBomb>true</isBomb><isFlagged>false</isFlagged><nearbyBombs>0</nearbyBombs></cell>) should be(cell)
 			}
 		}
 
@@ -29,6 +51,17 @@ class CellSpec extends AnyWordSpec {
 			"be printed as the revealed char" in {
 				cell.toString() should be("☐")
 			}
+
+			"be converted to XML" in {
+				val actualXML = XML.loadString(cell.toXML().toString)
+				val expectedXML = XML.loadString("<cell><isRevealed>true</isRevealed><isBomb>false</isBomb><isFlagged>false</isFlagged><nearbyBombs>0</nearbyBombs></cell>")
+
+				actualXML should be(expectedXML)
+			}
+
+			"be created from XML" in {
+				Cell.fromXML(<cell><isRevealed>true</isRevealed><isBomb>false</isBomb><isFlagged>false</isFlagged><nearbyBombs>0</nearbyBombs></cell>) should be(cell)
+			}
 		}
 
 		"it's a not bomb and hidden" should {
@@ -36,6 +69,17 @@ class CellSpec extends AnyWordSpec {
 
 			"be printed as the hidden char" in {
 				cell.toString() should be("#")
+			}
+
+			"be converted to XML" in {
+				val actualXML = XML.loadString(cell.toXML().toString)
+				val expectedXML = XML.loadString("<cell><isRevealed>false</isRevealed><isBomb>false</isBomb><isFlagged>false</isFlagged><nearbyBombs>0</nearbyBombs></cell>")
+
+				actualXML should be(expectedXML)
+			}
+
+			"be created from XML" in {
+				Cell.fromXML(<cell><isRevealed>false</isRevealed><isBomb>false</isBomb><isFlagged>false</isFlagged><nearbyBombs>0</nearbyBombs></cell>) should be(cell)
 			}
 		}
 
@@ -45,6 +89,17 @@ class CellSpec extends AnyWordSpec {
 			"be printed as the flag char" in {
 				cell.toString should be("⚑")
 			}
+
+			"be converted to XML" in {
+				val actualXML = XML.loadString(cell.toXML().toString)
+				val expectedXML = XML.loadString("<cell><isRevealed>false</isRevealed><isBomb>false</isBomb><isFlagged>true</isFlagged><nearbyBombs>0</nearbyBombs></cell>")
+
+				actualXML should be(expectedXML)
+			}
+
+			"be created from XML" in {
+				Cell.fromXML(<cell><isRevealed>false</isRevealed><isBomb>false</isBomb><isFlagged>true</isFlagged><nearbyBombs>0</nearbyBombs></cell>) should be(cell)
+			}
 		}
 
 		"it's flagged and revealed" should {
@@ -52,6 +107,17 @@ class CellSpec extends AnyWordSpec {
 
 			"be printed as the revealed char" in {
 				cell.toString should be("☐")
+			}
+
+			"be converted to XML" in {
+				val actualXML = XML.loadString(cell.toXML().toString)
+				val expectedXML = XML.loadString("<cell><isRevealed>true</isRevealed><isBomb>false</isBomb><isFlagged>true</isFlagged><nearbyBombs>0</nearbyBombs></cell>")
+
+				actualXML should be(expectedXML)
+			}
+
+			"be created from XML" in {
+				Cell.fromXML(<cell><isRevealed>true</isRevealed><isBomb>false</isBomb><isFlagged>true</isFlagged><nearbyBombs>0</nearbyBombs></cell>) should be(cell)
 			}
 		}
 
@@ -61,6 +127,17 @@ class CellSpec extends AnyWordSpec {
 			"be printed as the flag char" in {
 				cell.toString should be("⚑")
 			}
+
+			"be converted to XML" in {
+				val actualXML = XML.loadString(cell.toXML().toString)
+				val expectedXML = XML.loadString("<cell><isRevealed>false</isRevealed><isBomb>true</isBomb><isFlagged>true</isFlagged><nearbyBombs>0</nearbyBombs></cell>")
+
+				actualXML should be(expectedXML)
+			}
+
+			"be created from XML" in {
+				Cell.fromXML(<cell><isRevealed>false</isRevealed><isBomb>true</isBomb><isFlagged>true</isFlagged><nearbyBombs>0</nearbyBombs></cell>) should be(cell)
+			}
 		}
 
 		"it's flagged, revealed and a bomb" should {
@@ -68,6 +145,17 @@ class CellSpec extends AnyWordSpec {
 
 			"be printed as the bomb char" in {
 				cell.toString should be("☒")
+			}
+
+			"be converted to XML" in {
+				val actualXML = XML.loadString(cell.toXML().toString)
+				val expectedXML = XML.loadString("<cell><isRevealed>true</isRevealed><isBomb>true</isBomb><isFlagged>true</isFlagged><nearbyBombs>0</nearbyBombs></cell>")
+
+				actualXML should be(expectedXML)
+			}
+
+			"be created from XML" in {
+				Cell.fromXML(<cell><isRevealed>true</isRevealed><isBomb>true</isBomb><isFlagged>true</isFlagged><nearbyBombs>0</nearbyBombs></cell>) should be(cell)
 			}
 		}
 
@@ -77,6 +165,17 @@ class CellSpec extends AnyWordSpec {
 			"be printed as the hidden char" in {
 				cell.toString should be("#")
 			}
+
+			"be converted to XML" in {
+				val actualXML = XML.loadString(cell.toXML().toString)
+				val expectedXML = XML.loadString("<cell><isRevealed>false</isRevealed><isBomb>false</isBomb><isFlagged>false</isFlagged><nearbyBombs>4</nearbyBombs></cell>")
+
+				actualXML should be(expectedXML)
+			}
+
+			"be created from XML" in {
+				Cell.fromXML(<cell><isRevealed>false</isRevealed><isBomb>false</isBomb><isFlagged>false</isFlagged><nearbyBombs>4</nearbyBombs></cell>) should be(cell)
+			}
 		}
 
 		"it has 4 bombs nearby and is revealed" should {
@@ -84,6 +183,17 @@ class CellSpec extends AnyWordSpec {
 
 			"be printed as the number 4" in {
 				cell.toString should be("4")
+			}
+
+			"be converted to XML" in {
+				val actualXML = XML.loadString(cell.toXML().toString)
+				val expectedXML = XML.loadString("<cell><isRevealed>true</isRevealed><isBomb>false</isBomb><isFlagged>false</isFlagged><nearbyBombs>4</nearbyBombs></cell>")
+
+				actualXML should be(expectedXML)
+			}
+
+			"be created from XML" in {
+				Cell.fromXML(<cell><isRevealed>true</isRevealed><isBomb>false</isBomb><isFlagged>false</isFlagged><nearbyBombs>4</nearbyBombs></cell>) should be(cell)
 			}
 		}
 	}

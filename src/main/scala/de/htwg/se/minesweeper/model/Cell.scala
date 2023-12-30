@@ -1,6 +1,8 @@
 package de.htwg.se.minesweeper.model
 
-case class Cell(isRevealed: Boolean, isBomb: Boolean, isFlagged: Boolean = false, nearbyBombs: Int = 0):
+import scala.xml.Node
+
+case class Cell(isRevealed: Boolean, isBomb: Boolean, isFlagged: Boolean = false, nearbyBombs: Int = 0) {
 	override def toString: String = {
 		val bombChar = "☒"
 		val revealedChar = "☐"
@@ -16,3 +18,14 @@ case class Cell(isRevealed: Boolean, isBomb: Boolean, isFlagged: Boolean = false
 
 	def asRevealed: Cell = copy(isRevealed = true)
 	def asFlagToggled: Cell = copy(isFlagged = !isFlagged)
+	def toXML(): Node = <cell><isRevealed>{isRevealed}</isRevealed><isBomb>{isBomb}</isBomb><isFlagged>{isFlagged}</isFlagged><nearbyBombs>{nearbyBombs}</nearbyBombs></cell>
+}
+
+object Cell {
+	def fromXML(node: Node): Cell = Cell(
+		(node \ "isRevealed").text.toBoolean,
+		(node \ "isBomb").text.toBoolean,
+		(node \ "isFlagged").text.toBoolean,
+		(node \ "nearbyBombs").text.toInt
+	)
+}

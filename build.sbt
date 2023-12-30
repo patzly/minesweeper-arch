@@ -23,5 +23,7 @@ lazy val root = project
         .map(m => "org.openjfx" % s"javafx-$m" % "16" classifier osName)
     },
     libraryDependencies += "com.google.inject" % "guice" % "7.0.0",
-    libraryDependencies += "net.codingwell" %% "scala-guice" % "5.1.1"
+    libraryDependencies += "net.codingwell" %% "scala-guice" % "5.1.1",
+    libraryDependencies += "org.scala-lang.modules" %% "scala-xml" % "2.2.0",
+    libraryDependencies += "com.typesafe.play" %% "play-json" % "2.10.3"
   )
