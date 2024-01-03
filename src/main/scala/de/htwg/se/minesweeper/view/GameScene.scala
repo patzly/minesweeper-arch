@@ -39,7 +39,7 @@ case class GameScene(controller: ControllerInterface) extends Scene {
 		for (iy <- 0 until gridHeight) {
 			grid.add(new Button {
 				styleClass = Seq("cell")
-				onMouseClicked = e => e.getButton match {
+				onMouseClicked = e => if !controller.getGameState.field.getCell(ix, iy).get.isRevealed then e.getButton match {
 					case MouseButton.PRIMARY => controller.reveal(ix, iy) match {
 						case Success(_) => ()
 						case Failure(exception) => println(exception.getMessage)
@@ -49,7 +49,7 @@ case class GameScene(controller: ControllerInterface) extends Scene {
 						case Failure(exception) => println(exception.getMessage)
 					}
 					case _ => ()
-				}
+				} else ()
 				prefWidth <== Bindings.min(grid.widthProperty().divide(gridWidth.doubleValue), grid.heightProperty().divide(gridHeight.doubleValue))
 				prefHeight <== Bindings.min(grid.widthProperty().divide(gridWidth.doubleValue), grid.heightProperty().divide(gridHeight.doubleValue))
 			}, ix, iy)
