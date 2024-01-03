@@ -52,7 +52,7 @@ class TestObserver extends Observer[Event] with EventVisitor {
 class BaseControllerSpec extends AnyWordSpec {
     "A BaseController" when {
         "it has a single cell field" should {
-            val controller = BaseController(TestFieldFactory(Vector(Vector(Cell(false, false)))))
+            val controller = BaseController(TestFieldFactory(Vector(Vector(Cell(false, false)))), null)
             val observer = TestObserver()
             controller.addObserver(observer)
 
@@ -121,7 +121,7 @@ class BaseControllerSpec extends AnyWordSpec {
             }
         }
         "it has a multi cell field" should {
-            val controller = BaseController(TestFieldFactory(Vector.tabulate(3, 3)((y, x) => Cell(false, x == 0))))
+            val controller = BaseController(TestFieldFactory(Vector.tabulate(3, 3)((y, x) => Cell(false, x == 0))), null)
             val observer = TestObserver()
             controller.addObserver(observer)
             "without revealing the cell" in {
@@ -153,7 +153,7 @@ class BaseControllerSpec extends AnyWordSpec {
                     i += 1
                     true
                 else x == 0
-            })))
+            })), null)
             val observer = TestObserver()
             controller.addObserver(observer)
 

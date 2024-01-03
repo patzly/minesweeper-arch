@@ -5,8 +5,9 @@ import de.htwg.se.minesweeper.controller.baseController.BaseController
 import de.htwg.se.minesweeper.model.fieldComponent.FieldFactory
 
 import com.google.inject.Inject
+import de.htwg.se.minesweeper.model.FileIOComponent.FileIOInterface
 
-class SpyController @Inject() (val field_factory: FieldFactory) extends BaseController(field_factory) with ControllerInterface {
+class SpyController @Inject() (field_factory: FieldFactory, fileIO: FileIOInterface) extends BaseController(field_factory, fileIO) with ControllerInterface {
     var didWin = false
     var didLose = false
     var didExit = false

@@ -7,9 +7,10 @@ import de.htwg.se.minesweeper.controller._
 import de.htwg.se.minesweeper.model.fieldComponent.{FieldFactory, FieldInterface}
 import de.htwg.se.minesweeper.model.GameState
 import com.google.inject.Inject
+import de.htwg.se.minesweeper.model.FileIOComponent.FileIOInterface
 
 
-class BaseController @Inject() (val factory: FieldFactory) extends Observable[Event] with ControllerInterface {
+class BaseController @Inject() (val factory: FieldFactory, fileIO: FileIOInterface) extends Observable[Event] with ControllerInterface {
 	private[baseController] var gameState: GameState = GameState(0, 0, factory.createField(0, 0, 0), 0, 0, 0)
 
 	private[baseController] var state: BaseControllerState = FirstMoveBaseControllerState(this)
@@ -52,5 +53,26 @@ class BaseController @Inject() (val factory: FieldFactory) extends Observable[Ev
 			case Success(newState) => newState
 		}
 		Success(notifyObservers(FieldUpdatedEvent(gameState.field)))
+	}
+
+	override def loadGame(path: String): Try[Unit] = {
+		fileIO.load(path) match {
+			case Failure(exception) => return Failure(exception)
+			case Success(newState) => {
+				gameState = newState
+				gameState.firstMove match {
+					case true => state = FirstMoveBaseControllerState(this)
+					case false => state = AnyMoveBaseControllerState(this)
+				}
+			}
+		}
+		Success(notifyObservers(StartGameEvent(gameState.field)))
+	}
+
+	override def saveGame(path: String): Try[Unit] = {
+		fileIO.save(gameState, path) match {
+			case Failure(exception) => return Failure(exception)
+			case Success(_) => Success(())
+		}
 	}
 }

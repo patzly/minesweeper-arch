@@ -15,4 +15,6 @@ trait ControllerInterface extends Observable[Event] {
     def undo(): Try[Unit]
     def redo(): Try[Unit]
     def exit(): Unit
+    def loadGame(path: String): Try[Unit]
+    def saveGame(path: String): Try[Unit]
 }

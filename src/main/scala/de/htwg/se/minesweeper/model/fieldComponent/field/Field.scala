@@ -19,6 +19,14 @@ class Field(cellMatrix: CellMatrix) extends FieldInterface {
 		)
 	}
 
+	// for the tests
+	override def equals(other: Any): Boolean = {
+		other match {
+			case that: Field => matrix == that.matrix
+			case _ => false
+		}
+	}
+
 	override def toString: String = matrix.map(r => r.mkString(" ")).mkString("\n")
 	
 	override def getCell(x: Int, y: Int): Try[Cell] = Try(matrix(y)(x))

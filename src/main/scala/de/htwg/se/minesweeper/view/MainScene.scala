@@ -14,6 +14,7 @@ case class MainScene(controller: ControllerInterface) extends Scene {
 	private val height_spinner = new Spinner[Int](1, 32, 8)
 	private val bomb_spinner = new Spinner[Double](0.0, 1.0, 0.15, 0.01)
 	private val undo_spinner = new Spinner[Int](0, 10, 3)
+	private val load_path_input = new TextField()
 
 	controls.addColumn(0, new Label("Breite"), new Label("Höhe"), new Label("Bomben Verteilung"), new Label("Anzahl Undos"))
 	controls.addColumn(1, width_spinner, height_spinner, bomb_spinner, undo_spinner)
@@ -32,6 +33,10 @@ case class MainScene(controller: ControllerInterface) extends Scene {
 				controls,
 				new Button("Spielen") {
 					onMouseClicked = e => controller.startGame(width_spinner.getValue, height_spinner.getValue, bomb_spinner.getValue.toFloat, undo_spinner.getValue)
+				},
+				load_path_input,
+				new Button("Speicherstand Laden") {
+					onMouseClicked = e => controller.loadGame(load_path_input.getText)
 				}
 			)
 		}

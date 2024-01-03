@@ -10,6 +10,7 @@ import scalafx.scene.text.Text
 import javafx.scene.input.MouseButton
 import javafx.scene.layout.GridPane as JGridPane
 import scala.util.{Failure, Success}
+import de.htwg.se.minesweeper.model.fieldComponent.FieldInterface
 
 case class GameScene(controller: ControllerInterface) extends Scene {
 	private val undo_prop = IntegerProperty(controller.getGameState.undos)
@@ -18,6 +19,8 @@ case class GameScene(controller: ControllerInterface) extends Scene {
 
 	private val end_screen_visible = BooleanProperty(false)
 	private val end_screen_text = StringProperty("")
+
+	private val load_save_path_input = new TextField()
 
 	private val time_prop = IntegerProperty(0)
 	private val t = new java.util.Timer()
@@ -99,6 +102,13 @@ case class GameScene(controller: ControllerInterface) extends Scene {
 				new Button("Zum Menü") {
 					onMouseClicked = e => controller.setup()
 				},
+				load_save_path_input,
+				new Button("Speicherstand Laden") {
+					onMouseClicked = e => controller.loadGame(load_save_path_input.getText)
+				},
+				new Button("Spiel Speichern") {
+					onMouseClicked = e => controller.saveGame(load_save_path_input.getText)
+				},
 				new Button("Undo") {
 					disable <== end_screen_visible.or(cant_undo_prop)
 					onMouseClicked = e => controller.undo()
@@ -111,14 +121,14 @@ case class GameScene(controller: ControllerInterface) extends Scene {
 		}
 	}
 
-	def update(event: FieldUpdatedEvent): Unit = {
+	def update(field: FieldInterface): Unit = {
 		undo_prop.setValue(controller.getGameState.undos)
 		cant_undo_prop.setValue(controller.getGameState.cantUndo)
 		redo_prop.setValue(controller.getGameState.cantRedo)
 
 		// update the grid
 		grid.getChildren.forEach(button => {
-			val cell = event.field.getCell(JGridPane.getColumnIndex(button), JGridPane.getRowIndex(button)).get
+			val cell = field.getCell(JGridPane.getColumnIndex(button), JGridPane.getRowIndex(button)).get
 			button.getStyleClass.retainAll("cell")
 			button.setViewOrder(0)
 

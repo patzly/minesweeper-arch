@@ -18,20 +18,34 @@ private class StartGameState(tui: Tui) extends TuiState {
 			case "q" | null => tui.controller.exit()
 			case _ => {
 				val inputs = line.split(" ").toList
-				if inputs.length < 4 then {
-					return println("Invalid input: Format is <width> <height> <bomb_chance> <undos>!")
+
+				inputs.length match {
+				case 4 => {
+					val (width, height, bomb_chance, undos) = (inputs(0).toIntOption, inputs(1).toIntOption, inputs(2).toFloatOption, inputs(3).toIntOption) match {
+						case (Some(width), Some(height), Some(bomb_chance), Some(undos)) => (width, height, bomb_chance, undos)
+						case _ => return println("Invalid input: Please enter numbers!")
+					}
+
+					if width == 0 || height == 0 then return println("Invalid input: width or height can't be 0!")
+
+					println(s"Starting game with width=$width, height=$height, bomb_chance=$bomb_chance and undos=$undos")
+
+					tui.controller.startGame(width, height, bomb_chance, undos)
+					}
+				case 2 => {
+					if inputs(0) == "load" then {
+						println(s"Loading game from ${inputs(1)}")
+
+						tui.controller.loadGame(inputs(1)) match {
+							case Success(value) => ()
+							case Failure(exception) => println(exception.getMessage)
+						}
+					} else {
+						return println("Invalid input: Format is load <filepath>!")
+					}
 				}
-
-				val (width, height, bomb_chance, undos) = (inputs(0).toIntOption, inputs(1).toIntOption, inputs(2).toFloatOption, inputs(3).toIntOption) match {
-				    case (Some(width), Some(height), Some(bomb_chance), Some(undos)) => (width, height, bomb_chance, undos)
-				    case _ => return println("Invalid input: Please enter numbers!")
+				case _ => return println("Invalid input: Format is <width> <height> <bomb_chance> <undos> | load <filepath>!")
 				}
-
-				if width == 0 || height == 0 then return println("Invalid input: width or height can't be 0!")
-
-				println(s"Starting game with width=$width, height=$height, bomb_chance=$bomb_chance and undos=$undos")
-
-				tui.controller.startGame(width, height, bomb_chance, undos)
 			}
 		}
 	}
@@ -53,7 +67,27 @@ private class DefaultTuiState(tui: Tui) extends TuiState {
 			case _ => {
 				val inputs = line.split(" ").toList
 				if inputs.length < 2 then {
-					return println("Invalid input: Format is <column> <row>!")
+					return println("Invalid input: Format is <column> <row> | load <filepath>!")
+				}
+
+				inputs match {
+					case "load" :: path :: Nil => return {
+						println(s"Loading game from $path")
+
+						tui.controller.loadGame(path) match {
+							case Success(value) => ()
+							case Failure(exception) => println(exception.getMessage)
+						}
+					}
+					case "save" :: path :: Nil => return {
+						println(s"Saving game to $path")
+
+						tui.controller.saveGame(path) match {
+							case Success(value) => ()
+							case Failure(exception) => println(exception.getMessage)
+						}
+					}
+					case _ => ()
 				}
 
 				val (x, y) = (inputs(0).toIntOption, inputs(1).toIntOption) match {

@@ -1,0 +1,18 @@
+{
+  "undos" : 0,
+  "maxUndos" : 0,
+  "field" : {
+    "matrix" : [ [ {
+      "isRevealed" : true,
+      "isBomb" : true,
+      "isFlagged" : false,
+      "nearbyBombs" : 0
+    } ] ]
+  },
+  "bombChance" : 0,
+  "width" : 0,
+  "height" : 0,
+  "firstMove" : true,
+  "undoFields" : [ ],
+  "redoFields" : [ ]
+}

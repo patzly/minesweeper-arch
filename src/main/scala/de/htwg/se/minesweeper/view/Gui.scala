@@ -41,7 +41,7 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 
 	override def visitLost(event: LostEvent): Unit = gameScene.get.showLossScreen()
 	override def visitWon(event: WonEvent): Unit = gameScene.get.showWinScreen()
-	override def visitFieldUpdated(event: FieldUpdatedEvent): Unit = gameScene.get.update(event)
+	override def visitFieldUpdated(event: FieldUpdatedEvent): Unit = gameScene.get.update(event.field)
 
 	override def visitSetup(event: SetupEvent): Unit = {
 		gameScene = None
@@ -50,6 +50,7 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 
 	override def visitStartGame(event: StartGameEvent): Unit = {
 		gameScene = Some(GameScene(controller))
+		gameScene.get.update(event.field)
 		stage.setScene(gameScene.get)
 	}
 }
