@@ -62,26 +62,26 @@ class BaseControllerSpec extends AnyWordSpec {
                 observer.f.toString shouldBe("#")
             }
             "after undoing an empty stack" in {
-                controller.cantUndo shouldBe true
+                controller.getGameState.cantUndo shouldBe true
                 val fail = controller.undo() shouldBe a [Failure[NoSuchElementException]]
                 observer.f.toString shouldBe("#")
             }
             "flag the cell" in { // has to be tested before reveal() is called!
                 controller.flag(0, 0) shouldBe(Success(()))
                 observer.f.toString shouldBe ("⚑")
-                controller.cantUndo shouldBe false
+                controller.getGameState.cantUndo shouldBe false
             }
             "after undoing the flag" in {
                 controller.undo() shouldBe(Success(()))
                 observer.f.toString shouldBe("#")
-                controller.getUndos shouldBe 1
-                controller.cantUndo shouldBe true
-                controller.cantRedo shouldBe false
+                controller.getGameState.undos shouldBe 1
+                controller.getGameState.cantUndo shouldBe true
+                controller.getGameState.cantRedo shouldBe false
             }
             "after redoing the flag" in {
                 controller.redo() shouldBe(Success(()))
                 observer.f.toString shouldBe("⚑")
-                controller.cantRedo shouldBe true
+                controller.getGameState.cantRedo shouldBe true
             }
             "return Failure (firstMove)" in {
                 controller.reveal(1, 1) shouldBe a[Failure[IndexOutOfBoundsException]]
@@ -95,20 +95,20 @@ class BaseControllerSpec extends AnyWordSpec {
             "after undoing the reveal" in {
                 controller.undo() shouldBe(Success(()))
                 observer.f.toString shouldBe("⚑")
-                controller.getUndos shouldBe 0
-                controller.cantUndo shouldBe true
+                controller.getGameState.undos shouldBe 0
+                controller.getGameState.cantUndo shouldBe true
             }
             "after redoing the reveal" in {
                 controller.redo() shouldBe(Success(()))
                 observer.f.toString shouldBe("☐")
-                controller.cantRedo shouldBe true
+                controller.getGameState.cantRedo shouldBe true
             }
             "throw after redoing an empty stack" in {
                 controller.redo() shouldBe a [Failure[NoSuchElementException]]
                 observer.f.toString shouldBe("☐")
             }
             "throw after undoing without any undos left" in {
-                controller.cantUndo shouldBe true
+                controller.getGameState.cantUndo shouldBe true
                 controller.undo() shouldBe a [Failure[RuntimeException]]
             }
             "return Failure" in {

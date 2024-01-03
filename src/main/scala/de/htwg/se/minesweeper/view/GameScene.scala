@@ -9,11 +9,12 @@ import scalafx.scene.{Node, Scene}
 import scalafx.scene.text.Text
 import javafx.scene.input.MouseButton
 import javafx.scene.layout.GridPane as JGridPane
+import scala.util.{Failure, Success}
 
 case class GameScene(controller: ControllerInterface) extends Scene {
-	private val undo_prop = IntegerProperty(controller.getUndos)
-	private val cant_undo_prop = BooleanProperty(controller.cantUndo)
-	private val redo_prop = BooleanProperty(controller.cantRedo)
+	private val undo_prop = IntegerProperty(controller.getGameState.undos)
+	private val cant_undo_prop = BooleanProperty(controller.getGameState.cantUndo)
+	private val redo_prop = BooleanProperty(controller.getGameState.cantRedo)
 
 	private val end_screen_visible = BooleanProperty(false)
 	private val end_screen_text = StringProperty("")
@@ -30,14 +31,20 @@ case class GameScene(controller: ControllerInterface) extends Scene {
 		id = "game-cell-grid"
 	}
 
-	private val (gridWidth, gridHeight) = controller.getField.dimension
+	private val (gridWidth, gridHeight) = controller.getGameState.field.dimension
 	for (ix <- 0 until gridWidth) {
 		for (iy <- 0 until gridHeight) {
 			grid.add(new Button {
 				styleClass = Seq("cell")
 				onMouseClicked = e => e.getButton match {
-					case MouseButton.PRIMARY => controller.reveal(ix, iy)
-					case MouseButton.SECONDARY => controller.flag(ix, iy)
+					case MouseButton.PRIMARY => controller.reveal(ix, iy) match {
+						case Success(_) => ()
+						case Failure(exception) => println(exception.getMessage)
+					}
+					case MouseButton.SECONDARY => controller.flag(ix, iy) match {
+						case Success(_) => ()
+						case Failure(exception) => println(exception.getMessage)
+					}
 					case _ => ()
 				}
 				prefWidth <== Bindings.min(grid.widthProperty().divide(gridWidth.doubleValue), grid.heightProperty().divide(gridHeight.doubleValue))
@@ -78,8 +85,8 @@ case class GameScene(controller: ControllerInterface) extends Scene {
 							id = "game-retry-btn"
 							onMouseClicked = e => {
 								end_screen_visible.setValue(false)
-								val (width, height) = controller.getField.dimension
-								controller.startGame(width, height, controller.getBombChance, controller.getMaxUndos)
+								val (width, height) = controller.getGameState.field.dimension
+								controller.startGame(width, height, controller.getGameState.bombChance, controller.getGameState.maxUndos)
 							}
 						}
 					)
@@ -105,9 +112,9 @@ case class GameScene(controller: ControllerInterface) extends Scene {
 	}
 
 	def update(event: FieldUpdatedEvent): Unit = {
-		undo_prop.setValue(controller.getUndos)
-		cant_undo_prop.setValue(controller.cantUndo)
-		redo_prop.setValue(controller.cantRedo)
+		undo_prop.setValue(controller.getGameState.undos)
+		cant_undo_prop.setValue(controller.getGameState.cantUndo)
+		redo_prop.setValue(controller.getGameState.cantRedo)
 
 		// update the grid
 		grid.getChildren.forEach(button => {

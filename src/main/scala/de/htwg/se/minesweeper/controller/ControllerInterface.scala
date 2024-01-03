@@ -3,14 +3,10 @@ package de.htwg.se.minesweeper.controller
 import de.htwg.se.minesweeper.model.fieldComponent.FieldInterface
 import de.htwg.se.minesweeper.observer.Observable
 import scala.util.Try
+import de.htwg.se.minesweeper.model.GameState
 
 trait ControllerInterface extends Observable[Event] {
-    def getMaxUndos: Int
-    def getUndos: Int
-    def getField: FieldInterface
-    def cantUndo: Boolean
-    def cantRedo: Boolean
-    def getBombChance: Float
+    def getGameState: GameState
 
     def setup(): Unit
     def startGame(width: Int, height: Int, bomb_chance: Float, undos: Int): Unit

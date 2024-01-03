@@ -24,15 +24,6 @@ class FieldSpec extends AnyWordSpec {
 			"fail on withRevealed" in {
 				zeroField.withRevealed(0, 0) shouldBe a [Failure[IndexOutOfBoundsException]]
 			}
-			"be converted to XML" in {
-				val actualXML = trim(zeroField.toXML())
-				val expectedXML = trim(<field></field>)
-
-				actualXML should be(expectedXML)
-			}
-			"be created from XML" in {
-				Field.fromXML(<field></field>).toString should be(zeroField.toString)
-			}
 		}
 		"it has 1 row and 0 columns" should {
 			val zeroField = Field(Vector(Vector()))
@@ -47,15 +38,6 @@ class FieldSpec extends AnyWordSpec {
 			}
 			"fail on withRevealed" in {
 				zeroField.withRevealed(0, 0) shouldBe a[Failure[IndexOutOfBoundsException]]
-			}
-			"be converted to XML" in {
-				val actualXML = trim(zeroField.toXML())
-				val expectedXML = trim(<field><row></row></field>)
-
-				actualXML should be(expectedXML)
-			}
-			"be created from XML" in {
-				Field.fromXML(<field><row></row></field>).toString should be(zeroField.toString)
 			}
 		}
 		"it has 1 rows and columns" should {
@@ -128,73 +110,6 @@ class FieldSpec extends AnyWordSpec {
 			}
 			"check correctly if the game is won" in {
 				fieldWithBombs.hasWon shouldBe(false)
-			}
-			"be converted to XML" in {
-				val actualXML = trim(fieldWithBombs.toXML()).toString
-				val expectedXML = trim(<field>
-					<row>
-						<cell>
-						<isRevealed>false</isRevealed>
-						<isBomb>true</isBomb>
-						<isFlagged>false</isFlagged>
-						<nearbyBombs>1</nearbyBombs>
-						</cell>
-						<cell>
-						<isRevealed>false</isRevealed>
-						<isBomb>false</isBomb>
-						<isFlagged>false</isFlagged>
-						<nearbyBombs>2</nearbyBombs>
-						</cell>
-						<cell>
-						<isRevealed>false</isRevealed>
-						<isBomb>false</isBomb>
-						<isFlagged>false</isFlagged>
-						<nearbyBombs>1</nearbyBombs>
-						</cell>	
-					</row>
-					<row>
-						<cell>
-						<isRevealed>false</isRevealed>
-						<isBomb>false</isBomb>
-						<isFlagged>false</isFlagged>
-						<nearbyBombs>2</nearbyBombs>
-						</cell>
-						<cell>
-						<isRevealed>false</isRevealed>
-						<isBomb>true</isBomb>
-						<isFlagged>false</isFlagged>
-						<nearbyBombs>2</nearbyBombs>
-						</cell>
-						<cell>
-						<isRevealed>false</isRevealed>
-						<isBomb>false</isBomb>
-						<isFlagged>false</isFlagged>
-						<nearbyBombs>2</nearbyBombs>
-						</cell>
-					</row>
-					<row>
-						<cell>
-						<isRevealed>false</isRevealed>
-						<isBomb>false</isBomb>
-						<isFlagged>false</isFlagged>
-						<nearbyBombs>1</nearbyBombs>
-						</cell>
-						<cell>
-						<isRevealed>false</isRevealed>
-						<isBomb>false</isBomb>
-						<isFlagged>false</isFlagged>
-						<nearbyBombs>2</nearbyBombs>
-						</cell>
-						<cell>
-						<isRevealed>false</isRevealed>
-						<isBomb>true</isBomb>
-						<isFlagged>false</isFlagged>
-						<nearbyBombs>1</nearbyBombs>
-						</cell>
-					</row>
-				</field>).toString
-
-				actualXML should be(expectedXML)
 			}
 		}
 	}

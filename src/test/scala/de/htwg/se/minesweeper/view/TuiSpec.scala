@@ -58,7 +58,7 @@ class TuiSpec extends AnyWordSpec {
 			controller.addObserver(observer)
 
 			"have an empty fieldSting" in {
-				tui.fieldString(controller.getField) shouldBe ""
+				tui.fieldString(controller.getGameState.field) shouldBe ""
 			}
 		}
 		"it has a single cell field" should {
@@ -75,55 +75,55 @@ class TuiSpec extends AnyWordSpec {
 				tui.processLine("1 1 0 1")
 			}
 			"without revealing the cell" in {
-				tui.fieldString(controller.getField) shouldEqual "                     \n   1\n   -\n1 |#"
-				controller.getField.toString shouldEqual("#")
+				tui.fieldString(controller.getGameState.field) shouldEqual "                     \n   1\n   -\n1 |#"
+				controller.getGameState.field.toString shouldEqual("#")
 				tui.processLine("abc 2")
-				controller.getField.toString shouldEqual("#")
+				controller.getGameState.field.toString shouldEqual("#")
 				tui.processLine("2")
-				controller.getField.toString shouldEqual("#")
+				controller.getGameState.field.toString shouldEqual("#")
 			}
 			"after redoing an empty stack" in {
 				tui.processLine("r")
-				controller.getField.toString shouldEqual("#")
+				controller.getGameState.field.toString shouldEqual("#")
 			}
 			"after flagging the cell" in {
 				tui.processLine("1 1 flag")
-				controller.getField.toString shouldEqual("⚑")
+				controller.getGameState.field.toString shouldEqual("⚑")
 				tui.processLine("2 2 flag")
-				controller.getField.toString shouldEqual("⚑")
+				controller.getGameState.field.toString shouldEqual("⚑")
 			}
 			"after undoing the flag" in {
 				tui.processLine("u")
-				controller.getField.toString shouldEqual("#")
+				controller.getGameState.field.toString shouldEqual("#")
 				tui.processLine("u")
-				controller.getField.toString shouldEqual("#")
+				controller.getGameState.field.toString shouldEqual("#")
 			}
 			"after undoing an empty stack" in {
 				tui.processLine("u")
-				controller.getField.toString shouldEqual("#")
+				controller.getGameState.field.toString shouldEqual("#")
 			}
 			"after redoing the flag" in {
 				tui.processLine("r")
-				controller.getField.toString shouldEqual("⚑")
+				controller.getGameState.field.toString shouldEqual("⚑")
 			}
 			"after redoing again" in {
 				tui.processLine("r")
-				controller.getField.toString shouldEqual("⚑")
+				controller.getGameState.field.toString shouldEqual("⚑")
 			}
 			"after flagging the cell again" in {
 				tui.processLine("1 1 flag")
-				controller.getField.toString shouldEqual("#")
+				controller.getGameState.field.toString shouldEqual("#")
 			}
 			"after revealing out of bounds" in {
 				tui.processLine("0 0")
-				controller.getField.toString shouldEqual "#"
+				controller.getGameState.field.toString shouldEqual "#"
 			}
 			"after revealing the cell" in {
 				tui.processLine("1 1")
-				controller.getField.toString shouldEqual("☐")
+				controller.getGameState.field.toString shouldEqual("☐")
 				observer.w shouldBe(WonEvent())
 				tui.processLine("2 2")
-				controller.getField.toString shouldEqual("☐")
+				controller.getGameState.field.toString shouldEqual("☐")
 			}
 			"after going to menu" in {
 				tui.processLine("menu")
@@ -142,58 +142,58 @@ class TuiSpec extends AnyWordSpec {
 			"without revealing the cell" in {
 				controller.setup()
 				controller.startGame(3, 3, 0, 1)
-				tui.fieldString(controller.getField) shouldEqual "                     \n   1 2 3\n   -----\n1 |# # #\n2 |# # #\n3 |# # #"
-				controller.getField.toString shouldEqual("# # #\n# # #\n# # #")
+				tui.fieldString(controller.getGameState.field) shouldEqual "                     \n   1 2 3\n   -----\n1 |# # #\n2 |# # #\n3 |# # #"
+				controller.getGameState.field.toString shouldEqual("# # #\n# # #\n# # #")
 				tui.processLine("abc 2")
-				controller.getField.toString shouldEqual("# # #\n# # #\n# # #")
+				controller.getGameState.field.toString shouldEqual("# # #\n# # #\n# # #")
 				tui.processLine("abc")
-				controller.getField.toString shouldEqual("# # #\n# # #\n# # #")
+				controller.getGameState.field.toString shouldEqual("# # #\n# # #\n# # #")
 			}
 
 			"after revealing some cells recursively" in {
 				tui.processLine("3 3")
-				controller.getField.toString shouldEqual("# 2 ☐\n# 3 ☐\n# 2 ☐")
+				controller.getGameState.field.toString shouldEqual("# 2 ☐\n# 3 ☐\n# 2 ☐")
 				observer.w shouldBe(WonEvent())
-				tui.fieldString(controller.getField) shouldEqual "                     \n   1 2 3\n   -----\n1 |# 2 ☐\n2 |# 3 ☐\n3 |# 2 ☐"
+				tui.fieldString(controller.getGameState.field) shouldEqual "                     \n   1 2 3\n   -----\n1 |# 2 ☐\n2 |# 3 ☐\n3 |# 2 ☐"
 
 				tui.processLine("4 4")
-				controller.getField.toString shouldEqual("# 2 ☐\n# 3 ☐\n# 2 ☐")
+				controller.getGameState.field.toString shouldEqual("# 2 ☐\n# 3 ☐\n# 2 ☐")
 
 				tui.processLine("2 1")
-				controller.getField.toString shouldEqual("# 2 ☐\n# 3 ☐\n# 2 ☐")
-				tui.fieldString(controller.getField) shouldEqual "                     \n   1 2 3\n   -----\n1 |# 2 ☐\n2 |# 3 ☐\n3 |# 2 ☐"
+				controller.getGameState.field.toString shouldEqual("# 2 ☐\n# 3 ☐\n# 2 ☐")
+				tui.fieldString(controller.getGameState.field) shouldEqual "                     \n   1 2 3\n   -----\n1 |# 2 ☐\n2 |# 3 ☐\n3 |# 2 ☐"
 
 				observer.w shouldBe(WonEvent())
 			}
 			"after winning and retrying" in {
 				tui.processLine("y")
-				controller.getField.toString shouldEqual("# # #\n# # #\n# # #")
-				tui.fieldString(controller.getField) shouldEqual "                     \n   1 2 3\n   -----\n1 |# # #\n2 |# # #\n3 |# # #"
+				controller.getGameState.field.toString shouldEqual("# # #\n# # #\n# # #")
+				tui.fieldString(controller.getGameState.field) shouldEqual "                     \n   1 2 3\n   -----\n1 |# # #\n2 |# # #\n3 |# # #"
 			}
 			"when winning" in {
 				tui.processLine("3 3")
-				controller.getField.toString shouldEqual("# 2 ☐\n# 3 ☐\n# 2 ☐")
+				controller.getGameState.field.toString shouldEqual("# 2 ☐\n# 3 ☐\n# 2 ☐")
 				observer.w shouldBe(WonEvent())
-				tui.fieldString(controller.getField) shouldEqual "                     \n   1 2 3\n   -----\n1 |# 2 ☐\n2 |# 3 ☐\n3 |# 2 ☐"
+				tui.fieldString(controller.getGameState.field) shouldEqual "                     \n   1 2 3\n   -----\n1 |# 2 ☐\n2 |# 3 ☐\n3 |# 2 ☐"
 			}
 			"after retrying" in {
 				tui.processLine("y")
-				controller.getField.toString shouldEqual("# # #\n# # #\n# # #")
-				tui.fieldString(controller.getField) shouldEqual "                     \n   1 2 3\n   -----\n1 |# # #\n2 |# # #\n3 |# # #"
+				controller.getGameState.field.toString shouldEqual("# # #\n# # #\n# # #")
+				tui.fieldString(controller.getGameState.field) shouldEqual "                     \n   1 2 3\n   -----\n1 |# # #\n2 |# # #\n3 |# # #"
 			}
 			"when retrying without having lost or won" in {
 				tui.processLine("y")
-				controller.getField.toString shouldEqual("# # #\n# # #\n# # #")
-				tui.fieldString(controller.getField) shouldEqual "                     \n   1 2 3\n   -----\n1 |# # #\n2 |# # #\n3 |# # #"
+				controller.getGameState.field.toString shouldEqual("# # #\n# # #\n# # #")
+				tui.fieldString(controller.getGameState.field) shouldEqual "                     \n   1 2 3\n   -----\n1 |# # #\n2 |# # #\n3 |# # #"
 				tui.processLine("n")
-				controller.getField.toString shouldEqual("# # #\n# # #\n# # #")
-				tui.fieldString(controller.getField) shouldEqual "                     \n   1 2 3\n   -----\n1 |# # #\n2 |# # #\n3 |# # #"
+				controller.getGameState.field.toString shouldEqual("# # #\n# # #\n# # #")
+				tui.fieldString(controller.getGameState.field) shouldEqual "                     \n   1 2 3\n   -----\n1 |# # #\n2 |# # #\n3 |# # #"
 			}
 			"after winning and not retrying" in {
 				tui.processLine("3 3")
-				controller.getField.toString shouldEqual("# 2 ☐\n# 3 ☐\n# 2 ☐")
+				controller.getGameState.field.toString shouldEqual("# 2 ☐\n# 3 ☐\n# 2 ☐")
 				observer.w shouldBe(WonEvent())
-				tui.fieldString(controller.getField) shouldEqual "                     \n   1 2 3\n   -----\n1 |# 2 ☐\n2 |# 3 ☐\n3 |# 2 ☐"
+				tui.fieldString(controller.getGameState.field) shouldEqual "                     \n   1 2 3\n   -----\n1 |# 2 ☐\n2 |# 3 ☐\n3 |# 2 ☐"
 				tui.processLine("n")
 				controller.didExit shouldBe(true)
 			}
@@ -201,9 +201,9 @@ class TuiSpec extends AnyWordSpec {
 				controller.setup()
 				controller.startGame(3, 3, 0, 1)
 				tui.processLine("3 3")
-				controller.getField.toString shouldEqual("# 2 ☐\n# 3 ☐\n# 2 ☐")
+				controller.getGameState.field.toString shouldEqual("# 2 ☐\n# 3 ☐\n# 2 ☐")
 				observer.w shouldBe(WonEvent())
-				tui.fieldString(controller.getField) shouldEqual "                     \n   1 2 3\n   -----\n1 |# 2 ☐\n2 |# 3 ☐\n3 |# 2 ☐"
+				tui.fieldString(controller.getGameState.field) shouldEqual "                     \n   1 2 3\n   -----\n1 |# 2 ☐\n2 |# 3 ☐\n3 |# 2 ☐"
 				tui.processLine("q")
 				controller.didExit shouldBe(true)
 			}
@@ -222,7 +222,7 @@ class TuiSpec extends AnyWordSpec {
 			"print correctly" in {
 				controller.setup()
 				controller.startGame(15, 1, 0, 1)
-				tui.fieldString(controller.getField) shouldEqual "                      1 1 1 1 1 1\n    1 2 3 4 5 6 7 8 9 0 1 2 3 4 5\n    -----------------------------\n1  |# # # # # # # # # # # # # # #"
+				tui.fieldString(controller.getGameState.field) shouldEqual "                      1 1 1 1 1 1\n    1 2 3 4 5 6 7 8 9 0 1 2 3 4 5\n    -----------------------------\n1  |# # # # # # # # # # # # # # #"
 			}
 		}
 		"when it has some matrix" should {
@@ -233,7 +233,7 @@ class TuiSpec extends AnyWordSpec {
 			controller.startGame(10, 10, 0, 1)
 
 			"should lose" in {
-				println(controller.getField.toString)
+				println(controller.getGameState.field.toString)
 				tui.processLine("1 1")
 				tui.processLine("6 1")
 				observer.l shouldBe(LostEvent())

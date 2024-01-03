@@ -6,6 +6,7 @@ import scala.util.Failure
 import de.htwg.se.minesweeper.model.fieldComponent.FieldInterface
 import de.htwg.se.minesweeper.model.Cell
 import scala.xml.NodeSeq
+import scala.xml.Node
 
 type CellMatrix = Vector[Vector[Cell]]
 
@@ -82,21 +83,5 @@ class Field(cellMatrix: CellMatrix) extends FieldInterface {
 
 	override def hasWon: Boolean = {
 		matrix.flatten.forall(cell => cell.isRevealed || cell.isBomb)
-	}
-
-	override def toXML(): scala.xml.Node = {
-		<field>
-			{matrix.map(row => <row>{row.map(cell => cell.toXML())}</row>)}
-		</field>
-	}
-}
-
-object Field {
-	def fromXML(node: scala.xml.Node): Field = {
-		Field((node \ "row").map(row =>
-			(row \ "cell").map(cell =>
-				Cell.fromXML(cell)
-			).toVector
-		).toVector)
 	}
 }

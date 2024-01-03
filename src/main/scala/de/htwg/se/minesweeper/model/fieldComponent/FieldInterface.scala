@@ -11,5 +11,4 @@ trait FieldInterface {
     def withToggledFlag(x: Int, y: Int): Try[FieldInterface]
     def hasWon: Boolean
     def countNearbyMines(x: Int, y: Int): Try[Int]
-    def toXML(): scala.xml.Node
 }

@@ -85,8 +85,8 @@ class RetryTuiState(tui: Tui) extends TuiState {
 	override def processLine(line: String): Unit = {
 		line match {
 			case "y" => {
-				val (width, height) = (tui.controller.getField.dimension)
-				tui.controller.startGame(width, height, tui.controller.getBombChance, tui.controller.getMaxUndos)
+				val (width, height) = (tui.controller.getGameState.field.dimension)
+				tui.controller.startGame(width, height, tui.controller.getGameState.bombChance, tui.controller.getGameState.maxUndos)
 			}
 			case "menu" => tui.controller.setup()
 			case "n" | "q" | null => tui.controller.exit()
