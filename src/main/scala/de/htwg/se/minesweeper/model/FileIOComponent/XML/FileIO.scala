@@ -3,7 +3,7 @@ package de.htwg.se.minesweeper.model.FileIOComponent.XML
 import de.htwg.se.minesweeper.model.FileIOComponent.FileIOInterface
 import de.htwg.se.minesweeper.model.*
 import de.htwg.se.minesweeper.model.fieldComponent.FieldInterface
-import scala.util.{Try, Success, Failure}
+import scala.util.Try
 import de.htwg.se.minesweeper.model.FileIOComponent.FileExtension
 
 class FileIO extends FileIOInterface {
@@ -46,7 +46,7 @@ class FileIO extends FileIOInterface {
     }
     private def fieldFromXML(node: scala.xml.Node): FieldInterface = {
         val matrix = (node \ "matrix").head
-        val rows = (matrix \ "row")
+        val rows = matrix \ "row"
         val cells = rows.map(row => (row \ "cell").map(cellFromXML))
         val cellMatrix = cells.map(_.toVector).toVector
         FieldInterface.fromMatrix(cellMatrix)
@@ -61,20 +61,8 @@ class FileIO extends FileIOInterface {
             <width>{gameState.width}</width>
             <height>{gameState.height}</height>
             <firstMove>{gameState.firstMove}</firstMove>
-            <undoFields>
-                {
-                    for {
-                        field <- gameState.undoFields
-                    } yield fieldToXML(field)
-                }
-            </undoFields>
-            <redoFields>
-                {
-                    for {
-                        field <- gameState.redoFields
-                    } yield fieldToXML(field)
-                }
-            </redoFields>
+            <undoFields>{gameState.undoFields.map(fieldToXML)}</undoFields>
+            <redoFields>{gameState.redoFields.map(fieldToXML)}</redoFields>
         </gameState>
     }
     private def gameStateFromXML(node: scala.xml.Node): GameState = {

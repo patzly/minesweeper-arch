@@ -3,7 +3,7 @@ package de.htwg.se.minesweeper.model.FileIOComponent.JSON
 import de.htwg.se.minesweeper.model.* 
 import de.htwg.se.minesweeper.model.fieldComponent.FieldInterface
 import de.htwg.se.minesweeper.model.FileIOComponent.FileIOInterface
-import scala.util.{Try, Success, Failure}
+import scala.util.Try
 import play.api.libs.json._
 import de.htwg.se.minesweeper.model.FileIOComponent.FileExtension
 
@@ -57,20 +57,8 @@ class FileIO extends FileIOInterface {
             "width" -> gameState.width,
             "height" -> gameState.height,
             "firstMove" -> gameState.firstMove,
-            "undoFields" -> Json.toJson(
-                for {
-                    field <- gameState.undoFields
-                } yield {
-                    fieldToJSON(field)
-                }
-            ),
-            "redoFields" -> Json.toJson(
-                for {
-                    field <- gameState.redoFields
-                } yield {
-                    fieldToJSON(field)
-                }
-            )
+            "undoFields" -> Json.toJson(gameState.undoFields.map(fieldToJSON)),
+            "redoFields" -> Json.toJson(gameState.redoFields.map(fieldToJSON)),
         )
     }
     private def gameStateFromJSON(json: JsValue): GameState = {
@@ -88,7 +76,10 @@ class FileIO extends FileIOInterface {
 
     override def load(path: String): Try[GameState] = Try {
         if FileExtension.get(path) != "json" then throw new IllegalArgumentException("File extension must be .json")
-        gameStateFromJSON(Json.parse(scala.io.Source.fromFile(path).mkString))
+        val src = scala.io.Source.fromFile(path)
+        val state = gameStateFromJSON(Json.parse(src.mkString))
+        src.close()
+        state
     }
 
     override def save(gameState: GameState, path: String): Try[Unit] = Try {
@@ -96,6 +87,6 @@ class FileIO extends FileIOInterface {
         import java.io._
         val pw = new PrintWriter(new File(path))
         pw.write(Json.prettyPrint(gameStateToJSON(gameState)))
-        pw.close
+        pw.close()
     }
 }

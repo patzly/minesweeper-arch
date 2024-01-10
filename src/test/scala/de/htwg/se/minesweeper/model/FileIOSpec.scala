@@ -24,6 +24,8 @@ class FileIOSpec extends AnyWordSpec {
                 loadedGameState.get.height should equal(gameState.height)
                 loadedGameState.get.redoFields should equal(gameState.redoFields)
                 loadedGameState.get.undoFields should equal(gameState.undoFields)
+                loadedGameState.get.redoFields.foreach(f => f should equal(gameState.redoFields))
+                loadedGameState.get.undoFields.foreach(f => f should equal(gameState.undoFields))
                 loadedGameState.get.firstMove should equal(gameState.firstMove)
                 loadedGameState.get.bombChance should equal(gameState.bombChance)
                 loadedGameState.get should equal(gameState)
@@ -34,7 +36,6 @@ class FileIOSpec extends AnyWordSpec {
                 fileIO.save(GameState(0, 0, Field(Vector(Vector(Cell(true, true)))), 0, 0, 0), "test.txt") shouldBe a[Failure[Exception]]
                 fileIO.load("test.txt") shouldBe a[Failure[Exception]]
             }
-        
         }
     }
     "a JSON FileIO" when {
@@ -52,13 +53,12 @@ class FileIOSpec extends AnyWordSpec {
                 fileIO.save(GameState(0, 0, Field(Vector(Vector(Cell(true, true)))), 0, 0, 0), "test.txt") shouldBe a[Failure[Exception]]
                 fileIO.load("test.txt") shouldBe a[Failure[Exception]]
             }
-        
         }
     }
     "a Flexible FileIO" when {
         val fileIO = Flexible.FileIO()
         "saving and loading a gameState as xml" should {
-            val gameState = GameState(0, 0, Field(Vector(Vector(Cell(true, true)))), 0, 0, 0)
+            val gameState = GameState(0, 3, Field(Vector(Vector(Cell(true, true)))), 1.0, 1, 1)
             fileIO.save(gameState, "test.xml")
             val loadedGameState = fileIO.load("test.xml")
             "load the correct gameState" in {
@@ -66,7 +66,7 @@ class FileIOSpec extends AnyWordSpec {
             } 
         }
         "saving and loading a gameState as json" should {
-            val gameState = GameState(0, 0, Field(Vector(Vector(Cell(true, true)))), 0, 0, 0)
+            val gameState = GameState(0, 3, Field(Vector(Vector(Cell(true, true)))), 1.0, 1, 1)
             fileIO.save(gameState, "test.json")
             val loadedGameState = fileIO.load("test.json")
             "load the correct gameState" in {
@@ -77,6 +77,8 @@ class FileIOSpec extends AnyWordSpec {
                 loadedGameState.get.height should equal(gameState.height)
                 loadedGameState.get.redoFields should equal(gameState.redoFields)
                 loadedGameState.get.undoFields should equal(gameState.undoFields)
+                loadedGameState.get.redoFields.foreach(f => f should equal(gameState.redoFields))
+                loadedGameState.get.undoFields.foreach(f => f should equal(gameState.undoFields))
                 loadedGameState.get.firstMove should equal (gameState.firstMove)
                 loadedGameState.get.bombChance should equal (gameState.bombChance)
                 loadedGameState.get should equal(gameState)
@@ -84,7 +86,7 @@ class FileIOSpec extends AnyWordSpec {
         }
         "saving or loading the wrong file extension" should {
             "return a Failure" in {
-                fileIO.save(GameState(0, 0, Field(Vector(Vector(Cell(true, true)))), 0, 0, 0), "test.txt") shouldBe a[Failure[Exception]]
+                fileIO.save(GameState(0, 3, Field(Vector(Vector(Cell(true, true)))), 1.0, 1, 1), "test.txt") shouldBe a[Failure[Exception]]
                 fileIO.load("test.txt") shouldBe a[Failure[Exception]]
             }
         
