@@ -13,6 +13,7 @@ import de.htwg.se.minesweeper.model._
 import de.htwg.se.minesweeper.observer._
 import de.htwg.se.minesweeper.model.fieldComponent.FieldInterface
 import de.htwg.se.minesweeper.model.fieldComponent.field.TestFieldFactory
+import de.htwg.se.minesweeper.model.FileIOComponent.JSON.FileIO
 
 class TestObserver extends Observer[Event] with EventVisitor {
     var f: FieldInterface = null
@@ -166,6 +167,23 @@ class BaseControllerSpec extends AnyWordSpec {
                 controller.reveal(2, 0) shouldBe(Success(()))
                 observer.f.toString shouldBe("# 2 ☐\n# 3 ☐\n# 2 ☐")
                 observer.w shouldBe(WonEvent())
+            }
+        }
+        "it has a cross field" should {
+            val controller = BaseController(TestFieldFactory(Vector.tabulate(8, 8)((y, x) => Cell(false, x == 4 || y == 4))), new FileIO)
+            val observer = TestObserver()
+            controller.addObserver(observer)
+
+            "start and save after first move" in {
+                controller.setup()
+                controller.startGame(8, 8, 0, 0)
+                controller.reveal(0, 0) shouldBe(Success(()))
+                controller.saveGame("cross-save.json")
+            }
+
+            "load after first move" in {
+                controller.loadGame("cross-save.json")
+                controller.getGameState.firstMove shouldBe false
             }
         }
     }
