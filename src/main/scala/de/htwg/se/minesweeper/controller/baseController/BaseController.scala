@@ -71,7 +71,7 @@ class BaseController @Inject() (val factory: FieldFactory, fileIO: FileIOInterfa
 
 	override def saveGame(path: String): Try[Unit] = {
 		fileIO.save(gameState, path) match {
-			case Failure(exception) => return Failure(exception)
+			case Failure(exception) => Failure(exception)
 			case Success(_) => Success(())
 		}
 	}

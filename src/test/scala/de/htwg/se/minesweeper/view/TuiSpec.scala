@@ -9,6 +9,7 @@ import de.htwg.se.minesweeper.model._
 import de.htwg.se.minesweeper.model.fieldComponent.field._
 import scala.concurrent._
 import scala.concurrent.duration._
+import de.htwg.se.minesweeper.model.FileIOComponent.JSON.FileIO
 
 class TestObserver extends Observer[Event] with EventVisitor {
 	var w: WonEvent = null
@@ -134,7 +135,7 @@ class TuiSpec extends AnyWordSpec {
 			}
 		}
 		"it has a multi cell field" should {
-			val controller = SpyController(TestFieldFactory(Vector.tabulate(3, 3)((y, x) => Cell(false, x == 0))), null)
+			val controller = SpyController(TestFieldFactory(Vector.tabulate(3, 3)((y, x) => Cell(false, x == 0))), new FileIO())
 			val tui = Tui(controller)
 			val observer = TestObserver()
 			controller.addObserver(observer)
@@ -148,6 +149,9 @@ class TuiSpec extends AnyWordSpec {
 				controller.getGameState.field.toString shouldEqual("# # #\n# # #\n# # #")
 				tui.processLine("abc")
 				controller.getGameState.field.toString shouldEqual("# # #\n# # #\n# # #")
+				tui.processLine("save")
+				tui.processLine("save no-extension")
+				tui.processLine("save save.json")
 			}
 
 			"after revealing some cells recursively" in {
@@ -212,6 +216,19 @@ class TuiSpec extends AnyWordSpec {
 				tui.processLine("q")
 				controller.didExit shouldBe(true)
 			}
+			"after loading the save" in {
+				tui.processLine("two inputs")
+				tui.processLine("load no-exist")
+				tui.processLine("load")
+				tui.processLine("load save.json")
+				controller.getGameState.field.toString shouldEqual("# # #\n# # #\n# # #")
+				tui.processLine("load no-exist")
+				tui.processLine("load")
+				tui.processLine("load save.json")
+				controller.getGameState.field.toString shouldEqual("# # #\n# # #\n# # #")
+				tui.processLine("q")
+			}
+
 		}
 		"it is a long matrix" should {
 			val controller = SpyController(TestFieldFactory(Vector.tabulate(1, 15)((y, x) => Cell(false, x == 2))), null)
