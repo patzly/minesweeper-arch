@@ -15,6 +15,7 @@ class FileIO extends FileIOInterface {
             <nearbyBombs>{cell.nearbyBombs}</nearbyBombs>
         </cell>
     }
+    
     private def cellFromXML(node: scala.xml.Node): Cell = {
         val isRevealed = (node \ "isRevealed").text.toBoolean
         val isBomb = (node \ "isBomb").text.toBoolean
@@ -27,29 +28,18 @@ class FileIO extends FileIOInterface {
         <field>
             <matrix>
                 {
-                    for {
-                        y <- 0 until field.dimension._2
-                    } yield {
-                        <row>
-                            {
-                                for {
-                                    x <- 0 until field.dimension._1
-                                } yield {
-                                    cellToXML(field.getCell(x, y).get)
-                                }
-                            }
-                        </row>
-                    }
+                    for y <- 0 until field.dimension._2
+                        yield <row>{field.getRow(y).get.map(cellToXML)}</row>
                 }
             </matrix>
         </field>
     }
+
     private def fieldFromXML(node: scala.xml.Node): FieldInterface = {
         val matrix = (node \ "matrix").head
         val rows = matrix \ "row"
-        val cells = rows.map(row => (row \ "cell").map(cellFromXML))
-        val cellMatrix = cells.map(_.toVector).toVector
-        FieldInterface.fromMatrix(cellMatrix)
+        val cells = rows.map(row => (row \ "cell").map(cellFromXML).toVector).toVector
+        FieldInterface.fromMatrix(cells)
     }
 
     private def gameStateToXML(gameState: GameState): scala.xml.Node = {
@@ -65,6 +55,7 @@ class FileIO extends FileIOInterface {
             <redoFields>{gameState.redoFields.map(fieldToXML)}</redoFields>
         </gameState>
     }
+    
     private def gameStateFromXML(node: scala.xml.Node): GameState = {
         val undos = (node \ "undos").text.toInt
         val maxUndos = (node \ "maxUndos").text.toInt
@@ -82,6 +73,7 @@ class FileIO extends FileIOInterface {
         if FileExtension.get(path) != "xml" then throw new IllegalArgumentException("File extension must be .xml")
         scala.xml.XML.save(path, gameStateToXML(gameState))
     }
+    
     override def load(path: String): Try[GameState] = Try {
         if FileExtension.get(path) != "xml" then throw new IllegalArgumentException("File extension must be .xml")
         val node = scala.xml.XML.loadFile(path)

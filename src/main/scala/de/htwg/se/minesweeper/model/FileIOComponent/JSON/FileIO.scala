@@ -16,6 +16,7 @@ class FileIO extends FileIOInterface {
             "nearbyBombs" -> cell.nearbyBombs
         )
     }
+
     private def cellFromJSON(json: JsValue): Cell = {
         val isRevealed = (json \ "isRevealed").as[Boolean]
         val isBomb = (json \ "isBomb").as[Boolean]
@@ -27,25 +28,16 @@ class FileIO extends FileIOInterface {
     private def fieldToJSON(field: FieldInterface): JsObject = {
         Json.obj(
             "matrix" -> Json.toJson(
-                for {
-                    y <- 0 until field.dimension._2
-                } yield {
-                    Json.toJson(
-                        for {
-                            x <- 0 until field.dimension._1
-                        } yield {
-                            cellToJSON(field.getCell(x, y).get)
-                        }
-                    )
-                }
+                for y <- 0 until field.dimension._2
+                    yield Json.toJson(field.getRow(y).get.map(cellToJSON))
             )
         )
     }
+
     private def fieldFromJSON(json: JsValue): FieldInterface = {
         val matrix = (json \ "matrix").as[JsArray]
-        val cells = matrix.value.map(row => row.as[JsArray].value.map(cellFromJSON))
-        val cellMatrix = cells.map(_.toVector).toVector
-        FieldInterface.fromMatrix(cellMatrix)
+        val cells = matrix.value.map(row => row.as[JsArray].value.map(cellFromJSON).toVector).toVector
+        FieldInterface.fromMatrix(cells)
     }
 
     private def gameStateToJSON(gameState: GameState): JsObject = {
@@ -61,6 +53,7 @@ class FileIO extends FileIOInterface {
             "redoFields" -> Json.toJson(gameState.redoFields.map(fieldToJSON)),
         )
     }
+
     private def gameStateFromJSON(json: JsValue): GameState = {
         val undos = (json \ "undos").as[Int]
         val maxUndos = (json \ "maxUndos").as[Int]
