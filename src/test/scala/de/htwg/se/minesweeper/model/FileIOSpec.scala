@@ -17,7 +17,16 @@ class FileIOSpec extends AnyWordSpec {
             fileIO.save(gameState, "test.xml")
             val loadedGameState = fileIO.load("test.xml")
             "load the correct gameState" in {
-                loadedGameState.get should equal (gameState)
+                loadedGameState.get.field should equal(gameState.field)
+                loadedGameState.get.maxUndos should equal(gameState.maxUndos)
+                loadedGameState.get.undos should equal(gameState.undos)
+                loadedGameState.get.width should equal(gameState.width)
+                loadedGameState.get.height should equal(gameState.height)
+                loadedGameState.get.redoFields should equal(gameState.redoFields)
+                loadedGameState.get.undoFields should equal(gameState.undoFields)
+                loadedGameState.get.firstMove should equal(gameState.firstMove)
+                loadedGameState.get.bombChance should equal(gameState.bombChance)
+                loadedGameState.get should equal(gameState)
             } 
         }
         "saving or loading the wrong file extension" should {
@@ -61,8 +70,17 @@ class FileIOSpec extends AnyWordSpec {
             fileIO.save(gameState, "test.json")
             val loadedGameState = fileIO.load("test.json")
             "load the correct gameState" in {
-                loadedGameState.get shouldBe(gameState)
-            } 
+                loadedGameState.get.field should equal(gameState.field)
+                loadedGameState.get.maxUndos should equal(gameState.maxUndos)
+                loadedGameState.get.undos should equal(gameState.undos)
+                loadedGameState.get.width should equal(gameState.width)
+                loadedGameState.get.height should equal(gameState.height)
+                loadedGameState.get.redoFields should equal(gameState.redoFields)
+                loadedGameState.get.undoFields should equal(gameState.undoFields)
+                loadedGameState.get.firstMove should equal (gameState.firstMove)
+                loadedGameState.get.bombChance should equal (gameState.bombChance)
+                loadedGameState.get should equal(gameState)
+            }
         }
         "saving or loading the wrong file extension" should {
             "return a Failure" in {

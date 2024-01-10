@@ -45,6 +45,9 @@ class FieldSpec extends AnyWordSpec {
 			val fieldRevealed = Field(Vector(Vector(Cell(true, false))))
 			val fieldBomb = Field(Vector(Vector(Cell(true, true))))
 
+			"not be a bool" in {
+				fieldHidden.equals(false) shouldBe false
+			}
 			"print a single hidden Cell" in {
 				fieldHidden.toString shouldBe("#")
 			}
