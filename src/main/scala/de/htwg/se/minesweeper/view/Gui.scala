@@ -5,6 +5,8 @@ import de.htwg.se.minesweeper.observer.Observer
 import scalafx.application.{JFXApp3, Platform}
 import scalafx.scene.Scene
 import scalafx.scene.image.Image
+import scalafx.stage.{FileChooser, Window}
+import scalafx.stage.FileChooser.ExtensionFilter
 
 class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] with EventVisitor {
 	controller.addObserver(this)
@@ -21,7 +23,6 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 			onCloseRequest = e => controller.exit()
 			icons.add(new Image("file:icon.png"))
 		}
-
 
 		gui_thread_ready = true
 	}
@@ -52,5 +53,21 @@ class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] 
 		gameScene = Some(GameScene(controller))
 		gameScene.get.update(event.field)
 		stage.setScene(gameScene.get)
+	}
+}
+
+object Gui {
+	private val fc = new FileChooser {
+		title = "Spielstandsdatei auswählen"
+		extensionFilters.add(new ExtensionFilter("Spielstand", Seq("*.xml", "*.json")))
+		initialFileName = "Spielstand.json"
+	}
+
+	def openFileDialog(window: javafx.stage.Window): java.io.File = {
+		fc.showOpenDialog(window)
+	}
+
+	def saveFileDialog(window: javafx.stage.Window): java.io.File = {
+		fc.showSaveDialog(window)
 	}
 }

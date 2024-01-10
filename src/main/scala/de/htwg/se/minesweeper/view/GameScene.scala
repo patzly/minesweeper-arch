@@ -9,6 +9,7 @@ import scalafx.scene.{Node, Scene}
 import scalafx.scene.text.Text
 import javafx.scene.input.MouseButton
 import javafx.scene.layout.GridPane as JGridPane
+
 import scala.util.{Failure, Success}
 import de.htwg.se.minesweeper.model.fieldComponent.FieldInterface
 
@@ -19,8 +20,6 @@ case class GameScene(controller: ControllerInterface) extends Scene {
 
 	private val end_screen_visible = BooleanProperty(false)
 	private val end_screen_text = StringProperty("")
-
-	private val load_save_path_input = new TextField()
 
 	private val time_prop = IntegerProperty(0)
 	private val t = new java.util.Timer()
@@ -102,13 +101,6 @@ case class GameScene(controller: ControllerInterface) extends Scene {
 				new Button("Zum Menü") {
 					onMouseClicked = e => controller.setup()
 				},
-				load_save_path_input,
-				new Button("Speicherstand Laden") {
-					onMouseClicked = e => controller.loadGame(load_save_path_input.getText)
-				},
-				new Button("Spiel Speichern") {
-					onMouseClicked = e => controller.saveGame(load_save_path_input.getText)
-				},
 				new Button("Undo") {
 					disable <== end_screen_visible.or(cant_undo_prop)
 					onMouseClicked = e => controller.undo()
@@ -116,6 +108,22 @@ case class GameScene(controller: ControllerInterface) extends Scene {
 				new Button("Redo") {
 					disable <== end_screen_visible.or(redo_prop)
 					onMouseClicked = e => controller.redo()
+				},
+				new Button("Speicherstand laden") {
+					onMouseClicked = e => {
+						val selectedFile = Gui.openFileDialog(scene.get.getWindow)
+						if selectedFile != null then {
+							controller.loadGame(selectedFile.getPath)
+						}
+					}
+				},
+				new Button("Spielstand speichern") {
+					onMouseClicked = e => {
+						val selectedFile = Gui.saveFileDialog(scene.get.getWindow)
+						if selectedFile != null then {
+							controller.saveGame(selectedFile.getPath)
+						}
+					}
 				}
 			)
 		}

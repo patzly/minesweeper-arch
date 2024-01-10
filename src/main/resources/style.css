@@ -143,6 +143,7 @@
     -fx-padding: 20;
     -fx-alignment: center;
     -fx-column-halignment: center;
+    -fx-vgap: 10;
 }
 
 #game-end-screen {
