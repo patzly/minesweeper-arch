@@ -23,10 +23,9 @@ case class GameScene(controller: ControllerInterface) extends Scene {
 
 	private val time_prop = IntegerProperty(0)
 	private val t = new java.util.Timer()
-	private val task = new java.util.TimerTask {
+	t.schedule(new java.util.TimerTask {
 		def run(): Unit = time_prop.value = time_prop.value + 1
-	}
-	t.schedule(task, 1000L, 1000L)
+	}, 1000L, 1000L)
 
 	// create grid
 	private val grid = new GridPane {
@@ -85,10 +84,11 @@ case class GameScene(controller: ControllerInterface) extends Scene {
 						},
 						new Button("Retry") {
 							id = "game-retry-btn"
-							onMouseClicked = e => {
+							onMouseClicked = _ => {
 								end_screen_visible.setValue(false)
 								val (width, height) = controller.getGameState.field.dimension
 								controller.startGame(width, height, controller.getGameState.bombChance, controller.getGameState.maxUndos)
+								scene.value.getWindow.sizeToScene()
 							}
 						}
 					)
@@ -112,17 +112,13 @@ case class GameScene(controller: ControllerInterface) extends Scene {
 				new Button("Speicherstand laden") {
 					onMouseClicked = e => {
 						val selectedFile = Gui.openFileDialog(scene.get.getWindow)
-						if selectedFile != null then {
-							controller.loadGame(selectedFile.getPath)
-						}
+						if selectedFile != null then controller.loadGame(selectedFile.getPath)
 					}
 				},
 				new Button("Spielstand speichern") {
 					onMouseClicked = e => {
 						val selectedFile = Gui.saveFileDialog(scene.get.getWindow)
-						if selectedFile != null then {
-							controller.saveGame(selectedFile.getPath)
-						}
+						if selectedFile != null then controller.saveGame(selectedFile.getPath)
 					}
 				}
 			)
@@ -154,10 +150,12 @@ case class GameScene(controller: ControllerInterface) extends Scene {
 	def showLossScreen(): Unit = {
 		end_screen_visible.setValue(true)
 		end_screen_text.setValue("You lost!")
+		t.cancel()
 	}
 
 	def showWinScreen(): Unit = {
 		end_screen_visible.setValue(true)
 		end_screen_text.setValue("You won!")
+		t.cancel()
 	}
 }

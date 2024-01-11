@@ -10,8 +10,6 @@ import scala.util.Random
 import de.htwg.se.minesweeper.model.FileIOComponent._
 
 import de.htwg.se.minesweeper.model.FileIOComponent.Flexible.FileIO
-//import de.htwg.se.minesweeper.model.FileIOComponent.XML.FileIO
-//import de.htwg.se.minesweeper.model.FileIOComponent.JSON.FileIO
 import com.google.inject.name.Names
 
 class MinesweeperModule extends AbstractModule {

@@ -9,7 +9,6 @@ import de.htwg.se.minesweeper.model.GameState
 import com.google.inject.Inject
 import de.htwg.se.minesweeper.model.FileIOComponent.FileIOInterface
 
-
 class BaseController @Inject() (val factory: FieldFactory, fileIO: FileIOInterface) extends Observable[Event] with ControllerInterface {
 	private[baseController] var gameState: GameState = GameState(0, 0, factory.createField(0, 0, 0), 0, 0, 0)
 

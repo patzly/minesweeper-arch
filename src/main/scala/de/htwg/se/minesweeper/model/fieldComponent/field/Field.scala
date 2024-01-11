@@ -5,8 +5,6 @@ import scala.util.Success
 import scala.util.Failure
 import de.htwg.se.minesweeper.model.fieldComponent.FieldInterface
 import de.htwg.se.minesweeper.model.Cell
-import scala.xml.NodeSeq
-import scala.xml.Node
 
 type CellMatrix = Vector[Vector[Cell]]
 

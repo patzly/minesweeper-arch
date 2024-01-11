@@ -1,7 +1,5 @@
 package de.htwg.se.minesweeper.model
 
-import scala.xml.Node
-
 case class Cell(isRevealed: Boolean, isBomb: Boolean, isFlagged: Boolean = false, nearbyBombs: Int = 0) {
 	override def toString: String = {
 		val bombChar = "☒"

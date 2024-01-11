@@ -37,9 +37,7 @@ case class MainScene(controller: ControllerInterface) extends Scene {
 					new Button("Speicherstand laden") {
 						onMouseClicked = e => {
 							val selectedFile = Gui.openFileDialog(scene.get.getWindow)
-							if selectedFile != null then {
-								controller.loadGame(selectedFile.getPath)
-							}
+							if selectedFile != null then controller.loadGame(selectedFile.getPath)
 						}
 					}
 				) {

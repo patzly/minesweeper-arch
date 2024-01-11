@@ -1,6 +1,5 @@
 package de.htwg.se.minesweeper.controller
 
-import de.htwg.se.minesweeper.model.fieldComponent.FieldInterface
 import de.htwg.se.minesweeper.observer.Observable
 import scala.util.Try
 import de.htwg.se.minesweeper.model.GameState

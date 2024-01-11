@@ -1,7 +1,6 @@
 package de.htwg.se.minesweeper.model
 
 import de.htwg.se.minesweeper.model.fieldComponent.FieldInterface
-import scala.Option
 import scala.util.{Try, Success, Failure}
 
 // cannot be a case class to enable the circular reference in redoState

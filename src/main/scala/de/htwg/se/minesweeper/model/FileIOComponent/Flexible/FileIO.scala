@@ -2,11 +2,9 @@ package de.htwg.se.minesweeper.model.FileIOComponent.Flexible
 
 import de.htwg.se.minesweeper.model.GameState
 import de.htwg.se.minesweeper.model.FileIOComponent.FileIOInterface
-import scala.util.{Try, Failure, Success}
+import scala.util.{Try, Failure}
 import de.htwg.se.minesweeper.model.FileIOComponent.XML
 import de.htwg.se.minesweeper.model.FileIOComponent.JSON
-import com.google.inject.Inject
-import com.google.inject.name.Named
 import de.htwg.se.minesweeper.model.FileIOComponent.FileExtension
 
 class FileIO extends FileIOInterface {

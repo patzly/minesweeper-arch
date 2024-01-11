@@ -5,7 +5,7 @@ import de.htwg.se.minesweeper.observer.Observer
 import scalafx.application.{JFXApp3, Platform}
 import scalafx.scene.Scene
 import scalafx.scene.image.Image
-import scalafx.stage.{FileChooser, Window}
+import scalafx.stage.FileChooser
 import scalafx.stage.FileChooser.ExtensionFilter
 
 class Gui(controller: ControllerInterface) extends JFXApp3 with Observer[Event] with EventVisitor {
