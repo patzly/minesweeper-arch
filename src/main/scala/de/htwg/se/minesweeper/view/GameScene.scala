@@ -134,16 +134,18 @@ case class GameScene(controller: ControllerInterface) extends Scene {
 		grid.getChildren.forEach(button => {
 			val cell = field.getCell(JGridPane.getColumnIndex(button), JGridPane.getRowIndex(button)).get
 			button.getStyleClass.retainAll("cell")
-			button.setViewOrder(0)
 
+			// set button view order, 0 above 1
+			button.setViewOrder(0)
+			if cell.isFlagged || (cell.isRevealed && !cell.isBomb) then button.setViewOrder(1)
+
+			// set button image
 			if cell.isFlagged then button.getStyleClass.add("flagged")
 			else if cell.isRevealed then
-				button.setViewOrder(1)
 				if cell.isBomb then button.getStyleClass.add("bomb")
 				else if cell.nearbyBombs != 0 then button.getStyleClass.add("n" + cell.nearbyBombs.toString)
 				else button.getStyleClass.add("revealed")
-			else
-				button.getStyleClass.add("unrevealed")
+			else button.getStyleClass.add("unrevealed")
 		})
 	}
 
