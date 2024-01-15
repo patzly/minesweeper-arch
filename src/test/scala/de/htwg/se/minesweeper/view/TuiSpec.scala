@@ -62,6 +62,16 @@ class TuiSpec extends AnyWordSpec {
 				tui.fieldString(controller.getGameState.field) shouldBe ""
 			}
 		}
+		"it has another empty field" should {
+			val controller = SpyController(TestFieldFactory(Vector(Vector.empty)), null)
+			val tui = Tui(controller)
+			val observer = TestObserver()
+			controller.addObserver(observer)
+
+			"have an empty fieldSting" in {
+				tui.fieldString(controller.getGameState.field) shouldBe ""
+			}
+		}
 		"it has a single cell field" should {
 			val controller = SpyController(TestFieldFactory(Vector(Vector(Cell(false, false)))), null)
 			val tui = Tui(controller)
