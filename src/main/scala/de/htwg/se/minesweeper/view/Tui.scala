@@ -10,6 +10,7 @@ private trait TuiState {
 	def processLine(line: String): Unit
 }
 
+// this state is used in the main menu
 private class StartGameState(tui: Tui) extends TuiState {
 	println("Welcome to Minesweeper!")
 	println("Please enter width, height, bomb chance, and number of undos to start a new game or q to quit.")
@@ -51,6 +52,7 @@ private class StartGameState(tui: Tui) extends TuiState {
 	}
 }
 
+// this state is used during the game
 private class DefaultTuiState(tui: Tui) extends TuiState {
 	override def processLine(line: String): Unit = {
 		line match {
@@ -115,6 +117,7 @@ private class DefaultTuiState(tui: Tui) extends TuiState {
 	}
 }
 
+// this state is used after the game is over and the player is asked if they want to retry
 class RetryTuiState(tui: Tui) extends TuiState {
 	override def processLine(line: String): Unit = {
 		line match {
@@ -134,6 +137,7 @@ class Tui(val controller: ControllerInterface) extends Observer[Event] with Even
 	private var state: TuiState = DefaultTuiState(this)
 	controller.addObserver(this)
 
+    // logic to display the numbers along the field
 	def fieldString(field: FieldInterface): String = {
 		val (cols, rows) = field.dimension
 		if cols == 0 || rows == 0 then return ""
@@ -198,6 +202,7 @@ class Tui(val controller: ControllerInterface) extends Observer[Event] with Even
 		loop = false
 	}
 
+    // main loop for the tui
 	def play(): Unit = {
 		while loop do {
 			processLine(scala.io.StdIn.readLine())

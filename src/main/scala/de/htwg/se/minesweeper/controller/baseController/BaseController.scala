@@ -9,9 +9,9 @@ import de.htwg.se.minesweeper.model.GameState
 import com.google.inject.Inject
 import de.htwg.se.minesweeper.model.FileIOComponent.FileIOInterface
 
+// the actual implementation of the ControllerInterface
 class BaseController @Inject() (val factory: FieldFactory, fileIO: FileIOInterface) extends Observable[Event] with ControllerInterface {
 	private[baseController] var gameState: GameState = GameState(0, 0, factory.createField(0, 0, 0), 0, 0, 0)
-
 	private[baseController] var state: BaseControllerState = FirstMoveBaseControllerState(this)
 
 	private[baseController] def changeState(newState: BaseControllerState): Unit = {
@@ -32,8 +32,11 @@ class BaseController @Inject() (val factory: FieldFactory, fileIO: FileIOInterfa
 		notifyObservers(StartGameEvent(gameState.field))
 	}
 
+    // flag and reveal use the state pattern to change behaviour if it is the first move
+    // see: BaseControllerState.scala
 	override def reveal(x: Int, y: Int): Try[Unit] = state.reveal(x, y)
 	override def flag(x: Int, y: Int): Try[Unit] = state.flag(x, y)
+
 	override def exit(): Unit = {
 		notifyObservers(ExitEvent())
 	}

@@ -3,7 +3,11 @@ package de.htwg.se.minesweeper.model
 import de.htwg.se.minesweeper.model.fieldComponent.FieldInterface
 import scala.util.{Try, Success, Failure}
 
-// cannot be a case class to enable the circular reference in redoState
+/*
+Represents the state of the game
+
+cannot be a case class to enable the circular reference in redoState
+*/
 case class GameState(
     undos: Int,
     maxUndos: Int, 
@@ -13,10 +17,11 @@ case class GameState(
     height: Int,
     firstMove: Boolean = true,
     undoFields: List[FieldInterface] = List.empty,
-    redoFields: List[FieldInterface] = List.empty, // has to be var for the circular reference
+    redoFields: List[FieldInterface] = List.empty,
 ) {
     def cantRedo: Boolean = redoFields.isEmpty
     def cantUndo: Boolean = undos <= 0 || undoFields.isEmpty
+    // returns a new GameState with the latest move undone
     def undo: Try[GameState] = {
         if cantUndo then 
             Failure(new IllegalStateException("Cannot undo"))
@@ -28,6 +33,7 @@ case class GameState(
                 redoFields = this.field :: redoFields,
             ))
     }
+    // returns the GameState that was most recently undone
     def redo: Try[GameState] = {
         if cantRedo then 
             Failure(new IllegalStateException("Cannot redo"))
@@ -38,6 +44,7 @@ case class GameState(
                 redoFields = redoFields.tail,
             ))
     }
+    // returns a new GameState with the field updated
     def updateField(newField: FieldInterface): GameState = {
         copy(
             field = newField,

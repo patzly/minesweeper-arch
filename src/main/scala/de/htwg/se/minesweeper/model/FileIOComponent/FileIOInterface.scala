@@ -10,6 +10,7 @@ trait FileIOInterface {
 }
 
 object FileExtension {
+    // returns the file extension of a path
     def get(path: String): String = {
         val fileName = Paths.get(path).getFileName
         fileName.toString.split("\\.").last

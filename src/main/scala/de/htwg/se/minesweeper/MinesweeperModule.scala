@@ -14,9 +14,6 @@ import com.google.inject.name.Names
 
 class MinesweeperModule extends AbstractModule {
     override def configure(): Unit = {
-        // bind the named parameter "defaultSavePath" to the value "save.xml"
-        bindConstant().annotatedWith(Names.named("defaultSavePath")).to("minesweeper.save.xml")
-
         bind(classOf[FileIOInterface]).to(classOf[FileIO])
         bind(classOf[FieldFactory]).toInstance(RandomFieldFactory(Random()))
         bind(classOf[ControllerInterface]).to(classOf[BaseController]).asEagerSingleton()

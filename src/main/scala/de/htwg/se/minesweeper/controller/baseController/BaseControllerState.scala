@@ -5,9 +5,10 @@ import scala.util.{Failure, Success, Try}
 import de.htwg.se.minesweeper.controller._
 import de.htwg.se.minesweeper.model.GameState
 
+// base behaviour for the controller
 private abstract class BaseControllerState(controller: BaseController) {
-	// returns the field before the reveal
 	def reveal(x: Int, y: Int): Try[Unit] = {
+        // reveal the cell
 		controller.gameState.field.withRevealed(x, y) match {
 			case Success(value) => controller.gameState = controller.gameState.updateField(value)
 			case Failure(exception) => return Failure(exception)
@@ -15,6 +16,8 @@ private abstract class BaseControllerState(controller: BaseController) {
 
 		controller.notifyObservers(FieldUpdatedEvent(controller.gameState.field))
 
+        // check if the game is over
+        //
 		// .get because failure isn't possible
 		if controller.gameState.field.getCell(x, y).get.isBomb then {
 			controller.notifyObservers(LostEvent())
@@ -34,8 +37,10 @@ private abstract class BaseControllerState(controller: BaseController) {
 	}
 }
 
+// in minesweeper, the first move is always safe (no bombs)
 private class FirstMoveBaseControllerState(controller: BaseController) extends BaseControllerState(controller) {
 	override def reveal(x: Int, y: Int): Try[Unit] = {
+        // the first click should not be a bomb, so we generate Fields until that is the case
 		while controller.gameState.field.getCell(x, y) match {
 			case Success(cell) => cell.nearbyBombs != 0 || cell.isBomb
 			case Failure(exception) => return Failure(exception)
@@ -49,6 +54,7 @@ private class FirstMoveBaseControllerState(controller: BaseController) extends B
 	}
 }
 
+// implementation of the controller after the first move
 private class AnyMoveBaseControllerState(controller: BaseController) extends BaseControllerState(controller) {
 
 }

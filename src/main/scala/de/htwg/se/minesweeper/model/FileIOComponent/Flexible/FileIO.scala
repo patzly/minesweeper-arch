@@ -7,6 +7,8 @@ import de.htwg.se.minesweeper.model.FileIOComponent.XML
 import de.htwg.se.minesweeper.model.FileIOComponent.JSON
 import de.htwg.se.minesweeper.model.FileIOComponent.FileExtension
 
+// this FileIO can load and save both XML and JSON
+// and decides which one to use based on the file extension
 class FileIO extends FileIOInterface {
     private val xmlIO = new XML.FileIO
     private val jsonIO = new JSON.FileIO
