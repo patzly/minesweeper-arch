@@ -82,7 +82,7 @@ case class GameScene(controller: ControllerInterface) extends Scene {
 							text <== end_screen_text
 							styleClass = Seq("h1", "text-center", "bold", "white")
 						},
-						new Button("Retry") {
+						new Button("neustarten") {
 							id = "game-retry-btn"
 							onMouseClicked = _ => {
 								end_screen_visible.setValue(false)
@@ -151,13 +151,13 @@ case class GameScene(controller: ControllerInterface) extends Scene {
 
 	def showLossScreen(): Unit = {
 		end_screen_visible.setValue(true)
-		end_screen_text.setValue("You lost!")
+		end_screen_text.setValue("Verloren!")
 		t.cancel()
 	}
 
 	def showWinScreen(): Unit = {
 		end_screen_visible.setValue(true)
-		end_screen_text.setValue("You won!")
+		end_screen_text.setValue("Gewonnen!")
 		t.cancel()
 	}
 }
