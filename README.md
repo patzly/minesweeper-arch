@@ -1,7 +1,7 @@
 # Minesweeper
 [![Scala CI](https://github.com/bafto/minesweeper/actions/workflows/scala.yml/badge.svg)](https://github.com/bafto/minesweeper/actions/workflows/scala.yml) [![Coverage Status](https://coveralls.io/repos/github/bafto/minesweeper/badge.svg)](https://coveralls.io/github/bafto/minesweeper)
 
-Software Engineering Projekt an der HTWG im 3. Semester
+Software Architecture Projekt an der HTWG im 3. Semester
 
 ## Spielprinzip
 Das Ziel von Minesweeper ist es in einem Zufällig generiertem Mienenfeld alle freien Felder mit links klick auzudecken, ohne auf eine Mine zu klicken.
