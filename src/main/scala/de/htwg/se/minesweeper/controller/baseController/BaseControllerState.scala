@@ -7,54 +7,66 @@ import de.htwg.se.minesweeper.model.GameState
 
 // base behaviour for the controller
 private abstract class BaseControllerState(controller: BaseController) {
-	def reveal(x: Int, y: Int): Try[Unit] = {
-        // reveal the cell
-		controller.gameState.field.withRevealed(x, y) match {
-			case Success(value) => controller.gameState = controller.gameState.updateField(value)
-			case Failure(exception) => return Failure(exception)
-		}
+  def reveal(x: Int, y: Int): Try[Unit] = {
+    // reveal the cell
+    controller.gameState.field.withRevealed(x, y) match {
+      case Success(value) =>
+        controller.gameState = controller.gameState.updateField(value)
+      case Failure(exception) => return Failure(exception)
+    }
 
-		controller.notifyObservers(FieldUpdatedEvent(controller.gameState.field))
+    controller.notifyObservers(FieldUpdatedEvent(controller.gameState.field))
 
-        // check if the game is over
-        //
-		// .get because failure isn't possible
-		if controller.gameState.field.getCell(x, y).get.isBomb then {
-			controller.notifyObservers(LostEvent())
-		} else if controller.gameState.field.hasWon then {
-			controller.notifyObservers(WonEvent())
-		}
-		Success(())
-	}
-	def flag(x: Int, y: Int): Try[Unit] = {
-		controller.gameState.field.withToggledFlag(x, y) match {
-			case Success(newField) => {
-				controller.gameState = controller.gameState.updateField(newField)
-				Try(controller.notifyObservers(FieldUpdatedEvent(controller.gameState.field)))
-			}
-			case Failure(exception) => Failure(exception)
-		}
-	}
+    // check if the game is over
+    //
+    // .get because failure isn't possible
+    if controller.gameState.field.getCell(x, y).get.isBomb then {
+      controller.notifyObservers(LostEvent())
+    } else if controller.gameState.field.hasWon then {
+      controller.notifyObservers(WonEvent())
+    }
+    Success(())
+  }
+  def flag(x: Int, y: Int): Try[Unit] = {
+    controller.gameState.field.withToggledFlag(x, y) match {
+      case Success(newField) => {
+        controller.gameState = controller.gameState.updateField(newField)
+        Try(
+          controller.notifyObservers(
+            FieldUpdatedEvent(controller.gameState.field)
+          )
+        )
+      }
+      case Failure(exception) => Failure(exception)
+    }
+  }
 }
 
 // in minesweeper, the first move is always safe (no bombs)
-private class FirstMoveBaseControllerState(controller: BaseController) extends BaseControllerState(controller) {
-	override def reveal(x: Int, y: Int): Try[Unit] = {
-        // the first click should not be a bomb, so we generate Fields until that is the case
-		while controller.gameState.field.getCell(x, y) match {
-			case Success(cell) => cell.nearbyBombs != 0 || cell.isBomb
-			case Failure(exception) => return Failure(exception)
-		} do {
-			controller.gameState = controller.gameState.copy(field = controller.factory.createField(controller.gameState.width, controller.gameState.height, controller.gameState.bombChance))
-		}
+private class FirstMoveBaseControllerState(controller: BaseController)
+    extends BaseControllerState(controller) {
+  override def reveal(x: Int, y: Int): Try[Unit] = {
+    // the first click should not be a bomb, so we generate Fields until that is the case
+    while controller.gameState.field.getCell(x, y) match {
+        case Success(cell)      => cell.nearbyBombs != 0 || cell.isBomb
+        case Failure(exception) => return Failure(exception)
+      }
+    do {
+      controller.gameState = controller.gameState.copy(field =
+        controller.factory.createField(
+          controller.gameState.width,
+          controller.gameState.height,
+          controller.gameState.bombChance
+        )
+      )
+    }
 
-		controller.changeState(AnyMoveBaseControllerState(controller))
-		super.reveal(x, y) // not checked because it can't fail
-		Success(())
-	}
+    controller.changeState(AnyMoveBaseControllerState(controller))
+    super.reveal(x, y) // not checked because it can't fail
+    Success(())
+  }
 }
 
 // implementation of the controller after the first move
-private class AnyMoveBaseControllerState(controller: BaseController) extends BaseControllerState(controller) {
-
-}
+private class AnyMoveBaseControllerState(controller: BaseController)
+    extends BaseControllerState(controller) {}

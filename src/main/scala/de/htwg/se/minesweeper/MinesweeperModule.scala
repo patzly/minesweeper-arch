@@ -13,9 +13,11 @@ import de.htwg.se.minesweeper.model.FileIOComponent.Flexible.FileIO
 import com.google.inject.name.Names
 
 class MinesweeperModule extends AbstractModule {
-    override def configure(): Unit = {
-        bind(classOf[FileIOInterface]).to(classOf[FileIO])
-        bind(classOf[FieldFactory]).toInstance(RandomFieldFactory(Random()))
-        bind(classOf[ControllerInterface]).to(classOf[BaseController]).asEagerSingleton()
-    }
+  override def configure(): Unit = {
+    bind(classOf[FileIOInterface]).to(classOf[FileIO])
+    bind(classOf[FieldFactory]).toInstance(RandomFieldFactory(Random()))
+    bind(classOf[ControllerInterface])
+      .to(classOf[BaseController])
+      .asEagerSingleton()
+  }
 }

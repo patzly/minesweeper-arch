@@ -7,205 +7,243 @@ import de.htwg.se.minesweeper.controller._
 import de.htwg.se.minesweeper.observer.Observer
 
 private trait TuiState {
-	def processLine(line: String): Unit
+  def processLine(line: String): Unit
 }
 
 // this state is used in the main menu
 private class StartGameState(tui: Tui) extends TuiState {
-	println("Welcome to Minesweeper!")
-	println("Please enter width, height, bomb chance, and number of undos to start a new game or q to quit.")
-	override def processLine(line: String): Unit = {
-		line match {
-			case "q" | null => tui.controller.exit()
-			case _ => {
-				val inputs = line.split(" ").toList
+  println("Welcome to Minesweeper!")
+  println(
+    "Please enter width, height, bomb chance, and number of undos to start a new game or q to quit."
+  )
+  override def processLine(line: String): Unit = {
+    line match {
+      case "q" | null => tui.controller.exit()
+      case _ => {
+        val inputs = line.split(" ").toList
 
-				inputs.length match {
-				case 4 => {
-					val (width, height, bomb_chance, undos) = (inputs(0).toIntOption, inputs(1).toIntOption, inputs(2).toFloatOption, inputs(3).toIntOption) match {
-						case (Some(width), Some(height), Some(bomb_chance), Some(undos)) => (width, height, bomb_chance, undos)
-						case _ => return println("Invalid input: Please enter numbers!")
-					}
+        inputs.length match {
+          case 4 => {
+            val (width, height, bomb_chance, undos) = (
+              inputs(0).toIntOption,
+              inputs(1).toIntOption,
+              inputs(2).toFloatOption,
+              inputs(3).toIntOption
+            ) match {
+              case (
+                    Some(width),
+                    Some(height),
+                    Some(bomb_chance),
+                    Some(undos)
+                  ) =>
+                (width, height, bomb_chance, undos)
+              case _ => return println("Invalid input: Please enter numbers!")
+            }
 
-					if width == 0 || height == 0 then return println("Invalid input: width or height can't be 0!")
+            if width == 0 || height == 0 then
+              return println("Invalid input: width or height can't be 0!")
 
-					println(s"Starting game with width=$width, height=$height, bomb_chance=$bomb_chance and undos=$undos")
+            println(
+              s"Starting game with width=$width, height=$height, bomb_chance=$bomb_chance and undos=$undos"
+            )
 
-					tui.controller.startGame(width, height, bomb_chance, undos)
-					}
-				case 2 => {
-					if inputs(0) == "load" then {
-						println(s"Loading game from ${inputs(1)}")
+            tui.controller.startGame(width, height, bomb_chance, undos)
+          }
+          case 2 => {
+            if inputs(0) == "load" then {
+              println(s"Loading game from ${inputs(1)}")
 
-						tui.controller.loadGame(inputs(1)) match {
-							case Success(value) => ()
-							case Failure(exception) => println(exception.getMessage)
-						}
-					} else {
-						return println("Invalid input: Format is load <filepath>!")
-					}
-				}
-				case _ => return println("Invalid input: Format is <width> <height> <bomb_chance> <undos> | load <filepath>!")
-				}
-			}
-		}
-	}
+              tui.controller.loadGame(inputs(1)) match {
+                case Success(value)     => ()
+                case Failure(exception) => println(exception.getMessage)
+              }
+            } else {
+              return println("Invalid input: Format is load <filepath>!")
+            }
+          }
+          case _ =>
+            return println(
+              "Invalid input: Format is <width> <height> <bomb_chance> <undos> | load <filepath>!"
+            )
+        }
+      }
+    }
+  }
 }
 
 // this state is used during the game
 private class DefaultTuiState(tui: Tui) extends TuiState {
-	override def processLine(line: String): Unit = {
-		line match {
-			case "q" | null => tui.controller.exit()
-			case "menu" => tui.controller.setup()
-			case "u" => tui.controller.undo() match {
-				case Success(value) => ()
-				case Failure(exception) => println(exception.getMessage)
-			}
-			case "r" => tui.controller.redo() match {
-				case Success(value) => ()
-				case Failure(exception) => println(exception.getMessage)
-			}
-			case _ => {
-				val inputs = line.split(" ").toList
-				if inputs.length < 2 then {
-					return println("Invalid input: Format is <column> <row> | load <filepath>!")
-				}
+  override def processLine(line: String): Unit = {
+    line match {
+      case "q" | null => tui.controller.exit()
+      case "menu"     => tui.controller.setup()
+      case "u" =>
+        tui.controller.undo() match {
+          case Success(value)     => ()
+          case Failure(exception) => println(exception.getMessage)
+        }
+      case "r" =>
+        tui.controller.redo() match {
+          case Success(value)     => ()
+          case Failure(exception) => println(exception.getMessage)
+        }
+      case _ => {
+        val inputs = line.split(" ").toList
+        if inputs.length < 2 then {
+          return println(
+            "Invalid input: Format is <column> <row> | load <filepath>!"
+          )
+        }
 
-				inputs match {
-					case "load" :: path :: Nil => return {
-						println(s"Loading game from $path")
+        inputs match {
+          case "load" :: path :: Nil =>
+            return {
+              println(s"Loading game from $path")
 
-						tui.controller.loadGame(path) match {
-							case Success(value) => ()
-							case Failure(exception) => println(exception.getMessage)
-						}
-					}
-					case "save" :: path :: Nil => return {
-						println(s"Saving game to $path")
+              tui.controller.loadGame(path) match {
+                case Success(value)     => ()
+                case Failure(exception) => println(exception.getMessage)
+              }
+            }
+          case "save" :: path :: Nil =>
+            return {
+              println(s"Saving game to $path")
 
-						tui.controller.saveGame(path) match {
-							case Success(value) => ()
-							case Failure(exception) => println(exception.getMessage)
-						}
-					}
-					case _ => ()
-				}
+              tui.controller.saveGame(path) match {
+                case Success(value)     => ()
+                case Failure(exception) => println(exception.getMessage)
+              }
+            }
+          case _ => ()
+        }
 
-				val (x, y) = (inputs(0).toIntOption, inputs(1).toIntOption) match {
-				    case (Some(x), Some(y)) => (x-1, y-1)
-				    case _ => return println("Invalid input: Please enter numbers!")
-				}
+        val (x, y) = (inputs(0).toIntOption, inputs(1).toIntOption) match {
+          case (Some(x), Some(y)) => (x - 1, y - 1)
+          case _ => return println("Invalid input: Please enter numbers!")
+        }
 
-				if inputs.length == 3 && inputs(2) == "flag" then {
-					println(s"Toggle flag for ($x, $y)")
+        if inputs.length == 3 && inputs(2) == "flag" then {
+          println(s"Toggle flag for ($x, $y)")
 
-					return tui.controller.flag(x, y) match {
-						case Success(value) => ()
-						case Failure(exception) => println(exception.getMessage)
-					}
-				}
+          return tui.controller.flag(x, y) match {
+            case Success(value)     => ()
+            case Failure(exception) => println(exception.getMessage)
+          }
+        }
 
-				println(s"Selected ($x, $y)")
+        println(s"Selected ($x, $y)")
 
-				tui.controller.reveal(x, y) match {
-					case Success(value) => ()
-					case Failure(exception) => println(exception.getMessage)
-				}
-			}
-		}
-	}
+        tui.controller.reveal(x, y) match {
+          case Success(value)     => ()
+          case Failure(exception) => println(exception.getMessage)
+        }
+      }
+    }
+  }
 }
 
 // this state is used after the game is over and the player is asked if they want to retry
 class RetryTuiState(tui: Tui) extends TuiState {
-	override def processLine(line: String): Unit = {
-		line match {
-			case "y" => {
-				val (width, height) = (tui.controller.getGameState.field.dimension)
-				tui.controller.startGame(width, height, tui.controller.getGameState.bombChance, tui.controller.getGameState.maxUndos)
-			}
-			case "menu" => tui.controller.setup()
-			case "n" | "q" | null => tui.controller.exit()
-			case _ => println("Invalid input: Please enter q, y or n!")
-		}
-	}
+  override def processLine(line: String): Unit = {
+    line match {
+      case "y" => {
+        val (width, height) = (tui.controller.getGameState.field.dimension)
+        tui.controller.startGame(
+          width,
+          height,
+          tui.controller.getGameState.bombChance,
+          tui.controller.getGameState.maxUndos
+        )
+      }
+      case "menu"           => tui.controller.setup()
+      case "n" | "q" | null => tui.controller.exit()
+      case _                => println("Invalid input: Please enter q, y or n!")
+    }
+  }
 }
 
-class Tui(val controller: ControllerInterface) extends Observer[Event] with EventVisitor {
-	private var loop = true
-	private var state: TuiState = DefaultTuiState(this)
-	controller.addObserver(this)
+class Tui(val controller: ControllerInterface)
+    extends Observer[Event]
+    with EventVisitor {
+  private var loop = true
+  private var state: TuiState = DefaultTuiState(this)
+  controller.addObserver(this)
 
-    // logic to display the numbers along the field
-	def fieldString(field: FieldInterface): String = {
-		val (cols, rows) = field.dimension
-		if cols == 0 || rows == 0 then return ""
+  // logic to display the numbers along the field
+  def fieldString(field: FieldInterface): String = {
+    val (cols, rows) = field.dimension
+    if cols == 0 || rows == 0 then return ""
 
-		val l = cols.toString.length + 2
+    val l = cols.toString.length + 2
 
-		val pad = " " * l
+    val pad = " " * l
 
-		val numbers = {
-			val tens = pad + (" " * 18) + Range.inclusive(10, cols).map(a => a / 10).mkString(" ")
-			val ones = pad + Range.inclusive(1, cols).map(a => a % 10).mkString(" ")
-			tens + "\n" + ones
-		}
+    val numbers = {
+      val tens = pad + (" " * 18) + Range
+        .inclusive(10, cols)
+        .map(a => a / 10)
+        .mkString(" ")
+      val ones = pad + Range.inclusive(1, cols).map(a => a % 10).mkString(" ")
+      tens + "\n" + ones
+    }
 
-		val lines = pad + "-" * (cols*2 - 1)
+    val lines = pad + "-" * (cols * 2 - 1)
 
-		val rowStrings = Range.apply(0, rows).map(
-				r => (r+1).toString.padTo(l-1, ' ') + '|' + field.getRow(r).get.mkString(" ")
-			)
-			.mkString("\n")
+    val rowStrings = Range
+      .apply(0, rows)
+      .map(r =>
+        (r + 1).toString
+          .padTo(l - 1, ' ') + '|' + field.getRow(r).get.mkString(" ")
+      )
+      .mkString("\n")
 
-		s"$numbers\n$lines\n$rowStrings"
-	}
+    s"$numbers\n$lines\n$rowStrings"
+  }
 
-	def processLine(line: String): Unit = {
-		state.processLine(line)
-	}
+  def processLine(line: String): Unit = {
+    state.processLine(line)
+  }
 
-	override def update(e: Event): Unit =  {
-		e.accept(this)
-	}
-	
-	override def visitSetup(event: SetupEvent): Unit = {
-		state = StartGameState(this)
-		loop = true
-	}
+  override def update(e: Event): Unit = {
+    e.accept(this)
+  }
 
-	override def visitStartGame(event: StartGameEvent): Unit = {
-		state = DefaultTuiState(this)
-		loop = true
-		println(fieldString(event.field))
-	}
+  override def visitSetup(event: SetupEvent): Unit = {
+    state = StartGameState(this)
+    loop = true
+  }
 
-	override def visitFieldUpdated(event: FieldUpdatedEvent): Unit = {
-		println(fieldString(event.field))
-	}
+  override def visitStartGame(event: StartGameEvent): Unit = {
+    state = DefaultTuiState(this)
+    loop = true
+    println(fieldString(event.field))
+  }
 
-	override def visitWon(event: WonEvent): Unit = {
-		println("You won!")
-		println("retry? (y/n)")
-		state = new RetryTuiState(this)
-	}
+  override def visitFieldUpdated(event: FieldUpdatedEvent): Unit = {
+    println(fieldString(event.field))
+  }
 
-	override def visitLost(event: LostEvent): Unit = {
-		println("You lost!")
-		println("retry? (y/n)")
-		state = new RetryTuiState(this)
-	}
+  override def visitWon(event: WonEvent): Unit = {
+    println("You won!")
+    println("retry? (y/n)")
+    state = new RetryTuiState(this)
+  }
 
-	override def visitExit(event: ExitEvent): Unit = {
-		println("Goodbye!")
-		loop = false
-	}
+  override def visitLost(event: LostEvent): Unit = {
+    println("You lost!")
+    println("retry? (y/n)")
+    state = new RetryTuiState(this)
+  }
 
-    // main loop for the tui
-	def play(): Unit = {
-		while loop do {
-			processLine(scala.io.StdIn.readLine())
-		}
-	}
+  override def visitExit(event: ExitEvent): Unit = {
+    println("Goodbye!")
+    loop = false
+  }
+
+  // main loop for the tui
+  def play(): Unit = {
+    while loop do {
+      processLine(scala.io.StdIn.readLine())
+    }
+  }
 }

@@ -11,18 +11,18 @@ import com.google.inject.Guice
 
 @main
 def main(): Unit = {
-	val injector = Guice.createInjector(new MinesweeperModule)
-	val controller = injector.getInstance(classOf[ControllerInterface])
+  val injector = Guice.createInjector(new MinesweeperModule)
+  val controller = injector.getInstance(classOf[ControllerInterface])
 
-	val tui = Tui(controller)
-	val gui = Gui(controller)
-	controller.setup()
+  val tui = Tui(controller)
+  val gui = Gui(controller)
+  controller.setup()
 
-	implicit val context = ExecutionContext.global
-	val f = Future {
-		gui.main(Array[String]())
-	}
+  implicit val context = ExecutionContext.global
+  val f = Future {
+    gui.main(Array[String]())
+  }
 
-	tui.play()
-	Await.ready(f, Duration.Inf)
+  tui.play()
+  Await.ready(f, Duration.Inf)
 }
