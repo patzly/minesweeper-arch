@@ -53,10 +53,9 @@ private class StartGameState(tui: Tui) extends TuiState {
             if inputs(0) == "load" then {
               println(s"Loading game from ${inputs(1)}")
 
-              tui.controller.loadGame(inputs(1)) match {
-                case Success(value)     => ()
-                case Failure(exception) => println(exception.getMessage)
-              }
+              tui.controller
+                .loadGame(inputs(1))
+                .recover(e => println(e.getMessage))
             } else {
               return println("Invalid input: Format is load <filepath>!")
             }
@@ -78,15 +77,9 @@ private class DefaultTuiState(tui: Tui) extends TuiState {
       case "q" | null => tui.controller.exit()
       case "menu"     => tui.controller.setup()
       case "u" =>
-        tui.controller.undo() match {
-          case Success(value)     => ()
-          case Failure(exception) => println(exception.getMessage)
-        }
+        tui.controller.undo().recover(e => println(e.getMessage))
       case "r" =>
-        tui.controller.redo() match {
-          case Success(value)     => ()
-          case Failure(exception) => println(exception.getMessage)
-        }
+        tui.controller.redo().recover(e => println(e.getMessage))
       case _ => {
         val inputs = line.split(" ").toList
         if inputs.length < 2 then {
@@ -100,19 +93,13 @@ private class DefaultTuiState(tui: Tui) extends TuiState {
             return {
               println(s"Loading game from $path")
 
-              tui.controller.loadGame(path) match {
-                case Success(value)     => ()
-                case Failure(exception) => println(exception.getMessage)
-              }
+              tui.controller.loadGame(path).recover(e => println(e.getMessage))
             }
           case "save" :: path :: Nil =>
             return {
               println(s"Saving game to $path")
 
-              tui.controller.saveGame(path) match {
-                case Success(value)     => ()
-                case Failure(exception) => println(exception.getMessage)
-              }
+              tui.controller.saveGame(path).recover(e => println(e.getMessage))
             }
           case _ => ()
         }
@@ -125,18 +112,12 @@ private class DefaultTuiState(tui: Tui) extends TuiState {
         if inputs.length == 3 && inputs(2) == "flag" then {
           println(s"Toggle flag for ($x, $y)")
 
-          return tui.controller.flag(x, y) match {
-            case Success(value)     => ()
-            case Failure(exception) => println(exception.getMessage)
-          }
+          return tui.controller.flag(x, y).recover(e => println(e.getMessage))
         }
 
         println(s"Selected ($x, $y)")
 
-        tui.controller.reveal(x, y) match {
-          case Success(value)     => ()
-          case Failure(exception) => println(exception.getMessage)
-        }
+        tui.controller.reveal(x, y).recover(e => println(e.getMessage))
       }
     }
   }
@@ -224,13 +205,15 @@ class Tui(val controller: ControllerInterface)
   }
 
   override def visitWon(event: WonEvent): Unit = {
-    println("You won!")
-    println("retry? (y/n)")
-    state = new RetryTuiState(this)
+    wonLost("won")
   }
 
   override def visitLost(event: LostEvent): Unit = {
-    println("You lost!")
+    wonLost("lost")
+  }
+
+  private def wonLost(msg: String): Unit = {
+    println("You " + msg + "!")
     println("retry? (y/n)")
     state = new RetryTuiState(this)
   }

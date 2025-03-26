@@ -47,15 +47,9 @@ case class GameScene(controller: ControllerInterface) extends Scene {
             then
               e.getButton match {
                 case MouseButton.PRIMARY =>
-                  controller.reveal(ix, iy) match {
-                    case Success(_)         => ()
-                    case Failure(exception) => println(exception.getMessage)
-                  }
+                  controller.reveal(ix, iy).recover(e => println(e.getMessage))
                 case MouseButton.SECONDARY =>
-                  controller.flag(ix, iy) match {
-                    case Success(_)         => ()
-                    case Failure(exception) => println(exception.getMessage)
-                  }
+                  controller.flag(ix, iy).recover(e => println(e.getMessage))
                 case _ => ()
               }
             else ()
@@ -185,15 +179,9 @@ case class GameScene(controller: ControllerInterface) extends Scene {
     })
   }
 
-  def showLossScreen(): Unit = {
+  def showEndScreen(msg: String): Unit = {
     end_screen_visible.setValue(true)
-    end_screen_text.setValue("Verloren!")
-    t.cancel()
-  }
-
-  def showWinScreen(): Unit = {
-    end_screen_visible.setValue(true)
-    end_screen_text.setValue("Gewonnen!")
+    end_screen_text.setValue(msg)
     t.cancel()
   }
 }

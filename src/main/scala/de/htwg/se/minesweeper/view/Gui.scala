@@ -7,6 +7,7 @@ import scalafx.scene.Scene
 import scalafx.scene.image.Image
 import scalafx.stage.FileChooser
 import scalafx.stage.FileChooser.ExtensionFilter
+import scala.util.{Try, Success, Failure}
 
 class Gui(controller: ControllerInterface)
     extends JFXApp3
@@ -45,8 +46,9 @@ class Gui(controller: ControllerInterface)
   }
 
   override def visitLost(event: LostEvent): Unit =
-    gameScene.get.showLossScreen()
-  override def visitWon(event: WonEvent): Unit = gameScene.get.showWinScreen()
+    gameScene.get.showEndScreen("Verloren!")
+  override def visitWon(event: WonEvent): Unit =
+    gameScene.get.showEndScreen("Gewonnen!")
   override def visitFieldUpdated(event: FieldUpdatedEvent): Unit =
     gameScene.get.update(event.field)
 

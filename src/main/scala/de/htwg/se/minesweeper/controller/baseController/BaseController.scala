@@ -71,15 +71,17 @@ class BaseController @Inject() (
   }
 
   override def undo(): Try[Unit] = {
-    gameState = gameState.undo match {
-      case Failure(exception) => return Failure(exception)
-      case Success(newState)  => newState
-    }
-    Success(notifyObservers(FieldUpdatedEvent(gameState.field)))
+    undoRedoImpl(() => gameState.undo)
   }
 
   override def redo(): Try[Unit] = {
-    gameState = gameState.redo match {
+    undoRedoImpl(() => gameState.redo)
+  }
+
+  private def undoRedoImpl(
+      action: () => Try[GameState]
+  ): Try[Unit] = {
+    gameState = action() match {
       case Failure(exception) => return Failure(exception)
       case Success(newState)  => newState
     }

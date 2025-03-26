@@ -42,6 +42,7 @@ case class GameState(
         )
       )
   }
+
   // returns a new GameState with the field updated
   def updateField(newField: FieldInterface): GameState = {
     copy(

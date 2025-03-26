@@ -69,11 +69,11 @@ case class Field private (matrix: CellMatrix) extends FieldInterface {
       revealRec(
         x,
         y,
-        withCellRevealed(
+        withCellRevealed( // definitely reveal the clicked cell, wether it is a bomb or not
           x,
           y,
           matrix
-        ), // definitely reveal the clicked cell, wether it is a bomb or not
+        ),
         Set.empty // at the beginning, no cells are revealed
       )
     )
