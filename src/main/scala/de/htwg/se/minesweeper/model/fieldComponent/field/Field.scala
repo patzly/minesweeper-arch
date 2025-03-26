@@ -8,22 +8,40 @@ import de.htwg.se.minesweeper.model.Cell
 
 type CellMatrix = Vector[Vector[Cell]]
 
-// only implementation of FieldInterface
-class Field(cellMatrix: CellMatrix) extends FieldInterface {
+// returns the number of bombs in the 8 neighbouring cells
+private[field] def countNearbyMinesImpl(
+    x: Int,
+    y: Int,
+    matrix: CellMatrix
+): Int = {
+  matrix
+    .slice(y - 1, y + 2)
+    .transpose
+    .slice(x - 1, x + 2)
+    .flatten
+    .count(c => c.isBomb) - (if (matrix(y)(x).isBomb) 1 else 0)
+}
+
+object Field {
   // initialize the field with the number of nearby bombs
-  private val matrix: CellMatrix = {
-    cellMatrix.zipWithIndex.map((row, y) =>
-      row.zipWithIndex.map((cell, x) =>
-        cell.copy(nearbyBombs = countNearbyMinesImpl(x, y, cellMatrix))
+  def apply(matrix: CellMatrix): Field = {
+    new Field(
+      matrix.zipWithIndex.map((row, y) =>
+        row.zipWithIndex.map((cell, x) =>
+          cell.copy(nearbyBombs = countNearbyMinesImpl(x, y, matrix))
+        )
       )
     )
   }
+}
 
+// only implementation of FieldInterface
+case class Field private (matrix: CellMatrix) extends FieldInterface {
   // for the tests to work
   override def equals(other: Any): Boolean = {
     other match {
-      case that: Field => matrix == that.matrix
-      case _           => false
+      case Field(otherMatrix) => matrix == otherMatrix
+      case _                  => false
     }
   }
 
@@ -111,16 +129,6 @@ class Field(cellMatrix: CellMatrix) extends FieldInterface {
       val (x, y) = (cell._2, cell._3)
       revealRec(x, y, acc._1, acc._2)
     })
-  }
-
-  // returns the number of bombs in the 8 neighbouring cells
-  private def countNearbyMinesImpl(x: Int, y: Int, matrix: CellMatrix): Int = {
-    matrix
-      .slice(y - 1, y + 2)
-      .transpose
-      .slice(x - 1, x + 2)
-      .flatten
-      .count(c => c.isBomb) - (if (matrix(y)(x).isBomb) 1 else 0)
   }
 
   // wrapper for countNearbyMinesImpl to catch index out of bounds exceptions

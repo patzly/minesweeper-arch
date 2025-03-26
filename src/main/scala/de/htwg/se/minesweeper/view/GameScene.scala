@@ -136,16 +136,18 @@ case class GameScene(controller: ControllerInterface) extends Scene {
         },
         new Button("Speicherstand laden") {
           onMouseClicked = e => {
-            val selectedFile = Gui.openFileDialog(scene.get.getWindow)
-            if selectedFile != null then
-              controller.loadGame(selectedFile.getPath)
+            Gui.openFileDialog(scene.get.getWindow) match {
+              case null         => ()
+              case selectedFile => controller.loadGame(selectedFile.getPath)
+            }
           }
         },
         new Button("Spielstand speichern") {
           onMouseClicked = e => {
-            val selectedFile = Gui.saveFileDialog(scene.get.getWindow)
-            if selectedFile != null then
-              controller.saveGame(selectedFile.getPath)
+            Gui.saveFileDialog(scene.get.getWindow) match {
+              case null         => ()
+              case selectedFile => controller.saveGame(selectedFile.getPath)
+            }
           }
         }
       )
