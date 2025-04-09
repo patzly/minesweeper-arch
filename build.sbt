@@ -1,11 +1,13 @@
-val scala3Version = "3.3.1"
+ThisBuild / scalaVersion := "3.3.1"
+
+lazy val model = (project in file("model"))
+lazy val minesweeper = (project in file("minesweeper")).dependsOn(model)
 
 lazy val root = project
   .in(file("."))
   .settings(
     name := "minesweeper",
     version := "1.0.0",
-    scalaVersion := scala3Version,
     libraryDependencies += "org.scalactic" %% "scalactic" % "3.2.17",
     libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.17" % "test",
     libraryDependencies += "org.scalafx" %% "scalafx" % "16.0.0-R24",
@@ -25,3 +27,4 @@ lazy val root = project
     libraryDependencies += "org.scala-lang.modules" %% "scala-xml" % "2.2.0",
     libraryDependencies += "com.typesafe.play" %% "play-json" % "2.10.3"
   )
+  .aggregate(minesweeper, model)
