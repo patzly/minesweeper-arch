@@ -1,14 +1,13 @@
 package de.htwg.se.minesweeper
 
 import com.google.inject.AbstractModule
+import de.htwg.se.minesweeper.controller.*
+import de.htwg.se.minesweeper.controller.baseController.*
+import de.htwg.se.minesweeper.model.fieldComponent.*
+import de.htwg.se.minesweeper.model.fieldComponent.field.*
 
-import de.htwg.se.minesweeper.controller._
-import de.htwg.se.minesweeper.controller.baseController._
-import de.htwg.se.minesweeper.model.fieldComponent._
-import de.htwg.se.minesweeper.model.fieldComponent.field._
 import scala.util.Random
-import de.htwg.se.minesweeper.model.FileIOComponent._
-
+import de.htwg.se.minesweeper.model.FileIOComponent.*
 import de.htwg.se.minesweeper.model.FileIOComponent.Flexible.FileIO
 import com.google.inject.name.Names
 
