@@ -1,0 +1,11 @@
+services:
+  minesweeper:
+    build:
+      dockerfile: Dockerfile.minesweeper
+    ports:
+      - "8080:8080"
+  observer:
+    build:
+      dockerfile: Dockerfile.observer
+    ports:
+      - "8081:8081"

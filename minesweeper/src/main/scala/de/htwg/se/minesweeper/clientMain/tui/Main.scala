@@ -40,6 +40,6 @@ class ClientModule2 extends AbstractModule {
   override def configure(): Unit = {
     bind(classOf[FileIOInterface]).to(classOf[FileIO])
     bind(classOf[FieldFactory]).toInstance(RandomFieldFactory(Random()))
-    bind(classOf[ControllerInterface]).toInstance(RestClientController(8081))
+    bind(classOf[ControllerInterface]).toInstance(RestClientController(8083))
   }
 }

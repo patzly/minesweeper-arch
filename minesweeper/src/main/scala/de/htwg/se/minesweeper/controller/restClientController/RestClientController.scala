@@ -1,6 +1,5 @@
 package de.htwg.se.minesweeper.controller.restClientController
 
-import concurrent.duration.DurationInt
 import akka.Done
 import akka.actor.{ActorSystem, CoordinatedShutdown}
 import akka.http.scaladsl.Http
@@ -8,16 +7,15 @@ import de.htwg.se.minesweeper.controller.*
 import de.htwg.se.minesweeper.model.GameState
 import de.htwg.se.minesweeper.observer.Observable
 import akka.http.scaladsl.Http.ServerBinding
-import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpMethods, HttpRequest, StatusCodes}
+import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives.*
 import akka.http.scaladsl.server.Route
-import akka.http.scaladsl.unmarshalling.Unmarshal
 import de.htwg.se.minesweeper.model.GameState.gameStateFromJSON
 import de.htwg.se.minesweeper.model.fieldComponent.fieldFromJSON
+import de.htwg.se.util.HttpClient
 import play.api.libs.json.{JsValue, Json}
 
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
 import scala.util.{Failure, Success, Try}
 
@@ -44,7 +42,7 @@ private class MinesweeperServerObserver(observable: Observable[Event]) extends O
 
     def run(port: Int): Future[ServerBinding] = {
       val serverBinding = Http()
-        .newServerAt("localhost", port)
+        .newServerAt("0.0.0.0", port)
         .bind(routes)
 
       CoordinatedShutdown(system).addTask(CoordinatedShutdown.PhaseServiceStop, "shutdown-server") { () =>
@@ -64,8 +62,19 @@ private class MinesweeperServerObserver(observable: Observable[Event]) extends O
       post {
         path("update") {
           entity(as[String]) { json =>
-            val ev = eventFromJson(Json.parse(json))
-            observable.notifyObservers(ev)
+            Try {
+              println("received event: " + json)
+              val ev = eventFromJson(Json.parse(json))
+              observable.notifyObservers(ev)
+              println("event updated: " + ev)
+            } match {
+              case Failure(exception) =>
+                println("Failed to parse event: " + exception.getMessage)
+                complete(StatusCodes.BadRequest)
+              case Success(_) =>
+                println("event updated successfully")
+                complete(StatusCodes.OK)
+            }
             complete(StatusCodes.OK)
           }
         }
@@ -73,8 +82,10 @@ private class MinesweeperServerObserver(observable: Observable[Event]) extends O
       post {
         path("updateState") {
           entity(as[String]) { json =>
+            println("received game state: " + json)
             val state = gameStateFromJSON(Json.parse(json))
             gameState = state
+            println("game state updated: " + gameState)
             complete(StatusCodes.OK)
           }
         }
@@ -98,9 +109,10 @@ class RestClientController(port: Int) extends Observable[Event] with ControllerI
 
   val url = "http://localhost:8080/minesweeper"
   private val observer = MinesweeperServerObserver(this)
-  private val http = Http(system)
+  private val http = new HttpClient
   private val bindingFuture = {
-    postRequest("/registerClient", Json.obj(
+    val future = observer.run(port)
+    http.postRequest(url + "/registerClient", Json.obj(
       "clientUrl" -> ("http://localhost:" + port.toString)
     ).toString) match {
         case Success(_) =>
@@ -108,7 +120,7 @@ class RestClientController(port: Int) extends Observable[Event] with ControllerI
         case Failure(exception) =>
             println("Failed to register client: " + exception.getMessage)
     }
-    observer.run(port)
+    future
   }
 
 
@@ -118,60 +130,28 @@ class RestClientController(port: Int) extends Observable[Event] with ControllerI
 
   override def getGameState: GameState = observer.getGameState
 
-  override def flag(x: Int, y: Int): Try[Unit] = postRequest("/flag", s"""{"x":$x,"y":$y}""")
+  override def flag(x: Int, y: Int): Try[Unit] = http.postRequest(url + "/flag", s"""{"x":$x,"y":$y}""")
 
-  override def reveal(x: Int, y: Int): Try[Unit] = postRequest("/reveal", s"""{"x":$x,"y":$y}""")
+  override def reveal(x: Int, y: Int): Try[Unit] = http.postRequest(url + "/reveal", s"""{"x":$x,"y":$y}""")
 
-  override def redo(): Try[Unit] = getRequest("/redo")
+  override def redo(): Try[Unit] = http.getRequest(url + "/redo")
 
-  override def undo(): Try[Unit] = getRequest("/undo")
+  override def undo(): Try[Unit] = http.getRequest(url + "/undo")
 
-  override def exit(): Unit = getRequest("/exit")
+  override def exit(): Unit = http.getRequest(url + "/exit")
 
   override def setup(): Unit = {
     println("setting up server")
-    getRequest("/setup")
+    http.getRequest(url + "/setup")
     println("set up server")
   }
 
   override def startGame(width: Int, height: Int, bomb_chance: Float, undos: Int): Unit =
-    postRequest("/startGame", Json.obj(
+    http.postRequest(url + "/startGame", Json.obj(
         "width" -> width,
         "height" -> height,
         "bomb_chance" -> bomb_chance,
         "undos" -> undos
         ).toString
     )
-
-
-  private def getRequest(path: String, timeout: Duration = 10 seconds) = Try[Unit] {
-    sendRequest(HttpRequest(
-        method = HttpMethods.GET,
-        uri = url + path,
-    ), timeout)
-  }
-
-  private def postRequest(path: String, body: String, timeout: Duration = 10 seconds): Try[Unit] = {
-    sendRequest(HttpRequest(
-        method = HttpMethods.POST,
-        uri = url + path,
-        entity = HttpEntity(ContentTypes.`application/json`, body)
-    ), timeout)
-  }
-
-  private def sendRequest(req: HttpRequest, timeout: Duration): Try[Unit] = {
-    println("sending request: " + req.toString)
-    Await.ready(http.singleRequest(req).flatMap { response =>
-      response.status match
-        case StatusCodes.OK =>
-          Future.successful(Success(()))
-        case _ =>
-          Unmarshal(response.entity).to[String].flatMap { body =>
-            val e = new RuntimeException("Request failed: " + body)
-            println(e)
-            Future.failed(e)
-          }
-      }, timeout)
-    Success(())
-  }
 }

@@ -1,0 +1,110 @@
+package de.htwg.se
+
+import akka.Done
+import akka.actor.{ActorSystem, CoordinatedShutdown}
+import akka.http.scaladsl.Http
+import akka.http.scaladsl.Http.ServerBinding
+import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.server.Directives.{as, complete, concat, entity, path, pathPrefix, post}
+import akka.http.scaladsl.server.Route
+import de.htwg.se.util.HttpClient
+import play.api.libs.json.{JsValue, Json}
+
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success}
+
+class ObserverServerRoutes {
+  implicit val system: ActorSystem = ActorSystem(getClass.getSimpleName.init)
+  implicit val executionContext: ExecutionContext = system.dispatcher
+
+  private val http = new HttpClient
+
+  private var clients = Set.empty[String]
+
+  def routes: Route = {
+    concat(
+      registerClient,
+      deregisterClient,
+      update,
+    )
+  }
+
+  def registerClient: Route = post {
+    path("registerClient") {
+      entity(as[String]) { json =>
+        val jsonValue = Json.parse(json);
+        val clientUrl: String = (jsonValue \ "clientUrl").as[String]
+        println("Registering client: " + clientUrl)
+        clients = clients + clientUrl
+        complete(StatusCodes.OK)
+      }
+    }
+  }
+
+  def deregisterClient: Route = post {
+    path("deregisterClient") {
+      entity(as[String]) { json =>
+        val jsonValue = Json.parse(json);
+        val clientUrl: String = (jsonValue \ "clientUrl").as[String]
+        println("Registering client: " + clientUrl)
+        clients = clients.filterNot(_ == clientUrl)
+        complete(StatusCodes.OK)
+      }
+    }
+  }
+
+  def update: Route = post {
+    path("update") {
+      entity(as[String]) { json =>
+        val jsonValue = Json.parse(json);
+        val gameState = (jsonValue \ "gameState").as[JsValue]
+        val event = (jsonValue \ "event").as[JsValue]
+        println("Received event: " + event.toString)
+        println("Received gameState: " + gameState.toString)
+        for (clientUrl <- clients) {
+          http.postRequest(clientUrl + "/updateState", gameState.toString)
+          http.postRequest(clientUrl + "/update", event.toString)
+        }
+        complete(StatusCodes.OK)
+      }
+    }
+  }
+}
+
+object ObserverServer {
+  private implicit val system: ActorSystem = ActorSystem(
+    getClass.getSimpleName.init
+  )
+  private implicit val executionContext: ExecutionContext = system.dispatcher
+  private val observerServerRoutes = ObserverServerRoutes()
+
+  def run: Future[ServerBinding] = {
+    val serverBinding = Http()
+      .newServerAt("0.0.0.0", 8081)
+      .bind(observerServerRoutes.routes)
+
+    CoordinatedShutdown(system).addTask(
+      CoordinatedShutdown.PhaseServiceStop,
+      "shutdown-server"
+    ) { () =>
+      shutdown(serverBinding)
+    }
+
+    serverBinding.onComplete {
+      case Success(binding) =>
+        println("ObserverServer -- Http Server is running at \n")
+      case Failure(exception) =>
+        println("ObserverServer -- Http Server failed to start " + exception)
+    }
+    serverBinding
+  }
+
+  private def shutdown(serverBinding: Future[ServerBinding]): Future[Done] =
+    serverBinding.flatMap { binding =>
+      binding.unbind().map { _ =>
+        system.terminate()
+        Done
+      }
+    }
+
+}
