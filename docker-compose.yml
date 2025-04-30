@@ -1,11 +1,17 @@
 services:
   minesweeper:
     build:
-      dockerfile: Dockerfile.minesweeper
+      dockerfile: Dockerfile
+    command: sbt "project minesweeper" "runMain de.htwg.se.minesweeper.main 0.0.0.0 observer"
     ports:
       - "8080:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
   observer:
     build:
-      dockerfile: Dockerfile.observer
+      dockerfile: Dockerfile
+    command: sbt "project ObserverService" "runMain de.htwg.se.mainObserver 0.0.0.0 host.docker.internal"
     ports:
       - "8081:8081"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

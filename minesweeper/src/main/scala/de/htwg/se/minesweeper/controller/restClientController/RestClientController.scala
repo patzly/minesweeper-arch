@@ -42,7 +42,7 @@ private class MinesweeperServerObserver(observable: Observable[Event]) extends O
 
     def run(port: Int): Future[ServerBinding] = {
       val serverBinding = Http()
-        .newServerAt("0.0.0.0", port)
+        .newServerAt("localhost", port)
         .bind(routes)
 
       CoordinatedShutdown(system).addTask(CoordinatedShutdown.PhaseServiceStop, "shutdown-server") { () =>

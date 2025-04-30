@@ -13,7 +13,7 @@ import play.api.libs.json.{JsValue, Json}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
-class ObserverServerRoutes {
+class ObserverServerRoutes(clientHost: String) {
   implicit val system: ActorSystem = ActorSystem(getClass.getSimpleName.init)
   implicit val executionContext: ExecutionContext = system.dispatcher
 
@@ -33,7 +33,7 @@ class ObserverServerRoutes {
     path("registerClient") {
       entity(as[String]) { json =>
         val jsonValue = Json.parse(json);
-        val clientUrl: String = (jsonValue \ "clientUrl").as[String]
+        val clientUrl: String = (jsonValue \ "clientUrl").as[String].replace("localhost", clientHost)
         println("Registering client: " + clientUrl)
         clients = clients + clientUrl
         complete(StatusCodes.OK)
@@ -71,16 +71,16 @@ class ObserverServerRoutes {
   }
 }
 
-object ObserverServer {
+class ObserverServer(clientHost: String) {
   private implicit val system: ActorSystem = ActorSystem(
     getClass.getSimpleName.init
   )
   private implicit val executionContext: ExecutionContext = system.dispatcher
-  private val observerServerRoutes = ObserverServerRoutes()
+  private val observerServerRoutes = ObserverServerRoutes(clientHost)
 
-  def run: Future[ServerBinding] = {
+  def run(host: String, port: Int): Future[ServerBinding] = {
     val serverBinding = Http()
-      .newServerAt("0.0.0.0", 8081)
+      .newServerAt(host, port)
       .bind(observerServerRoutes.routes)
 
     CoordinatedShutdown(system).addTask(

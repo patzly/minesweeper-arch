@@ -20,13 +20,12 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 import de.htwg.se.util.HttpClient
 
-class MinesweeperRoutes(controller: ControllerInterface)
+class MinesweeperRoutes(controller: ControllerInterface, observerUrl: String)
     extends Observer[Event] {
   implicit val system: ActorSystem = ActorSystem(getClass.getSimpleName.init)
   implicit val executionContext: ExecutionContext = system.dispatcher
 
   private val http = new HttpClient
-  private val observerUrl = "http://localhost:8081"
 
   controller.addObserver(this)
 
@@ -199,10 +198,10 @@ object MinesweeperServer {
   )
   private implicit val executionContext: ExecutionContext = system.dispatcher
 
-  def run(controller: ControllerInterface): Future[ServerBinding] = {
+  def run(controller: ControllerInterface, host: String, port: Int, observerUrl: String): Future[ServerBinding] = {
     val serverBinding = Http()
-      .newServerAt("0.0.0.0", 8080)
-      .bind(routes(MinesweeperRoutes(controller)))
+      .newServerAt(host, port)
+      .bind(routes(MinesweeperRoutes(controller, observerUrl)))
 
     CoordinatedShutdown(system).addTask(
       CoordinatedShutdown.PhaseServiceStop,

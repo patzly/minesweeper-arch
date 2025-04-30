@@ -6,4 +6,4 @@ COPY ./ /app
 RUN sbt clean compile
 
 EXPOSE 8081
-CMD [ "sbt", "project ObserverService", "runMain de.htwg.se.mainObserver" ]
+CMD [ "sbt", "project ObserverService", "runMain de.htwg.se.mainObserver host.docker.internal" ]

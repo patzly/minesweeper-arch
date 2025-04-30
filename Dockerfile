@@ -6,4 +6,3 @@ COPY ./ /app
 RUN sbt clean compile
 
 EXPOSE 8080
-CMD [ "sbt", "project minesweeper", "runMain de.htwg.se.minesweeper.main host.docker.internal" ]
