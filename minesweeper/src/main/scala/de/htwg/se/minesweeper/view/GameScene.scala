@@ -130,18 +130,12 @@ case class GameScene(controller: ControllerInterface) extends Scene {
         },
         new Button("Speicherstand laden") {
           onMouseClicked = e => {
-            Gui.openFileDialog(scene.get.getWindow) match {
-              case null         => ()
-              case selectedFile => controller.loadGame(selectedFile.getPath)
-            }
+            controller.loadGame()
           }
         },
         new Button("Spielstand speichern") {
           onMouseClicked = e => {
-            Gui.saveFileDialog(scene.get.getWindow) match {
-              case null         => ()
-              case selectedFile => controller.saveGame(selectedFile.getPath)
-            }
+            controller.saveGame()
           }
         }
       )

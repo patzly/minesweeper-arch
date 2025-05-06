@@ -11,6 +11,7 @@ import akka.http.scaladsl.Http.ServerBinding
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives.*
 import akka.http.scaladsl.server.Route
+import de.htwg.se.minesweeper.database.{DatabaseModule, GameStateDao}
 import de.htwg.se.minesweeper.model.GameState.gameStateToJSON
 import de.htwg.se.minesweeper.observer.Observer
 import de.htwg.se.minesweeper.server.MinesweeperServer.getClass
@@ -20,7 +21,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 import de.htwg.se.util.HttpClient
 
-class MinesweeperRoutes(controller: ControllerInterface, observerUrl: String)
+class MinesweeperRoutes(controller: ControllerInterface, observerUrl: String, gameStateDao: GameStateDao)
     extends Observer[Event] {
   implicit val system: ActorSystem = ActorSystem(getClass.getSimpleName.init)
   implicit val executionContext: ExecutionContext = system.dispatcher
@@ -30,12 +31,19 @@ class MinesweeperRoutes(controller: ControllerInterface, observerUrl: String)
   controller.addObserver(this)
 
   override def update(e: Event): Unit = {
-      println("MinesweeperServer -- update: " + e)
-      val json = Json.obj(
-        "event" -> eventToJson(e),
-        "gameState" -> gameStateToJSON(controller.getGameState),
-      )
-      http.postRequest(observerUrl + "/update", json.toString)
+    println("MinesweeperServer -- update: " + e)
+    val json = Json.obj(
+      "event" -> eventToJson(e),
+      "gameState" -> gameStateToJSON(controller.getGameState),
+    )
+    gameStateDao.save(controller.getGameState).onComplete({
+      case Success(_) => gameStateDao.load().onComplete({
+        case Success(gameState: Option[GameState]) => println("Game state saved successfully: " + gameState.get)
+        case Failure(exception) => println("Failed to register client: " + exception)
+      })
+      case Failure(exception) => println("Failed to register client: " + exception)
+    })
+    http.postRequest(observerUrl + "/update", json.toString)
   }
 
   private def eventToJson(event: Event): JsValue = {
@@ -198,10 +206,12 @@ object MinesweeperServer {
   )
   private implicit val executionContext: ExecutionContext = system.dispatcher
 
+  private val gameStateDao = DatabaseModule.init("gameStates.db")
+
   def run(controller: ControllerInterface, host: String, port: Int, observerUrl: String): Future[ServerBinding] = {
     val serverBinding = Http()
       .newServerAt(host, port)
-      .bind(routes(MinesweeperRoutes(controller, observerUrl)))
+      .bind(routes(MinesweeperRoutes(controller, observerUrl, gameStateDao)))
 
     CoordinatedShutdown(system).addTask(
       CoordinatedShutdown.PhaseServiceStop,
