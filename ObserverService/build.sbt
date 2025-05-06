@@ -1,5 +1,6 @@
 val akkaVersion = "2.8.5"
 val akkaHttpVersion = "10.5.3"
+val slickVersion = "3.6.0"
 
 name := "observer"
 
@@ -13,3 +14,6 @@ libraryDependencies += "com.typesafe.akka" %% "akka-stream" % akkaVersion
 libraryDependencies += "com.typesafe.akka" %% "akka-http" % akkaHttpVersion
 libraryDependencies += "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion % Test
 libraryDependencies += "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion % Test
+libraryDependencies += "com.typesafe.slick" %% "slick" % slickVersion
+libraryDependencies += "com.typesafe.slick" %% "slick-hikaricp" % slickVersion
+libraryDependencies += "org.xerial" % "sqlite-jdbc" % "3.49.1.0"

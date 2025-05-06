@@ -5,15 +5,16 @@ import akka.actor.{ActorSystem, CoordinatedShutdown}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http.ServerBinding
 import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.server.Directives.{as, complete, concat, entity, path, pathPrefix, post}
+import akka.http.scaladsl.server.Directives.{as, complete, concat, entity, onSuccess, path, pathPrefix, post}
 import akka.http.scaladsl.server.Route
+import de.htwg.se.database.{ClientDao, DatabaseModule}
 import de.htwg.se.util.HttpClient
 import play.api.libs.json.{JsValue, Json}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
-class ObserverServerRoutes(clientHost: String) {
+class ObserverServerRoutes(clientHost: String, clientDao: ClientDao) {
   implicit val system: ActorSystem = ActorSystem(getClass.getSimpleName.init)
   implicit val executionContext: ExecutionContext = system.dispatcher
 
@@ -29,25 +30,31 @@ class ObserverServerRoutes(clientHost: String) {
     )
   }
 
-  def registerClient: Route = post {
+  private def registerClient: Route = post {
     path("registerClient") {
       entity(as[String]) { json =>
         val jsonValue = Json.parse(json);
         val clientUrl: String = (jsonValue \ "clientUrl").as[String].replace("localhost", clientHost)
         println("Registering client: " + clientUrl)
-        clients = clients + clientUrl
+        clientDao.insert(clientUrl).onComplete({
+          case Success(_) => clientDao.list().onComplete({
+            case Success(clients) => println("Client registered successfully: " + clients.mkString(", "))
+            case Failure(exception) => println("Failed to register client: " + exception)
+          })
+          case Failure(exception) => println("Failed to register client: " + exception)
+        })
         complete(StatusCodes.OK)
       }
     }
   }
 
-  def deregisterClient: Route = post {
+  private def deregisterClient: Route = post {
     path("deregisterClient") {
       entity(as[String]) { json =>
         val jsonValue = Json.parse(json);
         val clientUrl: String = (jsonValue \ "clientUrl").as[String]
         println("Registering client: " + clientUrl)
-        clients = clients.filterNot(_ == clientUrl)
+        clientDao.delete(clientUrl)
         complete(StatusCodes.OK)
       }
     }
@@ -61,22 +68,24 @@ class ObserverServerRoutes(clientHost: String) {
         val event = (jsonValue \ "event").as[JsValue]
         println("Received event: " + event.toString)
         println("Received gameState: " + gameState.toString)
-        for (clientUrl <- clients) {
-          http.postRequest(clientUrl + "/updateState", gameState.toString)
-          http.postRequest(clientUrl + "/update", event.toString)
+        onSuccess(clientDao.list()) { clients =>
+          clients.foreach { clientUrl =>
+            http.postRequest(clientUrl + "/updateState", gameState.toString)
+            http.postRequest(clientUrl + "/update", event.toString)
+          }
+          complete(StatusCodes.OK)
         }
-        complete(StatusCodes.OK)
       }
     }
   }
 }
 
 class ObserverServer(clientHost: String) {
-  private implicit val system: ActorSystem = ActorSystem(
-    getClass.getSimpleName.init
-  )
+  private implicit val system: ActorSystem = ActorSystem(getClass.getSimpleName.init)
   private implicit val executionContext: ExecutionContext = system.dispatcher
-  private val observerServerRoutes = ObserverServerRoutes(clientHost)
+
+  private val clientDao = DatabaseModule.init("clients.db")
+  private val observerServerRoutes = ObserverServerRoutes(clientHost, clientDao)
 
   def run(host: String, port: Int): Future[ServerBinding] = {
     val serverBinding = Http()
@@ -86,8 +95,8 @@ class ObserverServer(clientHost: String) {
     CoordinatedShutdown(system).addTask(
       CoordinatedShutdown.PhaseServiceStop,
       "shutdown-server"
-    ) { () =>
-      shutdown(serverBinding)
+    ) {
+      () => shutdown(serverBinding)
     }
 
     serverBinding.onComplete {
@@ -106,5 +115,4 @@ class ObserverServer(clientHost: String) {
         Done
       }
     }
-
 }

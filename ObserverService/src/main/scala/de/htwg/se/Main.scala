@@ -3,16 +3,16 @@ package de.htwg.se
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
 
-import scala.concurrent.{Await, Future}
+import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 import scala.concurrent.duration.Duration
 
 @main
 def mainObserver(hostArg: String, clientHost: String): Unit = {
   val host = if (hostArg.isEmpty) "0.0.0.0" else hostArg
 
-  implicit val system = ActorSystem(Behaviors.empty, "my-system")
+  implicit val system: ActorSystem[Any] = ActorSystem(Behaviors.empty, "my-system")
   // needed for the future flatMap/onComplete in the end
-  implicit val executionContext = system.executionContext
+  implicit val executionContext: ExecutionContextExecutor = system.executionContext
 
   val server = new ObserverServer(clientHost)
   val bindingFuture = server.run(host, 8081)
