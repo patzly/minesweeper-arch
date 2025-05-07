@@ -4,10 +4,12 @@ import de.htwg.se.minesweeper.controller.*
 import de.htwg.se.minesweeper.observer.Observer
 import scalafx.application.{JFXApp3, Platform}
 import scalafx.scene.Scene
+import scalafx.scene.control.TextInputDialog
 import scalafx.scene.image.Image
 import scalafx.stage.FileChooser
 import scalafx.stage.FileChooser.ExtensionFilter
-import scala.util.{Try, Success, Failure}
+
+import scala.util.{Failure, Success, Try}
 
 class Gui(controller: ControllerInterface)
     extends JFXApp3
@@ -73,11 +75,29 @@ object Gui {
     initialFileName = "Spielstand.json"
   }
 
-  def openFileDialog(window: javafx.stage.Window): java.io.File = {
-    fc.showOpenDialog(window)
+  def openFileDialog(window: javafx.stage.Window): Option[String] = {
+    new TextInputDialog(defaultValue = "savegame"){
+        initOwner(window)
+        title = "Spielstand laden"
+        headerText = "Bitte geben Sie den Namen des Spielstands ein:"
+        contentText = "Spielstand:"
+        }.showAndWait() match {
+        case Some(fileName) =>
+            Some(fileName)
+        case None => None
+    }
   }
 
-  def saveFileDialog(window: javafx.stage.Window): java.io.File = {
-    fc.showSaveDialog(window)
+  def saveFileDialog(window: javafx.stage.Window): Option[String] = {
+    new TextInputDialog(defaultValue = "savegame"){
+        initOwner(window)
+        title = "Spielstand speichern"
+        headerText = "Bitte geben Sie den Namen des Spielstands ein:"
+        contentText = "Spielstand:"
+        }.showAndWait() match {
+        case Some(fileName) =>
+            Some(fileName)
+        case None => None
+    }
   }
 }

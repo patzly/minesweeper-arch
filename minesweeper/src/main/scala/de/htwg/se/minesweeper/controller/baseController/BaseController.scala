@@ -88,9 +88,8 @@ class BaseController @Inject() (
     Success(notifyObservers(FieldUpdatedEvent(gameState.field)))
   }
 
-  override def loadGame(): Try[Unit] = {
-    // TODO: replace with database access
-    /*fileIO.load(path) match {
+  override def loadGame(path: String): Try[Unit] = {
+    fileIO.load(path) match {
       case Failure(exception) => return Failure(exception)
       case Success(newState) => {
         gameState = newState
@@ -99,16 +98,15 @@ class BaseController @Inject() (
           case false => state = AnyMoveBaseControllerState(this)
         }
       }
-    }*/
+    }
     Success(notifyObservers(StartGameEvent(gameState.field)))
   }
 
-  override def saveGame(): Try[Unit] = {
-    // TODO: replace with database access
-    /*fileIO.save(gameState, path) match {
+  override def saveGame(path: String): Try[Unit] = {
+    fileIO.save(gameState, path) match {
       case Failure(exception) => Failure(exception)
       case Success(_)         => Success(())
-    }*/
+    }
     Success(())
   }
 }

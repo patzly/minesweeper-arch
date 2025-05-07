@@ -21,7 +21,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 import de.htwg.se.util.HttpClient
 
-class MinesweeperRoutes(controller: ControllerInterface, observerUrl: String, gameStateDao: GameStateDao)
+class MinesweeperRoutes(controller: ControllerInterface, observerUrl: String)
     extends Observer[Event] {
   implicit val system: ActorSystem = ActorSystem(getClass.getSimpleName.init)
   implicit val executionContext: ExecutionContext = system.dispatcher
@@ -36,13 +36,6 @@ class MinesweeperRoutes(controller: ControllerInterface, observerUrl: String, ga
       "event" -> eventToJson(e),
       "gameState" -> gameStateToJSON(controller.getGameState),
     )
-    gameStateDao.save(controller.getGameState).onComplete({
-      case Success(_) => gameStateDao.load().onComplete({
-        case Success(gameState: Option[GameState]) => println("Game state saved successfully: " + gameState.get)
-        case Failure(exception) => println("Failed to register client: " + exception)
-      })
-      case Failure(exception) => println("Failed to register client: " + exception)
-    })
     http.postRequest(observerUrl + "/update", json.toString)
   }
 
@@ -76,7 +69,9 @@ class MinesweeperRoutes(controller: ControllerInterface, observerUrl: String, ga
       flag,
       undo,
       redo,
-      exit
+      exit,
+      loadGame,
+      saveGame
     )
   }
 
@@ -194,10 +189,34 @@ class MinesweeperRoutes(controller: ControllerInterface, observerUrl: String, ga
       complete(StatusCodes.OK)
     }
   }
-  // loads/saves the game
-  // in case of load a FieldUpdatedEvent is sent to all observers
-  //  def loadGame(path: String): Try[Unit]
-  //  def saveGame(path: String): Try[Unit]
+  def loadGame: Route = post {
+    path("loadGame") {
+      entity(as[String]) { json =>
+        val jsonValue = Json.parse(json);
+        val path: String = (jsonValue \ "path").as[String]
+        controller.loadGame(path) match {
+          case Success(_) =>
+            complete(StatusCodes.OK)
+          case Failure(exception) =>
+            complete(StatusCodes.InternalServerError, exception.getMessage)
+        }
+      }
+    }
+  }
+  def saveGame: Route = post {
+    path("saveGame") {
+      entity(as[String]) { json =>
+        val jsonValue = Json.parse(json);
+        val path: String = (jsonValue \ "path").as[String]
+        controller.saveGame(path) match {
+          case Success(_) =>
+            complete(StatusCodes.OK)
+          case Failure(exception) =>
+            complete(StatusCodes.InternalServerError, exception.getMessage)
+        }
+      }
+    }
+  }
 }
 
 object MinesweeperServer {
@@ -206,12 +225,10 @@ object MinesweeperServer {
   )
   private implicit val executionContext: ExecutionContext = system.dispatcher
 
-  private val gameStateDao = DatabaseModule.init("gameStates.db")
-
   def run(controller: ControllerInterface, host: String, port: Int, observerUrl: String): Future[ServerBinding] = {
     val serverBinding = Http()
       .newServerAt(host, port)
-      .bind(routes(MinesweeperRoutes(controller, observerUrl, gameStateDao)))
+      .bind(routes(MinesweeperRoutes(controller, observerUrl)))
 
     CoordinatedShutdown(system).addTask(
       CoordinatedShutdown.PhaseServiceStop,

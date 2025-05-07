@@ -49,20 +49,20 @@ private class StartGameState(tui: Tui) extends TuiState {
 
             tui.controller.startGame(width, height, bomb_chance, undos)
           }
-          case 1 => {
+          case 2 => {
             if inputs(0) == "load" then {
-              println(s"Loading game from database")
+              println(s"Loading game from ${inputs(1)}")
 
               tui.controller
-                .loadGame()
+                .loadGame(inputs(1))
                 .recover(e => println(e.getMessage))
             } else {
-              return println("Invalid input: only keyword load allowed")
+              return println("Invalid input: Format is load <filepath>!")
             }
           }
           case _ =>
             return println(
-              "Invalid input: Format is <width> <height> <bomb_chance> <undos> | load"
+              "Invalid input: Format is <width> <height> <bomb_chance> <undos> | load <path>"
             )
         }
       }
@@ -82,24 +82,24 @@ private class DefaultTuiState(tui: Tui) extends TuiState {
         tui.controller.redo().recover(e => println(e.getMessage))
       case _ => {
         val inputs = line.split(" ").toList
-        if inputs.length < 1 then {
+        if inputs.length < 2 then {
           return println(
-            "Invalid input: Format is <column> <row> | load"
+            "Invalid input: Format is <column> <row> | load <path>"
           )
         }
 
         inputs match {
           case "load" :: path :: Nil =>
             return {
-              println("Loading game from database")
+              println(s"Loading game from $path")
 
-              tui.controller.loadGame().recover(e => println(e.getMessage))
+              tui.controller.loadGame(path).recover(e => println(e.getMessage))
             }
           case "save" :: path :: Nil =>
             return {
-              println("Saving game to database")
+              println(s"Saving game to $path")
 
-              tui.controller.saveGame().recover(e => println(e.getMessage))
+              tui.controller.saveGame(path).recover(e => println(e.getMessage))
             }
           case _ => ()
         }

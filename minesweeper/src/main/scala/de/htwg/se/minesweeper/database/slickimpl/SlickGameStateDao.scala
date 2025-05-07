@@ -12,14 +12,14 @@ import scala.concurrent.{ExecutionContext, Future}
 class SlickGameStateDao(db: Database)(implicit ec: ExecutionContext) extends GameStateDao {
   private val table = GameStates.table
 
-  override def save(gameState: GameState): Future[Unit] = {
+  override def save(gameState: GameState, id: String): Future[Unit] = {
     val json = gameStateToJSON(gameState).toString()
-    val entity = GameStateEntity(0, json)
+    val entity = GameStateEntity(id, json)
     db.run(table.insertOrUpdate(entity)).map(_ => ())
   }
 
-  override def load(): Future[Option[GameState]] = {
-    db.run(table.filter(_.id === 0).result.headOption).map {
+  override def load(id: String): Future[Option[GameState]] = {
+    db.run(table.filter(_.id === id).result.headOption).map {
       case Some(entity) => Some(gameStateFromJSON(play.api.libs.json.Json.parse(entity.json)))
       case None => None
     }

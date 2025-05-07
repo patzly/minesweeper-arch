@@ -10,10 +10,17 @@ import scala.util.Random
 import de.htwg.se.minesweeper.model.FileIOComponent.*
 import de.htwg.se.minesweeper.model.FileIOComponent.Flexible.FileIO
 import com.google.inject.name.Names
+import de.htwg.se.minesweeper.database.slickimpl.SlickGameStateDao
+import de.htwg.se.minesweeper.database.{DatabaseModule, FileIOGameStateDao, GameStateDao}
 
-class MinesweeperModule extends AbstractModule {
+import scala.concurrent.ExecutionContext
+
+class MinesweeperModule(implicit executionContext: ExecutionContext) extends AbstractModule {
+
   override def configure(): Unit = {
-    bind(classOf[FileIOInterface]).to(classOf[FileIO])
+    val db = DatabaseModule.init("gameState.db")
+
+    bind(classOf[FileIOInterface]).toInstance(FileIOGameStateDao(db))
     bind(classOf[FieldFactory]).toInstance(RandomFieldFactory(Random()))
     bind(classOf[ControllerInterface])
       .to(classOf[BaseController])

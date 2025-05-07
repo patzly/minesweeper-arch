@@ -24,6 +24,6 @@ trait ControllerInterface extends Observable[Event] {
   def exit(): Unit
   // loads/saves the game
   // in case of load a FieldUpdatedEvent is sent to all observers
-  def loadGame(): Try[Unit]
-  def saveGame(): Try[Unit]
+  def loadGame(path: String): Try[Unit]
+  def saveGame(path: String): Try[Unit]
 }

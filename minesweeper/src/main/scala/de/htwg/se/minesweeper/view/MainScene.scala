@@ -55,7 +55,10 @@ case class MainScene(controller: ControllerInterface) extends Scene {
           },
           new Button("Speicherstand laden") {
             onMouseClicked = e => {
-              controller.loadGame()
+              Gui.openFileDialog(scene.get.getWindow) match {
+                case None         => ()
+                case Some(selectedFile) => controller.loadGame(selectedFile)
+              }
             }
           }
         ) {

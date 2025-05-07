@@ -20,8 +20,6 @@ class ObserverServerRoutes(clientHost: String, clientDao: ClientDao) {
 
   private val http = new HttpClient
 
-  private var clients = Set.empty[String]
-
   def routes: Route = {
     concat(
       registerClient,

@@ -124,9 +124,9 @@ class RestClientController(port: Int) extends Observable[Event] with ControllerI
   }
 
 
-  override def loadGame(): Try[Unit] = Success(())
+  override def loadGame(path: String): Try[Unit] = http.postRequest(url + "/loadGame", s"""{"path":"$path"}""")
 
-  override def saveGame(): Try[Unit] = Success(())
+  override def saveGame(path: String): Try[Unit] = http.postRequest(url + "/saveGame", s"""{"path":"$path"}""")
 
   override def getGameState: GameState = observer.getGameState
 
