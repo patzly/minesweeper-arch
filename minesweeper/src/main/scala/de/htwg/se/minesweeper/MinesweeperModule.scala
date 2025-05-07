@@ -8,9 +8,6 @@ import de.htwg.se.minesweeper.model.fieldComponent.field.*
 
 import scala.util.Random
 import de.htwg.se.minesweeper.model.FileIOComponent.*
-import de.htwg.se.minesweeper.model.FileIOComponent.Flexible.FileIO
-import com.google.inject.name.Names
-import de.htwg.se.minesweeper.database.slickimpl.SlickGameStateDao
 import de.htwg.se.minesweeper.database.{DatabaseModule, FileIOGameStateDao, GameStateDao}
 
 import scala.concurrent.ExecutionContext

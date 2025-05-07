@@ -11,7 +11,6 @@ import akka.http.scaladsl.Http.ServerBinding
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives.*
 import akka.http.scaladsl.server.Route
-import de.htwg.se.minesweeper.database.{DatabaseModule, GameStateDao}
 import de.htwg.se.minesweeper.model.GameState.gameStateToJSON
 import de.htwg.se.minesweeper.observer.Observer
 import de.htwg.se.minesweeper.server.MinesweeperServer.getClass

@@ -43,6 +43,7 @@ class Gui(controller: ControllerInterface)
 
   override def visitExit(event: ExitEvent): Unit = {
     // close the gui
+    controller.exit()
     stage.close()
     System.exit(0)
   }

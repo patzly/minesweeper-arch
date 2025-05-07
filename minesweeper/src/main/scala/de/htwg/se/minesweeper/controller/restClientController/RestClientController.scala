@@ -138,7 +138,9 @@ class RestClientController(port: Int) extends Observable[Event] with ControllerI
 
   override def undo(): Try[Unit] = http.getRequest(url + "/undo")
 
-  override def exit(): Unit = http.getRequest(url + "/exit")
+  override def exit(): Unit = http.postRequest(url + "/deregisterClient", Json.obj(
+    "clientUrl" -> ("http://localhost:" + port.toString)
+  ).toString)
 
   override def setup(): Unit = {
     println("setting up server")
