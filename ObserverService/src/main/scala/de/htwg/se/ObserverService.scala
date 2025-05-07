@@ -51,7 +51,7 @@ class ObserverServerRoutes(clientHost: String, clientDao: ClientDao) {
       entity(as[String]) { json =>
         val jsonValue = Json.parse(json);
         val clientUrl: String = (jsonValue \ "clientUrl").as[String]
-        println("Registering client: " + clientUrl)
+        println("Deregistering client: " + clientUrl)
         clientDao.delete(clientUrl)
         complete(StatusCodes.OK)
       }
