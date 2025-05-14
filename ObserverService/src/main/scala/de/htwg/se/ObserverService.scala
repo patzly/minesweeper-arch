@@ -82,7 +82,8 @@ class ObserverServer(clientHost: String) {
   private implicit val system: ActorSystem = ActorSystem(getClass.getSimpleName.init)
   private implicit val executionContext: ExecutionContext = system.dispatcher
 
-  private val clientDao = DatabaseModule.init("clients.db")
+  //private val clientDao = DatabaseModule.initSlick("clients.db")
+  private val clientDao = DatabaseModule.initMongo("mongodb://localhost:27017", "observer")(executionContext)
   private val observerServerRoutes = ObserverServerRoutes(clientHost, clientDao)
 
   def run(host: String, port: Int): Future[ServerBinding] = {

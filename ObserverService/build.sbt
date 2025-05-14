@@ -17,3 +17,4 @@ libraryDependencies += "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVers
 libraryDependencies += "com.typesafe.slick" %% "slick" % slickVersion
 libraryDependencies += "com.typesafe.slick" %% "slick-hikaricp" % slickVersion
 libraryDependencies += "org.xerial" % "sqlite-jdbc" % "3.49.1.0"
+libraryDependencies += "org.mongodb.scala" %% "mongo-scala-driver" % "5.4.0" cross CrossVersion.for3Use2_13
