@@ -56,6 +56,12 @@ private class StartGameState(tui: Tui) extends TuiState {
               tui.controller
                 .loadGame(inputs(1))
                 .recover(e => println(e.getMessage))
+            } else if inputs(0) == "save" then {
+              println(s"Saving game to ${inputs(1)}")
+
+              tui.controller
+                .saveGame(inputs(1))
+                .recover(e => println(e.getMessage))
             } else {
               return println("Invalid input: Format is load <filepath>!")
             }

@@ -15,7 +15,8 @@ import scala.concurrent.ExecutionContext
 class MinesweeperModule(implicit executionContext: ExecutionContext) extends AbstractModule {
 
   override def configure(): Unit = {
-    val db = DatabaseModule.init("gameState.db")
+    //val db = DatabaseModule.initSlick("gameState.db")
+    val db = DatabaseModule.initMongo("mongodb://localhost:27017", "minesweeper")
 
     bind(classOf[FileIOInterface]).toInstance(FileIOGameStateDao(db))
     bind(classOf[FieldFactory]).toInstance(RandomFieldFactory(Random()))
