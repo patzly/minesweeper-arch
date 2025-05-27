@@ -23,7 +23,7 @@ class MinesweeperSimulation extends Simulation {
     setupScn.inject(atOnceUsers(1)),
     loadSaveScn.inject(
       rampUsers(10) during (10.seconds),
-      constantUsersPerSec(5) during (10.seconds)
+      constantUsersPerSec(2) during (10.seconds)
     )
   ).protocols(httpConf)
 }

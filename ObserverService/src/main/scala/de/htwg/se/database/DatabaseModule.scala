@@ -11,7 +11,7 @@ import scala.util.{Failure, Success}
 
 object DatabaseModule {
   def initSlick(dbPath: String)(implicit ec: ExecutionContext): ClientDao = {
-    val db = Database.forURL(s"jdbc:sqlite:$dbPath", driver = "org.sqlite.JDBC")
+    val db = Database.forURL(s"jdbc:sqlite:$dbPath?journal_mode=WAL", driver = "org.sqlite.JDBC")
     val setup = Clients.table.schema.createIfNotExists
     db.run(setup).onComplete({
       case Success(_) => println(s"Database $dbPath initialized successfully.")
