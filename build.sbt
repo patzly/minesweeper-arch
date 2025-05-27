@@ -18,7 +18,7 @@ lazy val ObserverService =
     .enablePlugins(AssemblyPlugin)
     .settings(
       name := "observer",
-      assembly / mainClass := Some("de.htwg.se.mainObserver"),
+      sbtassembly.AssemblyKeys.assembly / mainClass := Some("de.htwg.se.mainObserver"),
     )
     .dependsOn(model, util)
 lazy val minesweeper =
@@ -26,9 +26,11 @@ lazy val minesweeper =
     .enablePlugins(AssemblyPlugin)
     .settings(
       name := "minesweeper",
-      assembly / mainClass := Some("de.htwg.se.minesweeper.main"),
+      sbtassembly.AssemblyKeys.assembly / mainClass := Some("de.htwg.se.minesweeper.main"),
     )
     .dependsOn(model, fileio, util)
+lazy val performanceTest = (project in file("PerformanceTest"))
+  .enablePlugins(GatlingPlugin)
 
 lazy val root = project
   .in(file("."))

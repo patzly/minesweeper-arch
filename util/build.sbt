@@ -1,7 +1,7 @@
 val akkaVersion = "2.8.5"
 val akkaHttpVersion = "10.5.3"
 
-name := "minesweeper"
+name := "util"
 
 libraryDependencies += "org.scalactic" %% "scalactic" % "3.2.17"
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.17" % "test"

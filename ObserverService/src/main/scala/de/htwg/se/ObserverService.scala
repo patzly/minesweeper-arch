@@ -10,8 +10,9 @@ import akka.http.scaladsl.server.Route
 import de.htwg.se.database.{ClientDao, DatabaseModule}
 import de.htwg.se.util.HttpClient
 import play.api.libs.json.{JsValue, Json}
+import scala.concurrent.duration._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 class ObserverServerRoutes(clientHost: String, clientDao: ClientDao) {
@@ -34,14 +35,26 @@ class ObserverServerRoutes(clientHost: String, clientDao: ClientDao) {
         val jsonValue = Json.parse(json);
         val clientUrl: String = (jsonValue \ "clientUrl").as[String].replace("localhost", clientHost)
         println("Registering client: " + clientUrl)
-        clientDao.insert(clientUrl).onComplete({
+        var result = StatusCodes.OK.intValue
+        val future = clientDao.insert(clientUrl)
+        future.onComplete({
           case Success(_) => clientDao.list().onComplete({
-            case Success(clients) => println("Client registered successfully: " + clients.mkString(", "))
-            case Failure(exception) => println("Failed to register client: " + exception)
+            case Success(clients) => {
+              println("Client registered successfully: " + clients.mkString(", "))
+              result = StatusCodes.OK.intValue
+            }
+            case Failure(exception) => {
+              println("Failed to register client: " + exception)
+              result = StatusCodes.InternalServerError.intValue
+            }
           })
-          case Failure(exception) => println("Failed to register client: " + exception)
+          case Failure(exception) => {
+            println("Failed to register client: " + exception)
+            result = StatusCodes.InternalServerError.intValue
+          }
         })
-        complete(StatusCodes.OK)
+        Await.ready(future, Duration.Inf)
+        complete(StatusCodes.getForKey(result))
       }
     }
   }
@@ -82,8 +95,8 @@ class ObserverServer(clientHost: String) {
   private implicit val system: ActorSystem = ActorSystem(getClass.getSimpleName.init)
   private implicit val executionContext: ExecutionContext = system.dispatcher
 
-  //private val clientDao = DatabaseModule.initSlick("clients.db")
-  private val clientDao = DatabaseModule.initMongo("mongodb://localhost:27017", "observer")(executionContext)
+  private val clientDao = DatabaseModule.initSlick("clients.db")
+  // private val clientDao = DatabaseModule.initMongo("mongodb://localhost:27017", "observer")(executionContext)
   private val observerServerRoutes = ObserverServerRoutes(clientHost, clientDao)
 
   def run(host: String, port: Int): Future[ServerBinding] = {
