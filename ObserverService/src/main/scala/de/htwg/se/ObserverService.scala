@@ -1,19 +1,22 @@
 package de.htwg.se
 
-import akka.Done
+import akka.{Done, NotUsed}
 import akka.actor.{ActorSystem, CoordinatedShutdown}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http.ServerBinding
+import akka.http.scaladsl.client.RequestBuilding.WithTransformation
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives.{as, complete, concat, entity, onSuccess, path, pathPrefix, post}
 import akka.http.scaladsl.server.Route
+import akka.stream.ClosedShape
+import akka.stream.scaladsl.*
 import de.htwg.se.database.{ClientDao, DatabaseModule}
 import de.htwg.se.util.HttpClient
 import play.api.libs.json.{JsValue, Json}
-import scala.concurrent.duration._
 
+import scala.concurrent.duration.*
 import scala.concurrent.{Await, ExecutionContext, Future}
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Success, Try}
 
 class ObserverServerRoutes(clientHost: String, clientDao: ClientDao) {
   implicit val system: ActorSystem = ActorSystem(getClass.getSimpleName.init)
@@ -75,17 +78,57 @@ class ObserverServerRoutes(clientHost: String, clientDao: ClientDao) {
     path("update") {
       entity(as[String]) { json =>
         val jsonValue = Json.parse(json);
-        val gameState = (jsonValue \ "gameState").as[JsValue]
-        val event = (jsonValue \ "event").as[JsValue]
-        println("Received event: " + event.toString)
-        println("Received gameState: " + gameState.toString)
-        onSuccess(clientDao.list()) { clients =>
-          clients.foreach { clientUrl =>
-            http.postRequest(clientUrl + "/updateState", gameState.toString)
-            http.postRequest(clientUrl + "/update", event.toString)
-          }
-          complete(StatusCodes.OK)
+        val gameState = (jsonValue \ "gameState").as[JsValue].toString
+        val event = (jsonValue \ "event").as[JsValue].toString
+
+        val graph = GraphDSL.create() { implicit builder =>
+          import GraphDSL.Implicits._
+
+          val input = builder.add(
+            Source.future {
+              clientDao.list().andThen {
+                case Success(value) =>
+                  println(s"clientDao.list() succeeded with: $value")
+                case Failure(ex) =>
+                  println(s"clientDao.list() failed: ${ex.getMessage}")
+              }
+            }
+)
+          val flattener = builder.add(Flow[Set[String]].mapConcat(_.toList))
+          val gameStateUpdater = builder.add(Flow[String].map { clientUrl =>
+            http.postRequest(clientUrl + "/updateState", gameState)
+          })
+          val eventUpdater = builder.add(Flow[String].map { clientUrl =>
+              http.postRequest(clientUrl + "/update", event)
+          })
+
+          val broadcast = builder.add(Broadcast[String](2))
+          val zip = builder.add(Zip[Try[Unit], Try[Unit]]())
+
+          val output = builder.add(Sink.foreach[(Try[Unit], Try[Unit])] {
+            case (Success(_), Success(_)) => println("Update successful for all clients.")
+            case (Failure(exception), _) => println(s"Failed to update game state: ${exception.getMessage}")
+            case (_, Failure(exception)) => println(s"Failed to update event: ${exception.getMessage}")
+          })
+
+          input ~> flattener ~> broadcast
+
+          broadcast.out(0) ~> gameStateUpdater ~> zip.in0
+          broadcast.out(1) ~> eventUpdater ~> zip.in1
+
+          zip.out ~> output
+          ClosedShape
         }
+        RunnableGraph.fromGraph(graph).run()
+        complete(StatusCodes.OK)
+
+//        onSuccess(clientDao.list()) { clients =>
+//          clients.foreach { clientUrl =>
+//            http.postRequest(clientUrl + "/updateState", gameState.toString)
+//            http.postRequest(clientUrl + "/update", event.toString)
+//          }
+//          complete(StatusCodes.OK)
+//        }
       }
     }
   }
