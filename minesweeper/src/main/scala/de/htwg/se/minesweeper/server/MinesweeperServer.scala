@@ -1,27 +1,34 @@
 package de.htwg.se.minesweeper.server
 
 import akka.Done
-import akka.actor.CoordinatedShutdown
 import akka.actor.ActorSystem
+import akka.actor.CoordinatedShutdown
 import akka.http.scaladsl.Http
-import de.htwg.se.minesweeper.controller.*
-import de.htwg.se.minesweeper.model.GameState
-import de.htwg.se.minesweeper.model.fieldComponent.fieldToJSON
 import akka.http.scaladsl.Http.ServerBinding
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives.*
 import akka.http.scaladsl.server.Route
+import de.htwg.se.minesweeper.controller.*
+import de.htwg.se.minesweeper.model.GameState
 import de.htwg.se.minesweeper.model.GameState.gameStateToJSON
+import de.htwg.se.minesweeper.model.fieldComponent.fieldToJSON
 import de.htwg.se.minesweeper.observer.Observer
 import de.htwg.se.minesweeper.server.MinesweeperServer.getClass
-import play.api.libs.json.{JsValue, Json}
-
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success}
 import de.htwg.se.util.HttpClient
+import org.apache.kafka.clients.producer.*
+import play.api.libs.json.JsValue
+import play.api.libs.json.Json
 
-class MinesweeperRoutes(controller: ControllerInterface, observerUrl: String)
-    extends Observer[Event] {
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
+import scala.util.Failure
+import scala.util.Success
+
+class MinesweeperRoutes(
+    controller: ControllerInterface,
+    observerUrl: String,
+    kafkaProducer: KafkaProducer[String, String]
+) extends Observer[Event] {
   implicit val system: ActorSystem = ActorSystem(getClass.getSimpleName.init)
   implicit val executionContext: ExecutionContext = system.dispatcher
 
@@ -31,11 +38,14 @@ class MinesweeperRoutes(controller: ControllerInterface, observerUrl: String)
 
   override def update(e: Event): Unit = {
     println("MinesweeperServer -- update: " + e)
-    val json = Json.obj(
-      "event" -> eventToJson(e),
-      "gameState" -> gameStateToJSON(controller.getGameState),
-    )
-    http.postRequest(observerUrl + "/update", json.toString)
+    val json = Json
+      .obj(
+        "event" -> eventToJson(e),
+        "gameState" -> gameStateToJSON(controller.getGameState)
+      )
+      .toString
+    kafkaProducer.send(ProducerRecord("my-topic", "update", json))
+    // http.postRequest(observerUrl + "/update", json)
   }
 
   private def eventToJson(event: Event): JsValue = {
@@ -77,7 +87,8 @@ class MinesweeperRoutes(controller: ControllerInterface, observerUrl: String)
   def registerClient: Route = post {
     path("registerClient") {
       entity(as[String]) { json =>
-        http.postRequest(observerUrl + "/registerClient", json)
+        kafkaProducer.send(ProducerRecord("my-topic", "register", json))
+        // http.postRequest(observerUrl + "/registerClient", json)
         complete(StatusCodes.OK)
       }
     }
@@ -86,7 +97,8 @@ class MinesweeperRoutes(controller: ControllerInterface, observerUrl: String)
   def deregisterClient: Route = post {
     path("deregisterClient") {
       entity(as[String]) { json =>
-        http.postRequest(observerUrl + "/deregisterClient", json)
+        kafkaProducer.send(ProducerRecord("my-topic", "deregister", json))
+        // http.postRequest(observerUrl + "/deregisterClient", json)
         complete(StatusCodes.OK)
       }
     }
@@ -223,11 +235,17 @@ object MinesweeperServer {
     getClass.getSimpleName.init
   )
   private implicit val executionContext: ExecutionContext = system.dispatcher
+  private val kafkaProducer = createKafkaProducer
 
-  def run(controller: ControllerInterface, host: String, port: Int, observerUrl: String): Future[ServerBinding] = {
+  def run(
+      controller: ControllerInterface,
+      host: String,
+      port: Int,
+      observerUrl: String
+  ): Future[ServerBinding] = {
     val serverBinding = Http()
       .newServerAt(host, port)
-      .bind(routes(MinesweeperRoutes(controller, observerUrl)))
+      .bind(routes(MinesweeperRoutes(controller, observerUrl, kafkaProducer)))
 
     CoordinatedShutdown(system).addTask(
       CoordinatedShutdown.PhaseServiceStop,
@@ -253,11 +271,27 @@ object MinesweeperServer {
     }
 
   private def shutdown(serverBinding: Future[ServerBinding]): Future[Done] =
+    kafkaProducer.close()
     serverBinding.flatMap { binding =>
       binding.unbind().map { _ =>
         system.terminate()
         Done
       }
     }
+
+  private def createKafkaProducer: KafkaProducer[String, String] = {
+    val props = java.util.Properties()
+    props.put("bootstrap.servers", "localhost:9092")
+    props.put(
+      "key.serializer",
+      "org.apache.kafka.common.serialization.StringSerializer"
+    )
+    props.put(
+      "value.serializer",
+      "org.apache.kafka.common.serialization.StringSerializer"
+    )
+
+    KafkaProducer[String, String](props)
+  }
 
 }
